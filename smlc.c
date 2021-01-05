@@ -16,10 +16,30 @@
   the number of columns of the first one \
   is different than the number of rows of the second one." \
 
+#define CANNOT_REMOVE_COLUMN \
+  "Cannot remove matrix column %d. The value should be less than %d.\n" \
+
+#define CANNOT_REMOVE_ROW \
+  "Cannot remove matrix row %d. The value should be less than %d.\n" \
+
+#define INVALID_ROWS \
+  "Cannot create matrix with 0 number of rows. Aborting." \
+
+#define INVALID_COLS \
+    "Cannot create matrix with 0 number of cols. Aborting." \
+
 //
 // Basic Matrix Methods
 //
 smlc_matrix *smlc_new(unsigned int num_rows, unsigned int num_cols) {
+  if (num_rows == 0) {
+    SMLC_ERROR(INVALID_ROWS);
+    abort();
+  }
+  if (num_cols == 0) {
+    SMLC_ERROR(INVALID_COLS);
+    abort();
+  }
   smlc_matrix *m = malloc(sizeof(*m));
   NP_CHECK(m);
   m->num_rows = num_rows;
@@ -90,7 +110,48 @@ int smlc_eq_dim(smlc_matrix *m1, smlc_matrix *m2) {
 }
 
 //
-// Operations
+// Structural Changes
+//
+// smlc_matrix *smlc_add_col(smlc_matrix *m, unsigned int size, double *values);
+// smlc_matrix *smlc_add_row(smlc_matrix *m, unsigned int size, double *values);
+
+smlc_matrix *smlc_rem_col(smlc_matrix *m, unsigned int column) {
+  if(column >= m->num_cols) {
+    SMLC_FERROR(CANNOT_REMOVE_COLUMN, column, m->num_cols);
+    return NULL;
+  }
+  smlc_matrix *r = smlc_new(m->num_rows, m->num_cols-1);
+  int i, j, k;
+  for(i = 0; i < m->num_rows; i++) {
+    for(j = 0, k=0; j < m->num_cols; j++) {
+      if (column!=j) {
+        r->data[i][k++] = m->data[i][j];
+      }
+    }
+  }
+  return r;
+}
+
+smlc_matrix *smlc_rem_row(smlc_matrix *m, unsigned int row) {
+  if (row >= m->num_rows) {
+    SMLC_FERROR(CANNOT_REMOVE_ROW, row, m->num_rows);
+    return NULL;
+  }
+  smlc_matrix *r = smlc_new(m->num_rows-1, m->num_cols);
+  int i, j, k;
+  for(i = 0, k = 0; i < m->num_rows; i++) {
+    if (row!=i) {
+      for(j = 0; j < m->num_cols; j++) {
+        r->data[k][j] = m->data[i][j];
+      }
+      k++;
+    }
+  }
+  return r;
+}
+
+//
+// Matrix Operations
 //
 
 smlc_matrix *smlc_plus(smlc_matrix *m1, smlc_matrix *m2) {
@@ -165,71 +226,87 @@ smlc_matrix *smlc_transpose(smlc_matrix *m) {
 
 int main(int argc, char *argv[]) {
 
-  double m1_v[9] = {
-    1.0, 2.0, 1.0,
-    4.0, 7.0, 8.0,
-    3.0, 1.0, 8.0
-  };
-
-  double m2_v[9] = {
-    1.0, 2.0, 1.0,
-    4.0, 7.0, 8.0,
-    3.0, 1.0, 8.0
-  };
-
-  smlc_matrix *m1 = smlc_new_from(3,3,9,m1_v);
-  smlc_matrix *m2 = smlc_new_from(3,3,9,m2_v);
-
-  smlc_print(m1,"%2.2f\t");
-
-  printf("\n + \n\n");
-
-  smlc_print(m2, "%2.2f\t");
-
-  printf("\n=\n\n");
-
-  smlc_print(smlc_plus(m1,m2), "%2.2f\t");
-
-  printf("\n\n");
-  smlc_print(smlc_smultiply(m1, 5.0), "%2.2f\t");
-
-  double m3_v[8] = {
-    2.0, 1.0,
-    8.2, 8.3,
-    7.1, 7.2,
-    2.0, 2.5
-  };
-
-  smlc_matrix *m3 = smlc_new_from(4,2,8,m3_v);
-
-  printf("\n\n");
-  smlc_print(m3,"%2.2f\t");
-
-  printf("\n\n");
-  smlc_print(smlc_transpose(m3), "%2.2f\t");
+  // double m1_v[9] = {
+  //   1.0, 2.0, 1.0,
+  //   4.0, 7.0, 8.0,
+  //   3.0, 1.0, 8.0
+  // };
+  //
+  // double m2_v[9] = {
+  //   1.0, 2.0, 1.0,
+  //   4.0, 7.0, 8.0,
+  //   3.0, 1.0, 8.0
+  // };
+  //
+  // smlc_matrix *m1 = smlc_new_from(3,3,9,m1_v);
+  // smlc_matrix *m2 = smlc_new_from(3,3,9,m2_v);
+  //
+  // smlc_print(m1,"%2.2f\t");
+  //
+  // printf("\n + \n\n");
+  //
+  // smlc_print(m2, "%2.2f\t");
+  //
+  // printf("\n=\n\n");
+  //
+  // smlc_print(smlc_plus(m1,m2), "%2.2f\t");
+  //
+  // printf("\n\n");
+  // smlc_print(smlc_smultiply(m1, 5.0), "%2.2f\t");
+  //
+  // double m3_v[8] = {
+  //   2.0, 1.0,
+  //   8.2, 8.3,
+  //   7.1, 7.2,
+  //   2.0, 2.5
+  // };
+  //
+  // smlc_matrix *m3 = smlc_new_from(4,2,8,m3_v);
+  //
+  // printf("\n\n");
+  // smlc_print(m3,"%2.2f\t");
+  //
+  // printf("\n\n");
+  // smlc_print(smlc_transpose(m3), "%2.2f\t");
+  //
 
   double m4_v[6] = {
     2.0, 3.0, 4.0,
     1.0, 0.0, 0.0
   };
 
-  double m5_v[6] = {
-    0.0, 1000,
-    1, 100,
-    0, 10
-  };
+  //
+  // double m5_v[6] = {
+  //   0.0, 1000,
+  //   1, 100,
+  //   0, 10
+  // };
+  //
+  // smlc_matrix *m4 = smlc_new_from(2,3,6,m4_v);
+  // printf("\n\n");
+  // smlc_print(m4, "%2.2f\t");
+  //
+  // smlc_matrix *m5 = smlc_new_from(3,2,6,m5_v);
+  // printf("\n\n");
+  // smlc_print(m5, "%2.2f\t");
+  //
+  // printf("\n\n");
+  //
+  // smlc_print(smlc_multiply(m4, m5), "%2.2f\t");
 
   smlc_matrix *m4 = smlc_new_from(2,3,6,m4_v);
-  printf("\n\n");
+
   smlc_print(m4, "%2.2f\t");
-
-  smlc_matrix *m5 = smlc_new_from(3,2,6,m5_v);
   printf("\n\n");
-  smlc_print(m5, "%2.2f\t");
-
+  smlc_print(smlc_rem_col(m4, 0), "%2.2f\t");
   printf("\n\n");
-
-  smlc_print(smlc_multiply(m4, m5), "%2.2f\t");
+  smlc_print(smlc_rem_col(m4, 1), "%2.2f\t");
+  printf("\n\n");
+  smlc_print(smlc_rem_col(m4, 2), "%2.2f\t");
+  printf("\n\n");
+  smlc_print(smlc_rem_row(m4, 0), "%2.2f\t");
+  printf("\n\n");
+  smlc_print(smlc_rem_row(m4, 1), "%2.2f\t");
 
   return 0;
 }
