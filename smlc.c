@@ -1,20 +1,22 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <float.h>
+#include <math.h>
 
 #include "smlc.h"
 
 #define DEFAULT_VALUE 0.0
 
 #define CANNOT_ADD \
-  "Cannot add two matrices with different dimensions." \
+  "Cannot add two matrices with different dimensions.\n" \
 
 #define CANNOT_SUBTRACT \
-  "Cannot subctract two matrices with different dimensions." \
+  "Cannot subctract two matrices with different dimensions.\n" \
 
 #define CANNOT_MULITPLY \
   "Cannot multiply two matrices where \
   the number of columns of the first one \
-  is different than the number of rows of the second one." \
+  is different than the number of rows of the second one.\n" \
 
 #define CANNOT_REMOVE_COLUMN \
   "Cannot remove matrix column %d. The value should be less than %d.\n" \
@@ -23,10 +25,29 @@
   "Cannot remove matrix row %d. The value should be less than %d.\n" \
 
 #define INVALID_ROWS \
-  "Cannot create matrix with 0 number of rows. Aborting." \
+  "Cannot create matrix with 0 number of rows. Aborting.\n" \
 
 #define INVALID_COLS \
-    "Cannot create matrix with 0 number of cols. Aborting." \
+    "Cannot create matrix with 0 number of cols. Aborting.\n" \
+
+#define CANNOT_TRACE \
+    "Cannot calculate trace. Matrix needs to be square.\n" \
+
+#define CANNOT_CROUT \
+    "Cannot apply crout algorithm. Matrix needs to be square.\n" \
+
+#define CANNOT_SWAP_ROWS \
+     "Cannot swap rows (%d, %d) because the matrix number of rows is %d.\n" \
+
+#define CANNOT_ROW_MULTIPLY \
+      "Cannot multiply row (%d), maximum number of rows is %d.\n" \
+
+#define CANNOT_ADD_TO_ROW \
+      "Cannot add %2.2f x (row=%d) to row=%d. Total number of rows is: %d.\n" \
+
+#define CANNOT_LU_MATRIX_SQUARE \
+      "Canot LU. Matrix (%d, %d) needs to be square.\n" \
+
 
 //
 // Basic Matrix Methods
@@ -40,23 +61,32 @@ smlc_matrix *smlc_new(unsigned int num_rows, unsigned int num_cols) {
     SMLC_ERROR(INVALID_COLS);
     abort();
   }
-  smlc_matrix *m = malloc(sizeof(*m));
+  smlc_matrix *m = calloc(1, sizeof(*m));
   NP_CHECK(m);
   m->num_rows = num_rows;
   m->num_cols = num_cols;
   m->is_square = (num_rows == num_cols) ? 1 : 0;
-  m->data = malloc(sizeof(*m->data) * m->num_rows);
+  m->data = calloc(m->num_rows, sizeof(*m->data));
   NP_CHECK(m->data);
   int i;
   for(i = 0; i < m->num_rows; ++i) {
-    m->data[i] = malloc(sizeof(**m->data) * m->num_cols);
+    m->data[i] = calloc(m->num_cols, sizeof(**m->data));
     NP_CHECK(m->data[i]);
   }
   return m;
 }
 
+smlc_matrix *smlc_new_identity(unsigned int size) {
+  smlc_matrix *r = smlc_new(size, size);
+  int i;
+  for(i = 0; i < r->num_rows; i++) {
+    r->data[i][i] = 1.0;
+  }
+  return r;
+}
+
 smlc_matrix *smlc_new_from(unsigned int num_rows, unsigned int num_cols, unsigned int n_vals, double *vals) {
-  smlc_matrix * m = smlc_new(num_rows, num_cols);
+  smlc_matrix *m = smlc_new(num_rows, num_cols);
   int i, j, v_idx;
   for(i = 0; i < m->num_rows; i++) {
     for(j = 0; j < m->num_cols; j++) {
@@ -65,6 +95,17 @@ smlc_matrix *smlc_new_from(unsigned int num_rows, unsigned int num_cols, unsigne
     }
   }
   return m;
+}
+
+smlc_matrix *smlc_new_copy(smlc_matrix *m) {
+  smlc_matrix *r  = smlc_new(m->num_rows, m->num_cols);
+  int i,j;
+  for(i = 0; i < r->num_rows; i++) {
+    for(j = 0; j < r->num_cols; j++) {
+      r->data[i][j] = m->data[i][j];
+    }
+  }
+  return r;
 }
 
 void smlc_free(smlc_matrix *matrix) {
@@ -93,14 +134,20 @@ void smlc_set_all(smlc_matrix *matrix, double value) {
   }
 }
 
-void smlc_print(smlc_matrix *matrix, const char *d_fmt) {
+void smlc_print(smlc_matrix *matrix) {
+  smlc_printf(matrix, "%2.2f\t");
+}
+
+void smlc_printf(smlc_matrix *matrix, const char *d_fmt) {
   int i, j;
+  fprintf(stdout, "\n");
   for(i = 0; i < matrix->num_rows; ++i) {
     for(j = 0; j < matrix->num_cols; ++j) {
       fprintf(stdout, d_fmt, matrix->data[i][j]);
     }
     fprintf(stdout, "\n");
   }
+  fprintf(stdout, "\n");
 }
 
 // Checks if two matrices have the same dimesions
@@ -110,10 +157,25 @@ int smlc_eq_dim(smlc_matrix *m1, smlc_matrix *m2) {
 }
 
 //
-// Structural Changes
+// Matrix LU
 //
-// smlc_matrix *smlc_add_col(smlc_matrix *m, unsigned int size, double *values);
-// smlc_matrix *smlc_add_row(smlc_matrix *m, unsigned int size, double *values);
+
+
+smlc_matrix_lu *smlc_matrix_lu_new(smlc_matrix *L, smlc_matrix *U, smlc_matrix *P) {
+  smlc_matrix_lu *r = malloc(sizeof(*r));
+  NP_CHECK(r);
+  r->L = L;
+  r->U = U;
+  r->P = P;
+  return r;
+}
+void smlc_matrix_lu_free(smlc_matrix_lu* lu) {
+  if (!lu) free(lu);
+}
+
+//
+// Basic Row Operations
+//
 
 smlc_matrix *smlc_rem_col(smlc_matrix *m, unsigned int column) {
   if(column >= m->num_cols) {
@@ -148,6 +210,68 @@ smlc_matrix *smlc_rem_row(smlc_matrix *m, unsigned int row) {
     }
   }
   return r;
+}
+
+smlc_matrix *smlc_swap_rows(smlc_matrix *m, unsigned int row1, unsigned int row2) {
+  smlc_matrix *r = smlc_new_copy(m);
+  if (!smlc_swap_rows_ip(r, row1, row2)) {
+    smlc_free(r);
+    return NULL;
+  }
+  return r;
+}
+
+int smlc_swap_rows_ip(smlc_matrix *m, unsigned int row1, unsigned int row2) {
+  if (row1 >= m->num_rows || row2 >= m->num_rows) {
+    SMLC_FERROR(CANNOT_SWAP_ROWS, row1, row2, m->num_rows);
+    return 0;
+  }
+  double *tmp = m->data[row2];
+  m->data[row2] = m->data[row1];
+  m->data[row1] = tmp;
+  return 1;
+}
+
+smlc_matrix *smlc_multiply_row(smlc_matrix *m, unsigned int row, double num) {
+  smlc_matrix *r = smlc_new_copy(m);
+  if (smlc_multiply_row_ip(r, row, num)) {
+    smlc_free(r);
+    return NULL;
+  }
+  return r;
+}
+
+int smlc_multiply_row_ip(smlc_matrix *m, unsigned int row, double num) {
+  if (row>=m->num_rows) {
+    SMLC_FERROR(CANNOT_ROW_MULTIPLY, row, m->num_rows);
+    return 0;
+  }
+  int i;
+  for(i=0; i < m->num_cols; i++) {
+    m->data[row][i] *= num;
+  }
+  return 0;
+}
+
+smlc_matrix *smlc_add_to_row(smlc_matrix *m, unsigned int where, unsigned int row, double multiplier) {
+  smlc_matrix *r = smlc_new_copy(m);
+  if (!smlc_add_to_row_ip(m, where, row, multiplier)) {
+    smlc_free(r);
+    return NULL;
+  }
+  return r;
+}
+
+int smlc_add_to_row_ip(smlc_matrix *m, unsigned int where, unsigned int row, double multiplier) {
+  if (where >= m->num_rows || row >= m->num_rows) {
+    SMLC_FERROR(CANNOT_ADD_TO_ROW, multiplier, row, where, m->num_rows);
+    return 0;
+  }
+  int i = 0;
+  for(i = 0; i < m->num_cols; i++) {
+    m->data[where][i] += multiplier * m->data[row][i];
+  }
+  return 1;
 }
 
 //
@@ -224,89 +348,79 @@ smlc_matrix *smlc_transpose(smlc_matrix *m) {
   return r;
 }
 
+double smlc_trace(smlc_matrix* m) {
+  if (!m->is_square) {
+    SMLC_ERROR(CANNOT_TRACE);
+  }
+  int i;
+  double trace = 0.0;
+  for(i = 0; i < m->num_rows; i++) {
+    trace += m->data[i][i];
+  }
+  return trace;
+}
+
+//
+// LU Decomposition
+//
+int smlc_absmax_row(smlc_matrix *m, unsigned int k) {
+  // Find max id on the column;
+  int i;
+  double max = m->data[k][k];
+  int maxIdx = k;
+  for(i = k+1; i < m->num_rows; i++) {
+    if (m->data[i][k] > max) {
+      max = fabs(m->data[i][k]);
+      maxIdx = i;
+    }
+  }
+  return maxIdx;
+}
+
+smlc_matrix_lu *smlc_lup(smlc_matrix *m) {
+  if (!m->is_square) {
+    SMLC_FERROR(CANNOT_LU_MATRIX_SQUARE, m->num_rows, m-> num_cols);
+    return NULL;
+  }
+  smlc_matrix *L = smlc_new_identity(m->num_rows);
+  smlc_matrix *U = smlc_new_copy(m);
+  smlc_matrix *P = smlc_new_identity(m->num_rows);
+
+  int j,i, pivot;
+  double mult;
+
+  for(j = 0; j < U->num_cols; j++) {
+    // Retrieves the row with the biggest element for column (j)
+    pivot = smlc_absmax_row(U, j);
+    if (pivot!=j) {
+      // Pivots LU and P accordingly to the rule
+      smlc_swap_rows_ip(U, j, pivot);
+      smlc_swap_rows_ip(P, j, pivot);
+    }
+    for(i = j+1; i < U->num_rows; i++) {
+      mult = U->data[i][j] / U->data[j][j];
+      smlc_add_to_row_ip(U, i, j, -mult);
+      P->data[i][j] = mult;
+    }
+  }
+
+  return smlc_matrix_lu_new(L, U, P);
+}
+
 int main(int argc, char *argv[]) {
-
-  // double m1_v[9] = {
-  //   1.0, 2.0, 1.0,
-  //   4.0, 7.0, 8.0,
-  //   3.0, 1.0, 8.0
-  // };
-  //
-  // double m2_v[9] = {
-  //   1.0, 2.0, 1.0,
-  //   4.0, 7.0, 8.0,
-  //   3.0, 1.0, 8.0
-  // };
-  //
-  // smlc_matrix *m1 = smlc_new_from(3,3,9,m1_v);
-  // smlc_matrix *m2 = smlc_new_from(3,3,9,m2_v);
-  //
-  // smlc_print(m1,"%2.2f\t");
-  //
-  // printf("\n + \n\n");
-  //
-  // smlc_print(m2, "%2.2f\t");
-  //
-  // printf("\n=\n\n");
-  //
-  // smlc_print(smlc_plus(m1,m2), "%2.2f\t");
-  //
-  // printf("\n\n");
-  // smlc_print(smlc_smultiply(m1, 5.0), "%2.2f\t");
-  //
-  // double m3_v[8] = {
-  //   2.0, 1.0,
-  //   8.2, 8.3,
-  //   7.1, 7.2,
-  //   2.0, 2.5
-  // };
-  //
-  // smlc_matrix *m3 = smlc_new_from(4,2,8,m3_v);
-  //
-  // printf("\n\n");
-  // smlc_print(m3,"%2.2f\t");
-  //
-  // printf("\n\n");
-  // smlc_print(smlc_transpose(m3), "%2.2f\t");
-  //
-
-  double m4_v[6] = {
-    2.0, 3.0, 4.0,
-    1.0, 0.0, 0.0
+  double mv[9] = {
+    2.0, 1.0, 5.0,
+    4.0, 4.0, -4.0,
+    1.0, 3.0, 1.0
   };
 
-  //
-  // double m5_v[6] = {
-  //   0.0, 1000,
-  //   1, 100,
-  //   0, 10
-  // };
-  //
-  // smlc_matrix *m4 = smlc_new_from(2,3,6,m4_v);
-  // printf("\n\n");
-  // smlc_print(m4, "%2.2f\t");
-  //
-  // smlc_matrix *m5 = smlc_new_from(3,2,6,m5_v);
-  // printf("\n\n");
-  // smlc_print(m5, "%2.2f\t");
-  //
-  // printf("\n\n");
-  //
-  // smlc_print(smlc_multiply(m4, m5), "%2.2f\t");
-
-  smlc_matrix *m4 = smlc_new_from(2,3,6,m4_v);
-
-  smlc_print(m4, "%2.2f\t");
-  printf("\n\n");
-  smlc_print(smlc_rem_col(m4, 0), "%2.2f\t");
-  printf("\n\n");
-  smlc_print(smlc_rem_col(m4, 1), "%2.2f\t");
-  printf("\n\n");
-  smlc_print(smlc_rem_col(m4, 2), "%2.2f\t");
-  printf("\n\n");
-  smlc_print(smlc_rem_row(m4, 0), "%2.2f\t");
-  printf("\n\n");
-  smlc_print(smlc_rem_row(m4, 1), "%2.2f\t");
+  smlc_matrix *m = smlc_new_from(3,3,9,mv);
+  smlc_print(m);
+  smlc_matrix_lu *lup = smlc_lup(m);
+  smlc_print(lup->U);
+  smlc_print(lup->L);
+  smlc_print(lup->P);
+  smlc_print(smlc_new_identity(3));
 
   return 0;
 }
