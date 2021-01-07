@@ -26,12 +26,12 @@ typedef struct nna_matrix_s {
   int is_square;
 } nna_matrix;
 
-typedef struct nna_matrix_lu_s {
+typedef struct nna_matrices_lu_s {
   nna_matrix *L;
   nna_matrix *U;
   nna_matrix *P;
   unsigned int num_permutations;
-} nna_matrix_lu;
+} nna_matrices_lu;
 
 //
 // Basic Matrix Methods
@@ -44,15 +44,15 @@ void nna_free(nna_matrix *matrix);
 double nna_get(nna_matrix *matrix, unsigned int i, unsigned int j);
 void nna_set(nna_matrix *matrix, unsigned int i, unsigned int j, double value);
 void nna_set_all(nna_matrix *matrix, double value);
-void nna_set_diag(nna_matrix *matrix, double value);
+int nna_set_diag(nna_matrix *matrix, double value);
 void nna_print(nna_matrix *matrix);
 void nna_printf(nna_matrix *matrix, const char *d_fmt);
 int nna_eq_dim(nna_matrix *m1, nna_matrix *m2);
 
 // LU object
 
-nna_matrix_lu *nna_matrix_lu_new(nna_matrix *L, nna_matrix *U, nna_matrix *P, unsigned int num_permutations);
-void nna_matrix_lu_free(nna_matrix_lu* lu);
+nna_matrices_lu *nna_matrices_lu_new(nna_matrix *L, nna_matrix *U, nna_matrix *P, unsigned int num_permutations);
+void nna_matrices_lu_free(nna_matrices_lu* lu);
 
 //
 // Basic Row and Operations
@@ -77,12 +77,24 @@ nna_matrix *nna_transpose(nna_matrix *m);
 double nna_trace(nna_matrix* m);
 
 //
-// LU Decomposition / Determinant
+// LU Decomposition / Determinant / Inverse
 //
 // Determines the row index for which the value on column k is the absolute max.
 // Function is used for pivoting rows for PA=LU decomposition.
 int nna_absmax_row(nna_matrix *m1, unsigned int k);
-nna_matrix_lu *nna_lup(nna_matrix *m);
-double nna_det(nna_matrix_lu* lup);
+nna_matrices_lu *nna_lup(nna_matrix *m);
+double nna_det(nna_matrices_lu* lup);
+nna_matrix *nna_inverse(nna_matrices_lu *m);
+
+
+//
+// Solving Linear Systems
+//
+
+nna_matrix *nna_solve_ls_fwdsub(nna_matrix *low_triang, nna_matrix *b);
+nna_matrix *nna_solve_ls_bcksub(nna_matrix *upper_triang, nna_matrix *b);
+nna_matrix *nna_solve_ls(nna_matrices_lu *m);
+
+
 
 #endif

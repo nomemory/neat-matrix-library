@@ -67,6 +67,12 @@ limitations under the License.
 #define CANNOT_LU_MATRIX_DEGENERATE \
       "Cannot LU. Matrix is degenerate or almost degenerate.\n" \
 
+#define CANNOT_SOLVE_LIN_SYS_INVALID_B \
+      "Cannot solve system. b[%d][%d] should have size b[%d][%d].\n" \
+
+#define CANNOT_SET_DIAG \
+      "Cannot set diag with value(=%2.2f). Matrix is not square.\n" \
+
 //
 // Basic Matrix Methods
 //
@@ -154,6 +160,18 @@ void nna_set_all(nna_matrix *matrix, double value) {
   }
 }
 
+int nna_set_diag(nna_matrix *m, double value) {
+  if (!m->is_square) {
+    NNA_FERROR(CANNOT_SET_DIAG, value);
+    return 0;
+  }
+  int i;
+  for(i = 0; i < m->num_rows; i++) {
+    m->data[i][i] = value;
+  }
+  return 1;
+}
+
 void nna_print(nna_matrix *matrix) {
   nna_printf(matrix, "%2.2f\t");
 }
@@ -181,8 +199,8 @@ int nna_eq_dim(nna_matrix *m1, nna_matrix *m2) {
 //
 
 
-nna_matrix_lu *nna_matrix_lu_new(nna_matrix *L, nna_matrix *U, nna_matrix *P, unsigned int num_permutations) {
-  nna_matrix_lu *r = malloc(sizeof(*r));
+nna_matrices_lu *nna_matrices_lu_new(nna_matrix *L, nna_matrix *U, nna_matrix *P, unsigned int num_permutations) {
+  nna_matrices_lu *r = malloc(sizeof(*r));
   NP_CHECK(r);
   r->L = L;
   r->U = U;
@@ -190,7 +208,7 @@ nna_matrix_lu *nna_matrix_lu_new(nna_matrix *L, nna_matrix *U, nna_matrix *P, un
   r->num_permutations = num_permutations;
   return r;
 }
-void nna_matrix_lu_free(nna_matrix_lu* lu) {
+void nna_matrices_lu_free(nna_matrices_lu* lu) {
   if (!lu) free(lu);
 }
 
@@ -398,12 +416,12 @@ int nna_absmax_row(nna_matrix *m, unsigned int k) {
   return maxIdx;
 }
 
-nna_matrix_lu *nna_lup(nna_matrix *m) {
+nna_matrices_lu *nna_lup(nna_matrix *m) {
   if (!m->is_square) {
     NNA_FERROR(CANNOT_LU_MATRIX_SQUARE, m->num_rows, m-> num_cols);
     return NULL;
   }
-  nna_matrix *L = nna_new_identity(m->num_rows);
+  nna_matrix *L = nna_new(m->num_rows, m->num_rows);
   nna_matrix *U = nna_new_copy(m);
   nna_matrix *P = nna_new_identity(m->num_rows);
 
@@ -421,6 +439,7 @@ nna_matrix_lu *nna_lup(nna_matrix *m) {
     if (pivot!=j) {
       // Pivots LU and P accordingly to the rule
       nna_swap_rows_r(U, j, pivot);
+      nna_swap_rows_r(L, j, pivot);
       nna_swap_rows_r(P, j, pivot);
       // Keep the number of permutations to easily calculate the
       // determinant sign afterwards
@@ -434,15 +453,16 @@ nna_matrix_lu *nna_lup(nna_matrix *m) {
       L->data[i][j] = mult;
     }
   }
+  nna_set_diag(L, 1.0);
 
-  return nna_matrix_lu_new(L, U, P, num_permutations);
+  return nna_matrices_lu_new(L, U, P, num_permutations);
 }
 
-// After the LUP factorisation the determinant can be easily calculated
+// After the LU(P) factorisation the determinant can be easily calculated
 // by multiplying the main diagonal of matrix U with the sign.
 // the sign is -1 if the number of permutations is odd
 // the sign is +1 if the number of permutations is even
-double nna_det(nna_matrix_lu* lup) {
+double nna_det(nna_matrices_lu* lup) {
   int k;
   int sign = (lup->num_permutations%2==0) ? 1 : -1;
   nna_matrix *U = lup->U;
@@ -453,21 +473,126 @@ double nna_det(nna_matrix_lu* lup) {
   return product * sign;
 }
 
+// After the LU(P) factorisation the determinant can be easily calculated
+nna_matrix *nna_inverse(nna_matrices_lu *m) {
+    return NULL;
+}
+
+//
+// Solving Linear Systems
+//
+
+// Forward substitution algorithm
+// Solves the linear system L * x = b
+//
+// L is lower triangular matrix of size NxN
+// B is column matrix of size Nx1
+// x is the solution column matrix of size Nx1
+//
+// Note: In case L is not a lower triangular matrix, the algorithm will try to
+// select only the lower triangular part of the matrix L and solve the system
+// swith it.
+//
+// Note: In case any of the diagonal elements (L[i][i]) are 0 the system cannot
+// be solved
+//
+// Note: This function is usually used with an L matrix from a LU decomposition
+nna_matrix *nna_solve_ls_fwdsub(nna_matrix *L, nna_matrix *b) {
+  nna_matrix* x = nna_new(L->num_cols, 1);
+  int i,j;
+  double tmp;
+  for(i = 0; i < L->num_cols; i++) {
+    tmp = b->data[i][0];
+    for(j = 0; j < i ; j++) {
+      tmp -= L->data[i][j] * x->data[j][0];
+    }
+    x->data[i][0] = tmp / L->data[i][i];
+  }
+  return x;
+}
+
+
+// Back substition algorithm
+// Solves the linear system U *x = b
+nna_matrix *nna_solve_ls_bcksub(nna_matrix *upper_triang, nna_matrix *b) {
+  return NULL;
+}
+
+// A[n][n] is a square matrix
+// m contains matrices L, U, P for A[n][n] so that P*A = L*U
+//
+// The linear system is:
+// A*x=b  =>  P*A*x = P*b  =>  L*U*x = P*b  =>
+// (where b is a matrix[n][1], and x is a matrix[n][1])
+//
+// if y = U*x , we solve two systems:
+//    L * y = P b (forward substition)
+//    U * x = y (backward substition)
+//
+// We obtain and return x
+nna_matrix *nna_solve_lsys(nna_matrices_lu *lu, nna_matrix* b) {
+  if (lu->U->num_rows != b->num_rows || b->num_cols != 1) {
+    NNA_FERROR(CANNOT_SOLVE_LIN_SYS_INVALID_B,
+      b->num_rows,
+      b->num_cols,
+      lu->U->num_rows,
+      lu->U->num_cols);
+      return NULL;
+  }
+  nna_matrix *U = lu->U;
+  nna_matrix *L = lu->L;
+  nna_matrix *P = lu->P;
+  nna_matrix *x = nna_new(U->num_rows, 1);
+  nna_matrix *Pb = nna_multiply(P, b);
+  printf("\nPb:\n");
+  nna_print(Pb);
+  // We solve L*y = P*b using forward substition
+  int k,j;
+  nna_matrix *y = nna_new(L->num_rows, 1);
+  double sum = 0;
+  y->data[0][0] = Pb->data[0][0];
+  // iterate for column, always trying to find y[j][j]
+  for(j = 1; j < L->num_cols; j++) {
+    for(k = 0; k < j; k++) {
+      sum += L->data[j][k] * y->data[k][0];
+    }
+    y->data[j][j] = (Pb->data[j][0] - sum)/L->data[j][j];
+    sum = 0;
+  }
+  printf("\ny\n");
+  nna_print(y);
+  // We solve U*x=y
+
+  nna_free(y);
+  nna_free(Pb);
+  return x;
+}
+
 int main(int argc, char *argv[]) {
-  double mv[16] = {
-    2.0, 7.0, 6.0, 1.0,
-    9.0, 5.0, 1.0, 2.0,
-    4.0, 3.0, 8.0, 3.0,
-    0.0, 3.0, 0.0, 1.0
+
+  printf("-----------------\n");
+
+  double LV[9] = {
+    1.0, 0.0, 0.0,
+    0.2, 1.0, 0.0,
+    0.6, 0.5, 1.0
   };
 
-  nna_matrix *m = nna_new_from(4,4,16,mv);
-  nna_print(m);
-  nna_matrix_lu *lup = nna_lup(m);
-  nna_print(lup->U);
-  nna_print(lup->L);
-  nna_print(lup->P);
-  printf("D=%2.2f\n",nna_det(lup));
+  double BV[3] = {
+    8.0,
+    3.0,
+    7.0
+  };
+
+  nna_matrix *L1 = nna_new_from(3, 3, 9, LV);
+  printf("\nL1=\n");
+  nna_print(L1);
+  nna_matrix *b1 = nna_new_from(3, 1, 3, BV);
+  printf("\nb1=\n");
+  nna_print(b1);
+  nna_matrix *x1 = nna_solve_ls_fwdsub(L1, b1);
+  printf("\nx1=\n");
+  nna_print(x1);
 
   return 0;
 }
