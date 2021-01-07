@@ -491,7 +491,7 @@ nna_matrix *nna_inverse(nna_matrices_lu *m) {
 //
 // Note: In case L is not a lower triangular matrix, the algorithm will try to
 // select only the lower triangular part of the matrix L and solve the system
-// swith it.
+// with it.
 //
 // Note: In case any of the diagonal elements (L[i][i]) are 0 the system cannot
 // be solved
@@ -514,8 +514,29 @@ nna_matrix *nna_solve_ls_fwdsub(nna_matrix *L, nna_matrix *b) {
 
 // Back substition algorithm
 // Solves the linear system U *x = b
-nna_matrix *nna_solve_ls_bcksub(nna_matrix *upper_triang, nna_matrix *b) {
-  return NULL;
+//
+// U is an upper triangular matrix of size NxN
+// B is a column matrix of size Nx1
+// x is the solution column matrix of size Nx1
+//
+// Note in case U is not an upper triangular matrix, the algorithm will try to
+// select only the upper triangular part of the matrix U and solve the system
+// with it
+//
+// Note: In case any of the diagonal elements (U[i][i]) are 0 the system cannot
+// be solved
+nna_matrix *nna_solve_ls_bcksub(nna_matrix *U, nna_matrix *b) {
+  nna_matrix *x = nna_new(U->num_cols, 1);
+  int i = U->num_cols, j;
+  double tmp;
+  while(i-->0) {
+    tmp = b->data[i][0];
+    for(j = i; j < U->num_cols; j++) {
+      tmp -= U->data[i][j] * x->data[j][0];
+    }
+    x->data[i][0] = tmp / U->data[i][i];
+  }
+  return x;
 }
 
 // A[n][n] is a square matrix
@@ -530,7 +551,7 @@ nna_matrix *nna_solve_ls_bcksub(nna_matrix *upper_triang, nna_matrix *b) {
 //    U * x = y (backward substition)
 //
 // We obtain and return x
-nna_matrix *nna_solve_lsys(nna_matrices_lu *lu, nna_matrix* b) {
+nna_matrix *nna_solve_ls(nna_matrices_lu *lu, nna_matrix* b) {
   if (lu->U->num_rows != b->num_rows || b->num_cols != 1) {
     NNA_FERROR(CANNOT_SOLVE_LIN_SYS_INVALID_B,
       b->num_rows,
@@ -539,29 +560,13 @@ nna_matrix *nna_solve_lsys(nna_matrices_lu *lu, nna_matrix* b) {
       lu->U->num_cols);
       return NULL;
   }
-  nna_matrix *U = lu->U;
-  nna_matrix *L = lu->L;
-  nna_matrix *P = lu->P;
-  nna_matrix *x = nna_new(U->num_rows, 1);
-  nna_matrix *Pb = nna_multiply(P, b);
-  printf("\nPb:\n");
-  nna_print(Pb);
+  nna_matrix *Pb = nna_multiply(lu->P, b);
+
   // We solve L*y = P*b using forward substition
-  int k,j;
-  nna_matrix *y = nna_new(L->num_rows, 1);
-  double sum = 0;
-  y->data[0][0] = Pb->data[0][0];
-  // iterate for column, always trying to find y[j][j]
-  for(j = 1; j < L->num_cols; j++) {
-    for(k = 0; k < j; k++) {
-      sum += L->data[j][k] * y->data[k][0];
-    }
-    y->data[j][j] = (Pb->data[j][0] - sum)/L->data[j][j];
-    sum = 0;
-  }
-  printf("\ny\n");
-  nna_print(y);
+  nna_matrix *y = nna_solve_ls_fwdsub(lu->L, Pb);
+
   // We solve U*x=y
+  nna_matrix *x = nna_solve_ls_bcksub(lu->U, y);
 
   nna_free(y);
   nna_free(Pb);
@@ -569,30 +574,41 @@ nna_matrix *nna_solve_lsys(nna_matrices_lu *lu, nna_matrix* b) {
 }
 
 int main(int argc, char *argv[]) {
-
-  printf("-----------------\n");
-
-  double LV[9] = {
-    1.0, 0.0, 0.0,
-    0.2, 1.0, 0.0,
-    0.6, 0.5, 1.0
+  double MV[25] = {
+    1.0, 2.0, 5.0, 0.0, 5.0,
+    3.0, 4.0, 9.0, 7.0, 8.0,
+    9.0, 8.0, 2.0, 8.0, 0.0,
+    1.0, 2.5, 3.7, 3.0, 2.5,
+    4.0, 8.0, 3.0, 1.0, 0.0
   };
 
-  double BV[3] = {
-    8.0,
-    3.0,
-    7.0
+  double B3[5] = {
+    8.00,
+    3.00,
+    7.00,
+    9.00,
+    8.00
   };
 
-  nna_matrix *L1 = nna_new_from(3, 3, 9, LV);
-  printf("\nL1=\n");
-  nna_print(L1);
-  nna_matrix *b1 = nna_new_from(3, 1, 3, BV);
-  printf("\nb1=\n");
-  nna_print(b1);
-  nna_matrix *x1 = nna_solve_ls_fwdsub(L1, b1);
-  printf("\nx1=\n");
-  nna_print(x1);
+  nna_matrix *M = nna_new_from(5, 5, 25, MV);
+  printf("\nM =\n");
+  nna_print(M);
+
+  nna_matrix *b3 = nna_new_from(5, 1, 5, B3);
+  printf("\nb3 =\n");
+  nna_print(b3);
+
+  nna_matrices_lu *M_LUP = nna_lup(M);
+  printf("\nL=\n");
+  nna_print(M_LUP->L);
+  printf("\nU =\n");
+  nna_print(M_LUP->U);
+  printf("\nP =\n");
+  nna_print(M_LUP->P);
+
+  nna_matrix *x3 = nna_solve_ls(M_LUP, b3);
+  printf("\nx3 =\n");
+  nna_print(x3);
 
   return 0;
 }

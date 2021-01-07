@@ -90,10 +90,9 @@ nna_matrix *nna_inverse(nna_matrices_lu *m);
 //
 // Solving Linear Systems
 //
-
 nna_matrix *nna_solve_ls_fwdsub(nna_matrix *low_triang, nna_matrix *b);
 nna_matrix *nna_solve_ls_bcksub(nna_matrix *upper_triang, nna_matrix *b);
-nna_matrix *nna_solve_ls(nna_matrices_lu *m);
+nna_matrix *nna_solve_ls(nna_matrices_lu *lu, nna_matrix* b);
 
 
 
