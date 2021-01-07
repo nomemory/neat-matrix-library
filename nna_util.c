@@ -16,11 +16,11 @@ limitations under the License.
 
 #include <stdio.h>
 #include <stdarg.h>
-#include "smlc_util.h"
+#include "nna_util.h"
 
 #define BUFFER_SIZE 4096
 
-void smlc_log(
+void nna_log(
   FILE* stream,
   const char* file_name,
   unsigned int line,
@@ -30,12 +30,12 @@ void smlc_log(
 #if DEBUG_TRUE
   va_list argp;
   va_start(argp, format);
-  smlc_vlog(stream, file_name, line, format, argp);
+  nna_vlog(stream, file_name, line, format, argp);
   va_end(argp);
 #endif
 }
 
-void smlc_vlog(
+void nna_vlog(
   FILE* stream,
   const char *file_name,
   unsigned int line,

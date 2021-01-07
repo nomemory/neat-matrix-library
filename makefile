@@ -1,8 +1,8 @@
 CC = gcc
 CFLAGS = -Wall
 LDFLAGS =
-OBJFILES = smlc.o smlc_util.o
-TARGET = smlc
+OBJFILES = nna.o nna_util.o
+TARGET = nna
 
 all: $(TARGET)
 
