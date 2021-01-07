@@ -59,14 +59,14 @@ void smlc_matrix_lu_free(smlc_matrix_lu* lu);
 smlc_matrix *smlc_rem_col(smlc_matrix *m, unsigned int column);
 smlc_matrix *smlc_rem_row(smlc_matrix *m, unsigned int row);
 smlc_matrix *smlc_swap_rows(smlc_matrix *m, unsigned int row1, unsigned int row2);
-int smlc_swap_rows_ip(smlc_matrix *m, unsigned int row1, unsigned int row2);
+int smlc_swap_rows_r(smlc_matrix *m, unsigned int row1, unsigned int row2);
 smlc_matrix *smlc_multiply_row(smlc_matrix *m, unsigned int row, double num);
 int smlc_multiply_row_ip(smlc_matrix *m, unsigned int row, double num);
 smlc_matrix *smlc_add_to_row(smlc_matrix *m, unsigned int where, unsigned int row, double multiplier);
 int smlc_add_to_row_ip(smlc_matrix *m, unsigned int where, unsigned int row, double multiplier);
 
 //
-// Operations
+// Matrix Operations
 //
 smlc_matrix *smlc_plus(smlc_matrix *m1, smlc_matrix *m2);
 smlc_matrix *smlc_minus(smlc_matrix *m1, smlc_matrix *m2);

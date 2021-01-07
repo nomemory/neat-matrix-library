@@ -64,10 +64,14 @@ limitations under the License.
 #define CANNOT_LU_MATRIX_SQUARE \
       "Canot LU. Matrix (%d, %d) needs to be square.\n" \
 
+#define CANNOT_LU_MATRIX_DEGENERATE \
+      "Cannot LU. Matrix is degenerate or almost degenerate.\n" \
 
 //
 // Basic Matrix Methods
 //
+
+// Dynamically allocates a new
 smlc_matrix *smlc_new(unsigned int num_rows, unsigned int num_cols) {
   if (num_rows == 0) {
     SMLC_ERROR(INVALID_ROWS);
@@ -230,14 +234,14 @@ smlc_matrix *smlc_rem_row(smlc_matrix *m, unsigned int row) {
 
 smlc_matrix *smlc_swap_rows(smlc_matrix *m, unsigned int row1, unsigned int row2) {
   smlc_matrix *r = smlc_new_copy(m);
-  if (!smlc_swap_rows_ip(r, row1, row2)) {
+  if (!smlc_swap_rows_r(r, row1, row2)) {
     smlc_free(r);
     return NULL;
   }
   return r;
 }
 
-int smlc_swap_rows_ip(smlc_matrix *m, unsigned int row1, unsigned int row2) {
+int smlc_swap_rows_r(smlc_matrix *m, unsigned int row1, unsigned int row2) {
   if (row1 >= m->num_rows || row2 >= m->num_rows) {
     SMLC_FERROR(CANNOT_SWAP_ROWS, row1, row2, m->num_rows);
     return 0;
@@ -250,14 +254,14 @@ int smlc_swap_rows_ip(smlc_matrix *m, unsigned int row1, unsigned int row2) {
 
 smlc_matrix *smlc_multiply_row(smlc_matrix *m, unsigned int row, double num) {
   smlc_matrix *r = smlc_new_copy(m);
-  if (smlc_multiply_row_ip(r, row, num)) {
+  if (smlc_multiply_row_r(r, row, num)) {
     smlc_free(r);
     return NULL;
   }
   return r;
 }
 
-int smlc_multiply_row_ip(smlc_matrix *m, unsigned int row, double num) {
+int smlc_multiply_row_r(smlc_matrix *m, unsigned int row, double num) {
   if (row>=m->num_rows) {
     SMLC_FERROR(CANNOT_ROW_MULTIPLY, row, m->num_rows);
     return 0;
@@ -408,10 +412,14 @@ smlc_matrix_lu *smlc_lup(smlc_matrix *m) {
   for(j = 0; j < U->num_cols; j++) {
     // Retrieves the row with the biggest element for column (j)
     pivot = smlc_absmax_row(U, j);
+    if (U->data[pivot][j] < DBL_EPSILON) {
+      SMLC_ERROR(CANNOT_LU_MATRIX_DEGENERATE);
+      return NULL;
+    }
     if (pivot!=j) {
       // Pivots LU and P accordingly to the rule
-      smlc_swap_rows_ip(U, j, pivot);
-      smlc_swap_rows_ip(P, j, pivot);
+      smlc_swap_rows_r(U, j, pivot);
+      smlc_swap_rows_r(P, j, pivot);
     }
     for(i = j+1; i < U->num_rows; i++) {
       mult = U->data[i][j] / U->data[j][j];
