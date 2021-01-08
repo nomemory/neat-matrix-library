@@ -65,6 +65,11 @@ int main(int argc, char *argv[]) {
   printf("\nx[%d][%d] =\n", x->num_rows, x->num_cols);
   nml_mat_print(x);
 
+  nml_mat_lup_free(A_LUP);
+  nml_mat_free(A);
+  nml_mat_free(b);
+  nml_mat_free(x);
+
   return 0;
 }
 ```
