@@ -6,7 +6,7 @@ It currently supports:
 * Inverse and Determinant computation
 * Solving [linear systems of equations](https://en.wikipedia.org/wiki/System_of_linear_equations);
 
-It's currently work in progress, more algorithms are being added.
+The library is still under heavy development.
 
 # Compile / Run Examples
 
