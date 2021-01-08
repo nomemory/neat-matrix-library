@@ -1,12 +1,10 @@
 **nml** is simple [matrix](https://en.wikipedia.org/wiki/Matrix_(mathematics)) and [linear algebra](https://en.wikipedia.org/wiki/Linear_algebra) library written in pure C.
 
-The library was written with focus on code readability in mind, and less on performance considerations.
-
 It currently supports:
 * Basic Matrix Operations;
-* LUP Decomposition;
+* [LUP Decomposition](https://en.wikipedia.org/wiki/LU_decomposition);
 * Inverse and Determinant computation
-* Solving linear systems;
+* Solving [linear systems of equations](https://en.wikipedia.org/wiki/System_of_linear_equations);
 
 It's currently work in progress, more algorithms are being added.
 
