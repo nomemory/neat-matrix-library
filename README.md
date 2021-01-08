@@ -24,6 +24,10 @@ This will compile the library, create a `dist` folder where you will find `*.a` 
 
 ## Building the examples
 
+Examples can be found in the [`./examples` folder](https://github.com/nomemory/neat-matrix-library/tree/main/examples).
+
+To build the code:
+
 ```bash
 ./nml.sh examples
 ```
