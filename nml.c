@@ -80,11 +80,13 @@ limitations under the License.
 #define CANNOT_CONCATENATE_V \
       "Cannot concatenate. Matrices have a different number of cols. Expected %d, found: %d.\n" \
 
+// *****************************************************************************
 //
-// Basic Matrix Methods
+// Constructing and destroying a matrix struct
 //
+// *****************************************************************************
 
-// Dynamically allocates a new
+// Dynamically allocates a new matrix struct
 nml_mat *nml_mat_new(unsigned int num_rows, unsigned int num_cols) {
   if (num_rows == 0) {
     NML_ERROR(INVALID_ROWS);
@@ -109,10 +111,16 @@ nml_mat *nml_mat_new(unsigned int num_rows, unsigned int num_cols) {
   return m;
 }
 
+// Dynamically alloctes a new matrix struct
+// The matrix is square (number of rows is equl with the number of cols)
 nml_mat *nml_mat_sqr(unsigned int size) {
   return nml_mat_new(size, size);
 }
 
+// Dynamically allocates a a new matrix struct
+// The resulting matrix is an ID matrix (I)
+// I has 1.0 on the first diagonal
+// I is square
 nml_mat *nml_mat_id(unsigned int size) {
   nml_mat *r = nml_mat_new(size, size);
   int i;
@@ -122,6 +130,8 @@ nml_mat *nml_mat_id(unsigned int size) {
   return r;
 }
 
+// Dynamically allocates a new matrix struct
+// Initialise the matrix by reading values from a vector
 nml_mat *nml_mat_from(unsigned int num_rows, unsigned int num_cols, unsigned int n_vals, double *vals) {
   nml_mat *m = nml_mat_new(num_rows, num_cols);
   int i, j, v_idx;
@@ -134,6 +144,8 @@ nml_mat *nml_mat_from(unsigned int num_rows, unsigned int num_cols, unsigned int
   return m;
 }
 
+// Dynamically allocates a new Matrix
+// Initialise the matrix by copying another one
 nml_mat *nml_mat_cp(nml_mat *m) {
   nml_mat *r  = nml_mat_new(m->num_rows, m->num_cols);
   int i,j;
@@ -145,6 +157,7 @@ nml_mat *nml_mat_cp(nml_mat *m) {
   return r;
 }
 
+// Frees a matrix structure
 void nml_mat_free(nml_mat *matrix) {
   int i;
   for(i = 0; i < matrix->num_rows; ++i) {
@@ -153,51 +166,11 @@ void nml_mat_free(nml_mat *matrix) {
   free(matrix->data);
 }
 
-double nml_mat_get(nml_mat *matrix, unsigned int i, unsigned int j) {
-  return matrix->data[i][j];
-}
-
-void nml_mat_set(nml_mat *matrix, unsigned int i, unsigned int j, double value) {
-  matrix->data[i][j] = value;
-}
-
-
-void nml_mat_setall(nml_mat *matrix, double value) {
-  int i, j;
-  for(i = 0; i < matrix->num_rows; i++) {
-    for(j = 0; j < matrix->num_cols; j++) {
-      matrix->data[i][j] = value;
-    }
-  }
-}
-
-int nml_mat_setdiag(nml_mat *m, double value) {
-  if (!m->is_square) {
-    NML_FERROR(CANNOT_SET_DIAG, value);
-    return 0;
-  }
-  int i;
-  for(i = 0; i < m->num_rows; i++) {
-    m->data[i][i] = value;
-  }
-  return 1;
-}
-
-void nml_mat_print(nml_mat *matrix) {
-  nml_mat_printf(matrix, "%2.2f\t");
-}
-
-void nml_mat_printf(nml_mat *matrix, const char *d_fmt) {
-  int i, j;
-  fprintf(stdout, "\n");
-  for(i = 0; i < matrix->num_rows; ++i) {
-    for(j = 0; j < matrix->num_cols; ++j) {
-      fprintf(stdout, d_fmt, matrix->data[i][j]);
-    }
-    fprintf(stdout, "\n");
-  }
-  fprintf(stdout, "\n");
-}
+// *****************************************************************************
+//
+// Matrix Equality
+//
+// *****************************************************************************
 
 // Checks if two matrices have the same dimesions
 int nml_mat_eqdim(nml_mat *m1, nml_mat *m2) {
@@ -223,40 +196,130 @@ int nml_mat_eq(nml_mat *m1, nml_mat *m2, double tolerance) {
   return 1;
 }
 
-int nml_mat_absmaxr(nml_mat *m, unsigned int k) {
-  // Find max id on the column;
-  int i;
-  double max = m->data[k][k];
-  int maxIdx = k;
-  for(i = k+1; i < m->num_rows; i++) {
-    if (m->data[i][k] > max) {
-      max = fabs(m->data[i][k]);
-      maxIdx = i;
+// *****************************************************************************
+//
+// Matrix printing
+//
+// *****************************************************************************
+
+// Prints the matrix on the stdout
+void nml_mat_print(nml_mat *matrix) {
+  nml_mat_printf(matrix, "%2.2f\t");
+}
+
+// Prints the matrix on the stdout (with a custom formatting for elements)
+void nml_mat_printf(nml_mat *matrix, const char *d_fmt) {
+  int i, j;
+  fprintf(stdout, "\n");
+  for(i = 0; i < matrix->num_rows; ++i) {
+    for(j = 0; j < matrix->num_cols; ++j) {
+      fprintf(stdout, d_fmt, matrix->data[i][j]);
+    }
+    fprintf(stdout, "\n");
+  }
+  fprintf(stdout, "\n");
+}
+
+// *****************************************************************************
+//
+// Accessing and modifying matrix elements
+//
+// *****************************************************************************
+
+double nml_mat_get(nml_mat *matrix, unsigned int i, unsigned int j) {
+  return matrix->data[i][j];
+}
+
+void nml_mat_set(nml_mat *matrix, unsigned int i, unsigned int j, double value) {
+  matrix->data[i][j] = value;
+}
+
+// Sets all elements of a matrix to a given value
+void nml_mat_setall(nml_mat *matrix, double value) {
+  int i, j;
+  for(i = 0; i < matrix->num_rows; i++) {
+    for(j = 0; j < matrix->num_cols; j++) {
+      matrix->data[i][j] = value;
     }
   }
-  return maxIdx;
 }
 
-//
-// Matrix LU
-//
-nml_mat_lup *nml_mat_lup_new(nml_mat *L, nml_mat *U, nml_mat *P, unsigned int num_permutations) {
-  nml_mat_lup *r = malloc(sizeof(*r));
-  NP_CHECK(r);
-  r->L = L;
-  r->U = U;
-  r->P = P;
-  r->num_permutations = num_permutations;
+// Sets all elements of the matrix to given value
+int nml_mat_setdiag(nml_mat *m, double value) {
+  if (!m->is_square) {
+    NML_FERROR(CANNOT_SET_DIAG, value);
+    return 0;
+  }
+  int i;
+  for(i = 0; i < m->num_rows; i++) {
+    m->data[i][i] = value;
+  }
+  return 1;
+}
+
+nml_mat *nml_mat_multr(nml_mat *m, unsigned int row, double num) {
+  nml_mat *r = nml_mat_cp(m);
+  if (nml_mat_multr_r(r, row, num)) {
+    nml_mat_free(r);
+    return NULL;
+  }
   return r;
 }
-void nml_mat_lup_free(nml_mat_lup* lu) {
-  if (!lu) free(lu);
+
+int nml_mat_multr_r(nml_mat *m, unsigned int row, double num) {
+  if (row>=m->num_rows) {
+    NML_FERROR(CANNOT_ROW_MULTIPLY, row, m->num_rows);
+    return 0;
+  }
+  int i;
+  for(i=0; i < m->num_cols; i++) {
+    m->data[row][i] *= num;
+  }
+  return 0;
 }
 
-//
-// Basic Row Operations
-//
+nml_mat *nml_mat_add2r(nml_mat *m, unsigned int where, unsigned int row, double multiplier) {
+  nml_mat *r = nml_mat_cp(m);
+  if (!nml_mat_add2r_r(m, where, row, multiplier)) {
+    nml_mat_free(r);
+    return NULL;
+  }
+  return r;
+}
 
+int nml_mat_add2r_r(nml_mat *m, unsigned int where, unsigned int row, double multiplier) {
+  if (where >= m->num_rows || row >= m->num_rows) {
+    NML_FERROR(CANNOT_ADD_TO_ROW, multiplier, row, where, m->num_rows);
+    return 0;
+  }
+  int i = 0;
+  for(i = 0; i < m->num_cols; i++) {
+    m->data[where][i] += multiplier * m->data[row][i];
+  }
+  return 1;
+}
+
+nml_mat *nml_mat_smult(nml_mat *m, double num) {
+  nml_mat *r = nml_mat_cp(m);
+  nml_mat_smult_r(r, num);
+  return r;
+}
+
+int nml_mat_smult_r(nml_mat *m, double num) {
+  int i, j;
+  for(i = 0; i < m->num_rows; i++) {
+    for(j = 0; j < m->num_cols; j++) {
+      m->data[i][j] *= num;
+    }
+  }
+  return 1;
+}
+
+// *****************************************************************************
+//
+// Modifying the matrix structure
+//
+// *****************************************************************************
 nml_mat *nml_mat_rcol(nml_mat *m, unsigned int column) {
   if(column >= m->num_cols) {
     NML_FERROR(CANNOT_REMOVE_COLUMN, column, m->num_cols);
@@ -309,48 +372,6 @@ int nml_mat_swaprs_r(nml_mat *m, unsigned int row1, unsigned int row2) {
   double *tmp = m->data[row2];
   m->data[row2] = m->data[row1];
   m->data[row1] = tmp;
-  return 1;
-}
-
-nml_mat *nml_mat_multr(nml_mat *m, unsigned int row, double num) {
-  nml_mat *r = nml_mat_cp(m);
-  if (nml_mat_multr_r(r, row, num)) {
-    nml_mat_free(r);
-    return NULL;
-  }
-  return r;
-}
-
-int nml_mat_multr_r(nml_mat *m, unsigned int row, double num) {
-  if (row>=m->num_rows) {
-    NML_FERROR(CANNOT_ROW_MULTIPLY, row, m->num_rows);
-    return 0;
-  }
-  int i;
-  for(i=0; i < m->num_cols; i++) {
-    m->data[row][i] *= num;
-  }
-  return 0;
-}
-
-nml_mat *nml_mat_add2r(nml_mat *m, unsigned int where, unsigned int row, double multiplier) {
-  nml_mat *r = nml_mat_cp(m);
-  if (!nml_mat_add2r_r(m, where, row, multiplier)) {
-    nml_mat_free(r);
-    return NULL;
-  }
-  return r;
-}
-
-int nml_mat_add2r_r(nml_mat *m, unsigned int where, unsigned int row, double multiplier) {
-  if (where >= m->num_rows || row >= m->num_rows) {
-    NML_FERROR(CANNOT_ADD_TO_ROW, multiplier, row, where, m->num_rows);
-    return 0;
-  }
-  int i = 0;
-  for(i = 0; i < m->num_cols; i++) {
-    m->data[where][i] += multiplier * m->data[row][i];
-  }
   return 1;
 }
 
@@ -423,6 +444,11 @@ nml_mat *nml_concat_v(unsigned int mnum, ...) {
   return NULL;
 }
 
+// *****************************************************************************
+//
+// Matrix Operations
+//
+// *****************************************************************************
 //
 // Matrix Operations
 //
@@ -473,22 +499,6 @@ int nml_mat_sub_r(nml_mat *m1, nml_mat *m2) {
   return 1;
 }
 
-nml_mat *nml_mat_smult(nml_mat *m, double num) {
-  nml_mat *r = nml_mat_cp(m);
-  nml_mat_smult_r(r, num);
-  return r;
-}
-
-int nml_mat_smult_r(nml_mat *m, double num) {
-  int i, j;
-  for(i = 0; i < m->num_rows; i++) {
-    for(j = 0; j < m->num_cols; j++) {
-      m->data[i][j] *= num;
-    }
-  }
-  return 1;
-}
-
 nml_mat *nml_mat_mult(nml_mat *m1, nml_mat *m2) {
   if (!(m1->num_cols == m2->num_rows)) {
     NML_ERROR(CANNOT_MULITPLY);
@@ -529,9 +539,40 @@ double nml_trace(nml_mat* m) {
   return trace;
 }
 
+// *****************************************************************************
 //
-// LU Decomposition
+// LUP Decomposition
 //
+// *****************************************************************************
+
+// Finds the maxid on the column (starting from k -> num_rows)
+// This method is used for pivoting in LUP decomposition
+int nml_mat_absmaxr(nml_mat *m, unsigned int k) {
+  // Find max id on the column;
+  int i;
+  double max = m->data[k][k];
+  int maxIdx = k;
+  for(i = k+1; i < m->num_rows; i++) {
+    if (m->data[i][k] > max) {
+      max = fabs(m->data[i][k]);
+      maxIdx = i;
+    }
+  }
+  return maxIdx;
+}
+
+nml_mat_lup *nml_mat_lup_new(nml_mat *L, nml_mat *U, nml_mat *P, unsigned int num_permutations) {
+  nml_mat_lup *r = malloc(sizeof(*r));
+  NP_CHECK(r);
+  r->L = L;
+  r->U = U;
+  r->P = P;
+  r->num_permutations = num_permutations;
+  return r;
+}
+void nml_mat_lup_free(nml_mat_lup* lu) {
+  if (!lu) free(lu);
+}
 
 nml_mat_lup *nml_mat_lup_solve(nml_mat *m) {
   if (!m->is_square) {
@@ -590,9 +631,11 @@ double nml_mat_det(nml_mat_lup* lup) {
   return product * sign;
 }
 
+// *****************************************************************************
 //
-// Solving Linear Systems
+// Solving linear systems of equations
 //
+// *****************************************************************************
 
 // Forward substitution algorithm
 // Solves the linear system L * x = b
