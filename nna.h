@@ -37,6 +37,7 @@ typedef struct nna_matrices_lu_s {
 // Basic Matrix Methods
 //
 nna_matrix *nna_new(unsigned int num_rows, unsigned int num_cols);
+nna_matrix *nna_new_square(unsigned int size);
 nna_matrix *nna_new_identity(unsigned int size);
 nna_matrix *nna_new_copy(nna_matrix *m);
 nna_matrix *nna_new_from(unsigned int num_rows, unsigned int num_cols, unsigned int n_vals, double *vals);
@@ -55,7 +56,7 @@ nna_matrices_lu *nna_matrices_lu_new(nna_matrix *L, nna_matrix *U, nna_matrix *P
 void nna_matrices_lu_free(nna_matrices_lu* lu);
 
 //
-// Basic Row and Operations
+// Rows, Columns and Concatenation
 //
 nna_matrix *nna_rem_col(nna_matrix *m, unsigned int column);
 nna_matrix *nna_rem_row(nna_matrix *m, unsigned int row);
@@ -65,12 +66,18 @@ nna_matrix *nna_multiply_row(nna_matrix *m, unsigned int row, double num);
 int nna_multiply_row_r(nna_matrix *m, unsigned int row, double num);
 nna_matrix *nna_add_to_row(nna_matrix *m, unsigned int where, unsigned int row, double multiplier);
 int nna_add_to_row_r(nna_matrix *m, unsigned int where, unsigned int row, double multiplier);
+nna_matrix *nna_concat_h(unsigned int mnun, ...);
+nna_matrix *nna_concat_v(unsigned int mnum, ...);
 
 //
 // Matrix Operations
 //
 nna_matrix *nna_plus(nna_matrix *m1, nna_matrix *m2);
+//TODO
+int *nna_plus_r(nna_matrix *m1, nna_matrix *m2);
 nna_matrix *nna_minus(nna_matrix *m1, nna_matrix *m2);
+//TODO
+int *nna_minus_r(nna_matrix *m1, nna_matrix *m2);
 nna_matrix *nna_smultiply(nna_matrix *m, double num);
 nna_matrix *nna_multiply(nna_matrix *m1, nna_matrix *m2);
 nna_matrix *nna_transpose(nna_matrix *m);

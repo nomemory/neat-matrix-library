@@ -18,6 +18,7 @@ limitations under the License.
 #include <stdlib.h>
 #include <float.h>
 #include <math.h>
+#include <stdarg.h>
 
 #include "nna.h"
 
@@ -73,6 +74,12 @@ limitations under the License.
 #define CANNOT_SET_DIAG \
       "Cannot set diag with value(=%2.2f). Matrix is not square.\n" \
 
+#define CANNOT_CONCATENATE_H \
+      "Cannot concatenate. Matrices have a different number of rows. Expected %d, found: %d.\n" \
+
+#define CANNOT_CONCATENATE_V \
+      "Cannot concatenate. Matrices have a different number of cols. Expected %d, found: %d.\n" \
+
 //
 // Basic Matrix Methods
 //
@@ -100,6 +107,10 @@ nna_matrix *nna_new(unsigned int num_rows, unsigned int num_cols) {
     NP_CHECK(m->data[i]);
   }
   return m;
+}
+
+nna_matrix *nna_new_square(unsigned int size) {
+  return nna_new(size, size);
 }
 
 nna_matrix *nna_new_identity(unsigned int size) {
@@ -197,8 +208,6 @@ int nna_eq_dim(nna_matrix *m1, nna_matrix *m2) {
 //
 // Matrix LU
 //
-
-
 nna_matrices_lu *nna_matrices_lu_new(nna_matrix *L, nna_matrix *U, nna_matrix *P, unsigned int num_permutations) {
   nna_matrices_lu *r = malloc(sizeof(*r));
   NP_CHECK(r);
@@ -311,6 +320,77 @@ int nna_add_to_row_r(nna_matrix *m, unsigned int where, unsigned int row, double
     m->data[where][i] += multiplier * m->data[row][i];
   }
   return 1;
+}
+
+// Concatenates a variable number of matrices into one
+// The concentation is done horizontally this means the matrices need to have
+// the same number of rows, while the number of columns is allowed to
+// be variable
+nna_matrix *nna_concat_h(unsigned int mnum, ...) {
+  if (0==mnum) {
+    return NULL;
+  }
+  va_list argp;
+  va_start(argp, mnum);
+  if (1==mnum) {
+    // We just return the one matrix supplied as the first param
+    // no need for additional logic
+    nna_matrix * fm = va_arg(argp, nna_matrix*);
+    nna_print(fm);
+    va_end(argp);
+    return nna_new_copy(fm);
+  }
+  // We compute to see if the matrices have the same number of rows
+  // We fillup the array containing the matrices from the varags
+  // We calculate the total number of columns to know how to allocate memory
+  // for the resulting matrix]
+  int i,j,k,jk,offset;
+  unsigned int lrow, ncols;
+  nna_matrix **marr;
+  nna_matrix *fm;
+  marr = malloc(sizeof(*marr) * mnum);
+  marr[0] = fm;
+  lrow = fm->num_rows;
+  ncols = fm->num_cols;
+  for(k = 1; k < mnum; k++) {
+    marr[k] = va_arg(argp, nna_matrix*);
+    if (lrow!=marr[k]->num_rows) {
+      NNA_FERROR(CANNOT_CONCATENATE_H, lrow, marr[k]->num_rows);
+      free(marr);
+      return NULL;
+    }
+    ncols+=marr[k]->num_cols;
+  }
+  va_end(argp);
+
+  // At this point we know how the resulting matrix looks like,
+  // we allocate memory for it accordingly
+  nna_matrix *r = nna_new(lrow, ncols);
+  nna_print(r);
+  for(i = 0; i < r->num_rows; i++) {
+    k = 0;
+    offset = 0;
+    for(j = 0; j < r->num_cols; j++) {
+      jk = j - offset;
+      // If the column index of marr[k] overflows
+      // We jump to the next matrix in the array
+      if (jk >= marr[k]->num_cols) {
+        offset = marr[k]->num_cols;
+        k++;
+      }
+      r->data[i][j] = marr[k]->data[i][jk];
+    }
+  }
+  free(marr);
+  return r;
+}
+
+// Concatenates a variable number of matrices into one.
+// The concentation is done vertically this means the matrices need to have
+// the same number of columns, while the number of rows is allowed to
+// be variable
+nna_matrix *nna_concat_v(unsigned int mnum, ...) {
+  
 }
 
 //
@@ -432,7 +512,7 @@ nna_matrices_lu *nna_lup(nna_matrix *m) {
   for(j = 0; j < U->num_cols; j++) {
     // Retrieves the row with the biggest element for column (j)
     pivot = nna_absmax_row(U, j);
-    if (U->data[pivot][j] < DBL_EPSILON) {
+    if (fabs(U->data[pivot][j]) < DBL_EPSILON) {
       NNA_ERROR(CANNOT_LU_MATRIX_DEGENERATE);
       return NULL;
     }
@@ -471,11 +551,6 @@ double nna_det(nna_matrices_lu* lup) {
     product *= U->data[k][k];
   }
   return product * sign;
-}
-
-// After the LU(P) factorisation the determinant can be easily calculated
-nna_matrix *nna_inverse(nna_matrices_lu *m) {
-    return NULL;
 }
 
 //
@@ -573,6 +648,37 @@ nna_matrix *nna_solve_ls(nna_matrices_lu *lu, nna_matrix* b) {
   return x;
 }
 
+// A * (A^-1) = I , where A[N][N]
+// We need to find (A^-1) which is the inverse
+//
+// We can write this as a series of N linear systems:
+// A * (a^-1)k = ik
+//
+// where:
+// (a^-1)k is the column vector k of the inverse
+// ik is the column vector k of the identity
+//
+// but:
+// PA = LU =>
+// P * A * (a^-1)k = P * ik =>
+// L * U * (a^-1)k = P * ik
+//
+// this means we will have to solve N systems of linear equations in this form:
+// L * U * (a^-1)k = P * ik
+// where 0 <= k < N
+//
+// And then the inverse is:
+// (A^-1) = ( (a^-1)0 | (a^-1)2 | ... | (A^-1)n-1)
+nna_matrix *nna_inverse(nna_matrices_lu *lu) {
+  unsigned int N = lu->L->num_cols;
+  nna_matrix *i = nna_new_square(N);
+  for(i = 0; i < N; i++) {
+
+  }
+  return i;
+}
+
+
 int main(int argc, char *argv[]) {
   double MV[25] = {
     1.0, 2.0, 5.0, 0.0, 5.0,
@@ -609,6 +715,15 @@ int main(int argc, char *argv[]) {
   nna_matrix *x3 = nna_solve_ls(M_LUP, b3);
   printf("\nx3 =\n");
   nna_print(x3);
+
+  printf("--------------");
+
+  nna_matrix *c1 = nna_new_square(4);
+  nna_set_all(c1, 1.0);
+  nna_matrix *c2 = nna_new(4, 3);
+  nna_set_all(c2, 2.0);
+
+  nna_print(nna_concat_h(1, c1));
 
   return 0;
 }
