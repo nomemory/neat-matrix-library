@@ -437,7 +437,7 @@ nml_mat *nml_mat_add(nml_mat *m1, nml_mat *m2) {
 }
 
 int nml_mat_add_r(nml_mat *m1, nml_mat *m2) {
-  if (!nml_eq_dim(m1, m2)) {
+  if (!nml_mat_eqdim(m1, m2)) {
     NML_ERROR(CANNOT_ADD);
     return 0;
   }
@@ -460,7 +460,7 @@ nml_mat *nml_mat_sub(nml_mat *m1, nml_mat *m2) {
 }
 
 int nml_mat_sub_r(nml_mat *m1, nml_mat *m2) {
-  if (!nml_eq_dim(m1, m2)) {
+  if (!nml_mat_eqdim(m1, m2)) {
     NML_ERROR(CANNOT_SUBTRACT);
     return 0;
   }
@@ -717,7 +717,7 @@ nml_mat *nml_mat_inv(nml_mat_lup *lu) {
 
 
 int main(int argc, char *argv[]) {
-  double MV[25] = {
+  double A_v[25] = {
     1.0, 2.0, 5.0, 0.0, 5.0,
     3.0, 4.0, 9.0, 7.0, 8.0,
     9.0, 8.0, 2.0, 8.0, 0.0,
@@ -725,7 +725,7 @@ int main(int argc, char *argv[]) {
     4.0, 8.0, 3.0, 1.0, 0.0
   };
 
-  double B3[5] = {
+  double b_v[5] = {
     8.00,
     3.00,
     7.00,
@@ -733,34 +733,32 @@ int main(int argc, char *argv[]) {
     8.00
   };
 
-  nml_mat *M = nml_mat_from(5, 5, 25, MV);
-  printf("\nM =\n");
-  nml_mat_print(M);
+  // The initial matrix
+  nml_mat *A = nml_mat_from(5, 5, 25, A_v);
+  // The b = vector of solutions
+  nml_mat *b = nml_mat_from(5, 1, 5, b_v);
+  // LUP Decomposition (P*A = L*U)
+  nml_mat_lup *A_LUP = nml_mat_lup_solve(A);
+  // Computes the determinant of A
+  double d = nml_mat_det(A_LUP);
+  // Solves A*x=b using LUP
+  nml_mat *x = nml_solve_ls(A_LUP, b);
 
-  nml_mat *b3 = nml_mat_from(5, 1, 5, B3);
-  printf("\nb3 =\n");
-  nml_mat_print(b3);
 
-  nml_mat_lup *M_LUP = nml_mat_lup_solve(M);
-  printf("\nL=\n");
-  nml_mat_print(M_LUP->L);
-  printf("\nU =\n");
-  nml_mat_print(M_LUP->U);
-  printf("\nP =\n");
-  nml_mat_print(M_LUP->P);
-
-  nml_mat *x3 = nml_solve_ls(M_LUP, b3);
-  printf("\nx3 =\n");
-  nml_mat_print(x3);
-
-  printf("--------------");
-
-  nml_mat *c1 = nml_mat_new_square(4);
-  nml_mat_setall(c1, 1.0);
-  nml_mat *c2 = nml_mat_new(4, 3);
-  nml_mat_setall(c2, 2.0);
-
-  nml_mat_print(nml_mat_cath(1, c1));
+  // Print everything
+  printf("\nA[%dx%d]:\n", A->num_rows, A->num_cols);
+  nml_mat_print(A);
+  printf("\nb[%dx%d]:\n", b->num_rows, b->num_cols);
+  nml_mat_print(b);
+  printf("\nL[%dx%d]:\n", A_LUP->L->num_rows, A_LUP->L->num_cols);
+  nml_mat_print(A_LUP->L);
+  printf("\nU[%dx%d] =\n", A_LUP->U->num_rows, A_LUP->U->num_cols);
+  nml_mat_print(A_LUP->U);
+  printf("\nP[%dx%d]=\n", A_LUP->P->num_rows, A_LUP->P->num_cols);
+  nml_mat_print(A_LUP->P);
+  printf("\nd=%2.2f\n", d);
+  printf("\nx[%d][%d] =\n", x->num_rows, x->num_cols);
+  nml_mat_print(x);
 
   return 0;
 }
