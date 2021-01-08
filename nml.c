@@ -109,7 +109,7 @@ nml_mat *nml_mat_new(unsigned int num_rows, unsigned int num_cols) {
   return m;
 }
 
-nml_mat *nml_mat_new_square(unsigned int size) {
+nml_mat *nml_mat_sqr(unsigned int size) {
   return nml_mat_new(size, size);
 }
 

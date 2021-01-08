@@ -26,11 +26,34 @@ NC='\033[0m'
 
 function sanity_checks {
   echo -e "${YELLOW}Sanity Checks:${NC}"
+
   for cmd in ${CMDS[@]};
   do
     echo -ne "\tChecking if $cmd is in PATH:"
     if ! command -v ${cmd} &> /dev/null
     then
+      echo -e " ${RED}NOK${NC}"
+      echo -e " ${RED}ABORTING${NC}"
+      exit
+    fi
+    echo -e " ${GREEN}OK${NC}"
+  done
+
+  for src in ${SOURCE_FILES[@]};
+  do
+    echo -ne "\tChecking if ${src} exists in folder:"
+    if [ ! -f "${src}" ]; then
+      echo -e " ${RED}NOK${NC}"
+      echo -e " ${RED}ABORTING${NC}"
+      exit
+    fi
+    echo -e " ${GREEN}OK${NC}"
+  done
+
+  for hfile in ${HEADER_FILES[@]};
+  do
+    echo -ne "\tChecking if ${hfile} exists in folder:"
+    if [ ! -f "${hfile}" ]; then
       echo -e " ${RED}NOK${NC}"
       echo -e " ${RED}ABORTING${NC}"
       exit
