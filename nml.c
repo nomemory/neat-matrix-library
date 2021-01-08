@@ -452,7 +452,7 @@ int nml_mat_add_r(nml_mat *m1, nml_mat *m2) {
 
 nml_mat *nml_mat_sub(nml_mat *m1, nml_mat *m2) {
   nml_mat *r = nml_mat_cp(m2);
-  if (!nml_mat_sub(r, m2)) {
+  if (!nml_mat_sub_r(r, m2)) {
     nml_mat_free(r);
     return NULL;
   }
@@ -706,64 +706,11 @@ nml_mat *nml_solve_ls(nml_mat_lup *lu, nml_mat* b) {
 //
 // And then the inverse is:
 // (A^-1) = ( (a^-1)0 | (a^-1)2 | ... | (A^-1)n-1)
-nml_mat *nml_mat_inv(nml_mat_lup *lu) {
-  unsigned int N = lu->L->num_cols;
-  nml_mat *i = nml_mat_new_square(N);
-  for(i = 0; i < N; i++) {
-
-  }
-  return i;
-}
-
-
-int main(int argc, char *argv[]) {
-  double A_v[25] = {
-    1.0, 2.0, 5.0, 0.0, 5.0,
-    3.0, 4.0, 9.0, 7.0, 8.0,
-    9.0, 8.0, 2.0, 8.0, 0.0,
-    1.0, 2.5, 3.7, 3.0, 2.5,
-    4.0, 8.0, 3.0, 1.0, 0.0
-  };
-
-  double b_v[5] = {
-    8.00,
-    3.00,
-    7.00,
-    9.00,
-    8.00
-  };
-
-  // The initial matrix
-  nml_mat *A = nml_mat_from(5, 5, 25, A_v);
-  // The b = vector of solutions
-  nml_mat *b = nml_mat_from(5, 1, 5, b_v);
-  // LUP Decomposition (P*A = L*U)
-  nml_mat_lup *A_LUP = nml_mat_lup_solve(A);
-  // Computes the determinant of A
-  double d = nml_mat_det(A_LUP);
-  // Solves A*x=b using LUP
-  nml_mat *x = nml_solve_ls(A_LUP, b);
-
-
-  // Print everything
-  printf("\nA[%dx%d]:\n", A->num_rows, A->num_cols);
-  nml_mat_print(A);
-  printf("\nb[%dx%d]:\n", b->num_rows, b->num_cols);
-  nml_mat_print(b);
-  printf("\nL[%dx%d]:\n", A_LUP->L->num_rows, A_LUP->L->num_cols);
-  nml_mat_print(A_LUP->L);
-  printf("\nU[%dx%d] =\n", A_LUP->U->num_rows, A_LUP->U->num_cols);
-  nml_mat_print(A_LUP->U);
-  printf("\nP[%dx%d]=\n", A_LUP->P->num_rows, A_LUP->P->num_cols);
-  nml_mat_print(A_LUP->P);
-  printf("\nd=%2.2f\n", d);
-  printf("\nx[%d][%d] =\n", x->num_rows, x->num_cols);
-  nml_mat_print(x);
-
-  nml_mat_lup_free(A_LUP);
-  nml_mat_free(A);
-  nml_mat_free(b);
-  nml_mat_free(x);
-
-  return 0;
-}
+// nml_mat *nml_mat_inv(nml_mat_lup *lu) {
+//   unsigned int N = lu->L->num_cols;
+//   nml_mat *i = nml_mat_new_square(N);
+//   for(i = 0; i < N; i++) {
+//
+//   }
+//   return i;
+// }
