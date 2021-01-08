@@ -5,6 +5,7 @@
 # COMPILING RELATED
 CC=gcc
 CCFLAGS="-Wall -c"
+CCFLAGS_EXAMPLES="-Wall"
 AR=ar
 ARFLAGS="crs"
 SOURCE_FILES=(nml.c nml_util.c)
@@ -14,6 +15,7 @@ DIST_DIR="dist"
 EXAMPLES="examples"
 EXAMPLES_LIB="examples/lib"
 LIB_NAME="libnml.a"
+LIB_NAME_SIMPLE="nml"
 CMDS=($CC ar nm)
 
 RED='\033[0;31m'
@@ -71,12 +73,20 @@ function clean {
   rm -rf ${DIST_DIR}
   echo -e "${YELLOW}Cleaning the folder `pwd`/${EXAMPLES_LIB}${NC}"
   rm -rf ${EXAMPLES_LIB}
+  echo -e "${YELLOW}Cleaning the folder `pwd`/${EXAMPLES}/*.ex"
+  rm -rf ${EXAMPLES}/*.ex
 }
 
 function examples {
   echo -e "${YELLOW}Preparing examples/ folder with the latest version:${NC}"
-  echo -e "\tMoving ${DIST_DIR}/* to ${EXAMPLES_LIB}/"
+  echo -e "\tMoving ${DIST_DIR}/* to ${EXAMPLES_LIB}/*"
   cp -r ${DIST_DIR} ${EXAMPLES_LIB}
+  echo -e "${YELLOW}Compiling Examples:${NC}"
+  ls ${EXAMPLES}/*.c | while read file ;
+    do
+      echo -e "\t ${EXAMPLES}/$file"
+      ${CC} ${CCFLAGS_EXAMPLES} ${file} -L ./${EXAMPLES}/lib -l${LIB_NAME_SIMPLE} -o ${file%%.*}.ex
+    done
 }
 
 function build_opt {

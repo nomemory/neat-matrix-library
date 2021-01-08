@@ -10,9 +10,35 @@ It's currently work in progress, more algorithms are being added.
 
 # Compile
 
+For building the library and the examples use the `./nml.sh <option>` bash script.
+
+The available options are: `build`, `clean`, `examples`.
+
+## Building the script
+
+```bash
+./nml.sh build
 ```
-make all
+
+This will compile the library, create a `dist` folder where you can find `*.a` static library file and the header files.
+
+## Building the examples
+
+```bash
+./nml.sh examples
 ```
+
+This will create an `examples/lib` folder where the `libnml.a` and the header files will be copied.
+All the examples will be compiled with the latest version of `libnml` and executables will be created (`*.ex`)
+
+
+## Cleaning
+
+```bash
+./nml.sh clean
+```
+
+This will clean everything (`*.o`,`*.ex`,`*.a`) and will leave the library folder in a clean state.
 
 # Short Example:
 
