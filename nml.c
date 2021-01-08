@@ -19,6 +19,7 @@ limitations under the License.
 #include <float.h>
 #include <math.h>
 #include <stdarg.h>
+#include <string.h>
 
 #include "nml.h"
 
@@ -80,6 +81,12 @@ limitations under the License.
 #define CANNOT_CONCATENATE_V \
       "Cannot concatenate. Matrices have a different number of cols. Expected %d, found: %d.\n" \
 
+#define CANNOT_GET_COLUMN \
+      "Cannot get column (%d). The matrix has %d number of columns.\n" \
+
+#define CANNOT_GET_ROW \
+      "Cannot get row (%d). The matrix has %d number of rows.\n" \
+
 // *****************************************************************************
 //
 // Constructing and destroying a matrix struct
@@ -111,10 +118,25 @@ nml_mat *nml_mat_new(unsigned int num_rows, unsigned int num_cols) {
   return m;
 }
 
+nml_mat *nml_mat_new_rnd(unsigned int num_rows, unsigned int num_cols, double min, double max) {
+  nml_mat *r = nml_mat_new(num_rows, num_cols);
+  int i, j;
+  for(i = 0; i < num_rows; i++) {
+    for(j = 0; j < num_cols; j++) {
+      r->data[i][j] = nml_rand_interval(min, max);
+    }
+  }
+  return r;
+}
+
 // Dynamically alloctes a new matrix struct
 // The matrix is square (number of rows is equl with the number of cols)
 nml_mat *nml_mat_sqr(unsigned int size) {
   return nml_mat_new(size, size);
+}
+
+nml_mat *nml_mat_sqr_rnd(unsigned int size, double min, double max) {
+  return nml_mat_new_rnd(size, size, min, max);
 }
 
 // Dynamically allocates a a new matrix struct
@@ -230,6 +252,29 @@ double nml_mat_get(nml_mat *matrix, unsigned int i, unsigned int j) {
   return matrix->data[i][j];
 }
 
+nml_mat *nml_mat_getcol(nml_mat *m, unsigned int col) {
+  if (col >= m->num_cols) {
+    NML_FERROR(CANNOT_GET_COLUMN, col, m->num_cols);
+    return NULL;
+  }
+  nml_mat *r = nml_mat_new(m->num_rows, 1);
+  int j;
+  for(j = 0; j < r->num_rows; j++) {
+    r->data[j][0] = m->data[j][col];
+  }
+  return r;
+}
+
+nml_mat *nml_mat_getrow(nml_mat *m, unsigned int row) {
+  if (row >= m->num_rows) {
+    NML_FERROR(CANNOT_GET_ROW, row, m->num_rows);
+    return NULL;
+  }
+  nml_mat *r = nml_mat_new(1, m->num_cols);
+  memcpy(r->data[0], m->data[row], m->num_cols * sizeof(*r->data[0]));
+  return r;
+}
+
 void nml_mat_set(nml_mat *matrix, unsigned int i, unsigned int j, double value) {
   matrix->data[i][j] = value;
 }
@@ -257,16 +302,16 @@ int nml_mat_setdiag(nml_mat *m, double value) {
   return 1;
 }
 
-nml_mat *nml_mat_multr(nml_mat *m, unsigned int row, double num) {
+nml_mat *nml_mat_multrow(nml_mat *m, unsigned int row, double num) {
   nml_mat *r = nml_mat_cp(m);
-  if (nml_mat_multr_r(r, row, num)) {
+  if (nml_mat_multrow_r(r, row, num)) {
     nml_mat_free(r);
     return NULL;
   }
   return r;
 }
 
-int nml_mat_multr_r(nml_mat *m, unsigned int row, double num) {
+int nml_mat_multrow_r(nml_mat *m, unsigned int row, double num) {
   if (row>=m->num_rows) {
     NML_FERROR(CANNOT_ROW_MULTIPLY, row, m->num_rows);
     return 0;
@@ -278,16 +323,16 @@ int nml_mat_multr_r(nml_mat *m, unsigned int row, double num) {
   return 0;
 }
 
-nml_mat *nml_mat_add2r(nml_mat *m, unsigned int where, unsigned int row, double multiplier) {
+nml_mat *nml_mat_rowplusrow(nml_mat *m, unsigned int where, unsigned int row, double multiplier) {
   nml_mat *r = nml_mat_cp(m);
-  if (!nml_mat_add2r_r(m, where, row, multiplier)) {
+  if (!nml_mat_rowplusrow_r(m, where, row, multiplier)) {
     nml_mat_free(r);
     return NULL;
   }
   return r;
 }
 
-int nml_mat_add2r_r(nml_mat *m, unsigned int where, unsigned int row, double multiplier) {
+int nml_mat_rowplusrow_r(nml_mat *m, unsigned int where, unsigned int row, double multiplier) {
   if (where >= m->num_rows || row >= m->num_rows) {
     NML_FERROR(CANNOT_ADD_TO_ROW, multiplier, row, where, m->num_rows);
     return 0;
@@ -299,13 +344,13 @@ int nml_mat_add2r_r(nml_mat *m, unsigned int where, unsigned int row, double mul
   return 1;
 }
 
-nml_mat *nml_mat_smult(nml_mat *m, double num) {
+nml_mat *nml_mat_scalarmult(nml_mat *m, double num) {
   nml_mat *r = nml_mat_cp(m);
-  nml_mat_smult_r(r, num);
+  nml_mat_scalarmult_r(r, num);
   return r;
 }
 
-int nml_mat_smult_r(nml_mat *m, double num) {
+int nml_mat_scalarmult_r(nml_mat *m, double num) {
   int i, j;
   for(i = 0; i < m->num_rows; i++) {
     for(j = 0; j < m->num_cols; j++) {
@@ -320,7 +365,7 @@ int nml_mat_smult_r(nml_mat *m, double num) {
 // Modifying the matrix structure
 //
 // *****************************************************************************
-nml_mat *nml_mat_rcol(nml_mat *m, unsigned int column) {
+nml_mat *nml_mat_remcol(nml_mat *m, unsigned int column) {
   if(column >= m->num_cols) {
     NML_FERROR(CANNOT_REMOVE_COLUMN, column, m->num_cols);
     return NULL;
@@ -337,7 +382,7 @@ nml_mat *nml_mat_rcol(nml_mat *m, unsigned int column) {
   return r;
 }
 
-nml_mat *nml_mat_rrow(nml_mat *m, unsigned int row) {
+nml_mat *nml_mat_remrow(nml_mat *m, unsigned int row) {
   if (row >= m->num_rows) {
     NML_FERROR(CANNOT_REMOVE_ROW, row, m->num_rows);
     return NULL;
@@ -355,16 +400,16 @@ nml_mat *nml_mat_rrow(nml_mat *m, unsigned int row) {
   return r;
 }
 
-nml_mat *nml_mat_swaprs(nml_mat *m, unsigned int row1, unsigned int row2) {
+nml_mat *nml_mat_swaprows(nml_mat *m, unsigned int row1, unsigned int row2) {
   nml_mat *r = nml_mat_cp(m);
-  if (!nml_mat_swaprs_r(r, row1, row2)) {
+  if (!nml_mat_swaprows_r(r, row1, row2)) {
     nml_mat_free(r);
     return NULL;
   }
   return r;
 }
 
-int nml_mat_swaprs_r(nml_mat *m, unsigned int row1, unsigned int row2) {
+int nml_mat_swaprows_r(nml_mat *m, unsigned int row1, unsigned int row2) {
   if (row1 >= m->num_rows || row2 >= m->num_rows) {
     NML_FERROR(CANNOT_SWAP_ROWS, row1, row2, m->num_rows);
     return 0;
@@ -379,7 +424,7 @@ int nml_mat_swaprs_r(nml_mat *m, unsigned int row1, unsigned int row2) {
 // The concentation is done horizontally this means the matrices need to have
 // the same number of rows, while the number of columns is allowed to
 // be variable
-nml_mat *nml_mat_cath(unsigned int mnum, ...) {
+nml_mat *nml_mat_concath(unsigned int mnum, ...) {
   if (0==mnum) {
     return NULL;
   }
@@ -516,7 +561,7 @@ nml_mat *nml_mat_mult(nml_mat *m1, nml_mat *m2) {
   return r;
 }
 
-nml_mat *nml_mat_trans(nml_mat *m) {
+nml_mat *nml_mat_trs(nml_mat *m) {
   int i, j;
   nml_mat *r = nml_mat_new(m->num_cols, m->num_rows);
   for(i = 0; i < r->num_rows; i++) {
@@ -596,9 +641,9 @@ nml_mat_lup *nml_mat_lup_solve(nml_mat *m) {
     }
     if (pivot!=j) {
       // Pivots LU and P accordingly to the rule
-      nml_mat_swaprs_r(U, j, pivot);
-      nml_mat_swaprs_r(L, j, pivot);
-      nml_mat_swaprs_r(P, j, pivot);
+      nml_mat_swaprows_r(U, j, pivot);
+      nml_mat_swaprows_r(L, j, pivot);
+      nml_mat_swaprows_r(P, j, pivot);
       // Keep the number of permutations to easily calculate the
       // determinant sign afterwards
       num_permutations++;
@@ -606,7 +651,7 @@ nml_mat_lup *nml_mat_lup_solve(nml_mat *m) {
     for(i = j+1; i < U->num_rows; i++) {
       mult = U->data[i][j] / U->data[j][j];
       // Building the U upper rows
-      nml_mat_add2r_r(U, i, j, -mult);
+      nml_mat_rowplusrow_r(U, i, j, -mult);
       // Store the multiplier in L
       L->data[i][j] = mult;
     }
@@ -620,7 +665,7 @@ nml_mat_lup *nml_mat_lup_solve(nml_mat *m) {
 // by multiplying the main diagonal of matrix U with the sign.
 // the sign is -1 if the number of permutations is odd
 // the sign is +1 if the number of permutations is even
-double nml_mat_det(nml_mat_lup* lup) {
+double nml_mat_determinant(nml_mat_lup* lup) {
   int k;
   int sign = (lup->num_permutations%2==0) ? 1 : -1;
   nml_mat *U = lup->U;
@@ -749,7 +794,7 @@ nml_mat *nml_solve_ls(nml_mat_lup *lu, nml_mat* b) {
 //
 // And then the inverse is:
 // (A^-1) = ( (a^-1)0 | (a^-1)2 | ... | (A^-1)n-1)
-// nml_mat *nml_mat_inv(nml_mat_lup *lu) {
+// nml_mat *nml_mat_inverse(nml_mat_lup *lu) {
 //   unsigned int N = lu->L->num_cols;
 //   nml_mat *i = nml_mat_new_square(N);
 //   for(i = 0; i < N; i++) {
