@@ -19,86 +19,102 @@ limitations under the License.
 
 #include "nml_util.h"
 
-typedef struct nml_matrix_s {
+typedef struct nml_mat_s {
   unsigned int num_rows;
   unsigned int num_cols;
   double **data;
   int is_square;
-} nml_matrix;
+} nml_mat;
 
-typedef struct nml_matrices_lu_s {
-  nml_matrix *L;
-  nml_matrix *U;
-  nml_matrix *P;
+typedef struct nml_mat_cols_s {
+  unsigned int num_cols;
+  nml_mat *cols;
+} nml_mat_cols;
+
+typedef struct nml_mat_rows_s {
+  unsigned int num_rows;
+  nml_mat *rows;
+} num_mat_rows;
+
+typedef struct nml_mat_lup_s {
+  nml_mat *L;
+  nml_mat *U;
+  nml_mat *P;
   unsigned int num_permutations;
-} nml_matrices_lu;
+} nml_mat_lup;
 
 //
 // Basic Matrix Methods
 //
-nml_matrix *nml_new(unsigned int num_rows, unsigned int num_cols);
-nml_matrix *nml_new_square(unsigned int size);
-nml_matrix *nml_new_identity(unsigned int size);
-nml_matrix *nml_new_copy(nml_matrix *m);
-nml_matrix *nml_new_from(unsigned int num_rows, unsigned int num_cols, unsigned int n_vals, double *vals);
-void nml_free(nml_matrix *matrix);
-double nml_get(nml_matrix *matrix, unsigned int i, unsigned int j);
-void nml_set(nml_matrix *matrix, unsigned int i, unsigned int j, double value);
-void nml_set_all(nml_matrix *matrix, double value);
-int nml_set_diag(nml_matrix *matrix, double value);
-void nml_print(nml_matrix *matrix);
-void nml_printf(nml_matrix *matrix, const char *d_fmt);
-int nml_eq_dim(nml_matrix *m1, nml_matrix *m2);
-
-// LU object
-
-nml_matrices_lu *nml_matrices_lu_new(nml_matrix *L, nml_matrix *U, nml_matrix *P, unsigned int num_permutations);
-void nml_matrices_lu_free(nml_matrices_lu* lu);
+nml_mat *nml_mat_new(unsigned int num_rows, unsigned int num_cols);
+nml_mat *nml_mat_sqr(unsigned int size);
+nml_mat *nml_mat_id(unsigned int size);
+nml_mat *nml_mat_cp(nml_mat *m);
+nml_mat *nml_mat_from(unsigned int num_rows, unsigned int num_cols, unsigned int n_vals, double *vals);
+void nml_mat_free(nml_mat *matrix);
+double nml_mat_get(nml_mat *matrix, unsigned int i, unsigned int j);
+void nml_mat_set(nml_mat *matrix, unsigned int i, unsigned int j, double value);
+void nml_mat_setall(nml_mat *matrix, double value);
+int nml_mat_setdiag(nml_mat *matrix, double value);
+void nml_mat_print(nml_mat *matrix);
+void nml_mat_printf(nml_mat *matrix, const char *d_fmt);
+int nml_mat_eqdim(nml_mat *m1, nml_mat *m2);
+int nml_mat_eq(nml_mat *m1, nml_mat *m2, double tolerance);
+int nml_mat_absmaxr(nml_mat *m1, unsigned int k);
 
 //
 // Rows, Columns and Concatenation
 //
-nml_matrix *nml_rem_col(nml_matrix *m, unsigned int column);
-nml_matrix *nml_rem_row(nml_matrix *m, unsigned int row);
-nml_matrix *nml_swap_rows(nml_matrix *m, unsigned int row1, unsigned int row2);
-int nml_swap_rows_r(nml_matrix *m, unsigned int row1, unsigned int row2);
-nml_matrix *nml_multiply_row(nml_matrix *m, unsigned int row, double num);
-int nml_multiply_row_r(nml_matrix *m, unsigned int row, double num);
-nml_matrix *nml_add_to_row(nml_matrix *m, unsigned int where, unsigned int row, double multiplier);
-int nml_add_to_row_r(nml_matrix *m, unsigned int where, unsigned int row, double multiplier);
-nml_matrix *nml_concat_h(unsigned int mnun, ...);
-nml_matrix *nml_concat_v(unsigned int mnum, ...);
+nml_mat *nml_mat_rcol(nml_mat *m, unsigned int column);
+nml_mat *nml_mat_rrow(nml_mat *m, unsigned int row);
+nml_mat *nml_mat_swaprs(nml_mat *m, unsigned int row1, unsigned int row2);
+int nml_mat_swaprs_r(nml_mat *m, unsigned int row1, unsigned int row2);
+//TODO
+nml_mat *nml_mat_swapcs(nml_mat *m, unsigned int col1, unsigned int col2);
+//TODO
+int nml_mat_swapcs_r(nml_mat *m, unsigned int col1, unsigned int col2);
+nml_mat *nml_mat_multr(nml_mat *m, unsigned int row, double num);
+int nml_mat_multr_r(nml_mat *m, unsigned int row, double num);
+nml_mat *nml_mat_add2r(nml_mat *m, unsigned int where, unsigned int row, double multiplier);
+int nml_mat_add2r_r(nml_mat *m, unsigned int where, unsigned int row, double multiplier);
+nml_mat *nml_mat_cath(unsigned int mnun, ...);
+nml_mat *nml_mat_catv(unsigned int mnum, ...);
 
 //
 // Matrix Operations
 //
-nml_matrix *nml_plus(nml_matrix *m1, nml_matrix *m2);
-//TODO
-int *nml_plus_r(nml_matrix *m1, nml_matrix *m2);
-nml_matrix *nml_minus(nml_matrix *m1, nml_matrix *m2);
-//TODO
-int *nml_minus_r(nml_matrix *m1, nml_matrix *m2);
-nml_matrix *nml_smultiply(nml_matrix *m, double num);
-nml_matrix *nml_multiply(nml_matrix *m1, nml_matrix *m2);
-nml_matrix *nml_transpose(nml_matrix *m);
-double nml_trace(nml_matrix* m);
+nml_mat *nml_mat_add(nml_mat *m1, nml_mat *m2);
+int nml_mat_add_r(nml_mat *m1, nml_mat *m2);
+nml_mat *nml_mat_sub(nml_mat *m1, nml_mat *m2);
+int nml_mat_sub_r(nml_mat *m1, nml_mat *m2);
+nml_mat *nml_mat_smult(nml_mat *m, double num);
+int nml_mat_smult_r(nml_mat *m, double num);
+nml_mat *nml_mat_mult(nml_mat *m1, nml_mat *m2);
+nml_mat *nml_mat_trans(nml_mat *m);
+double nml_mat_trace(nml_mat* m);
+
+// Column and Row Vectors
+nml_mat *nml_cols(nml_mat *m1);
+nml_mat *nml_rows(nml_mat *m2);
 
 //
 // LU Decomposition / Determinant / Inverse
 //
 // Determines the row index for which the value on column k is the absolute max.
 // Function is used for pivoting rows for PA=LU decomposition.
-int nml_absmax_row(nml_matrix *m1, unsigned int k);
-nml_matrices_lu *nml_lup(nml_matrix *m);
-double nml_det(nml_matrices_lu* lup);
-nml_matrix *nml_inverse(nml_matrices_lu *m);
+nml_mat_lup *nml_mat_lup_new(nml_mat *L, nml_mat *U, nml_mat *P, unsigned int num_permutations);
+nml_mat_lup *nml_mat_lup_solve(nml_mat *m);
+void nml_mat_lup_free(nml_mat_lup* lu);
+
+double nml_mat_det(nml_mat_lup* lup);
+nml_mat *nml_mat_inv(nml_mat_lup *m);
 
 
 //
 // Solving Linear Systems
 //
-nml_matrix *nml_solve_ls_fwdsub(nml_matrix *low_triang, nml_matrix *b);
-nml_matrix *nml_solve_ls_bcksub(nml_matrix *upper_triang, nml_matrix *b);
-nml_matrix *nml_solve_ls(nml_matrices_lu *lu, nml_matrix* b);
+nml_mat *nml_ls_solvefwd(nml_mat *low_triang, nml_mat *b);
+nml_mat *nml_ls_solvebck(nml_mat *upper_triang, nml_mat *b);
+nml_mat *nml_ls_solve(nml_mat_lup *lu, nml_mat* b);
 
 #endif

@@ -85,7 +85,7 @@ limitations under the License.
 //
 
 // Dynamically allocates a new
-nml_matrix *nml_new(unsigned int num_rows, unsigned int num_cols) {
+nml_mat *nml_mat_new(unsigned int num_rows, unsigned int num_cols) {
   if (num_rows == 0) {
     NML_ERROR(INVALID_ROWS);
     abort();
@@ -94,7 +94,7 @@ nml_matrix *nml_new(unsigned int num_rows, unsigned int num_cols) {
     NML_ERROR(INVALID_COLS);
     abort();
   }
-  nml_matrix *m = calloc(1, sizeof(*m));
+  nml_mat *m = calloc(1, sizeof(*m));
   NP_CHECK(m);
   m->num_rows = num_rows;
   m->num_cols = num_cols;
@@ -109,12 +109,12 @@ nml_matrix *nml_new(unsigned int num_rows, unsigned int num_cols) {
   return m;
 }
 
-nml_matrix *nml_new_square(unsigned int size) {
-  return nml_new(size, size);
+nml_mat *nml_mat_new_square(unsigned int size) {
+  return nml_mat_new(size, size);
 }
 
-nml_matrix *nml_new_identity(unsigned int size) {
-  nml_matrix *r = nml_new(size, size);
+nml_mat *nml_mat_id(unsigned int size) {
+  nml_mat *r = nml_mat_new(size, size);
   int i;
   for(i = 0; i < r->num_rows; i++) {
     r->data[i][i] = 1.0;
@@ -122,8 +122,8 @@ nml_matrix *nml_new_identity(unsigned int size) {
   return r;
 }
 
-nml_matrix *nml_new_from(unsigned int num_rows, unsigned int num_cols, unsigned int n_vals, double *vals) {
-  nml_matrix *m = nml_new(num_rows, num_cols);
+nml_mat *nml_mat_from(unsigned int num_rows, unsigned int num_cols, unsigned int n_vals, double *vals) {
+  nml_mat *m = nml_mat_new(num_rows, num_cols);
   int i, j, v_idx;
   for(i = 0; i < m->num_rows; i++) {
     for(j = 0; j < m->num_cols; j++) {
@@ -134,8 +134,8 @@ nml_matrix *nml_new_from(unsigned int num_rows, unsigned int num_cols, unsigned 
   return m;
 }
 
-nml_matrix *nml_new_copy(nml_matrix *m) {
-  nml_matrix *r  = nml_new(m->num_rows, m->num_cols);
+nml_mat *nml_mat_cp(nml_mat *m) {
+  nml_mat *r  = nml_mat_new(m->num_rows, m->num_cols);
   int i,j;
   for(i = 0; i < r->num_rows; i++) {
     for(j = 0; j < r->num_cols; j++) {
@@ -145,7 +145,7 @@ nml_matrix *nml_new_copy(nml_matrix *m) {
   return r;
 }
 
-void nml_free(nml_matrix *matrix) {
+void nml_mat_free(nml_mat *matrix) {
   int i;
   for(i = 0; i < matrix->num_rows; ++i) {
     free(matrix->data[i]);
@@ -153,16 +153,16 @@ void nml_free(nml_matrix *matrix) {
   free(matrix->data);
 }
 
-double nml_get(nml_matrix *matrix, unsigned int i, unsigned int j) {
+double nml_mat_get(nml_mat *matrix, unsigned int i, unsigned int j) {
   return matrix->data[i][j];
 }
 
-void nml_set(nml_matrix *matrix, unsigned int i, unsigned int j, double value) {
+void nml_mat_set(nml_mat *matrix, unsigned int i, unsigned int j, double value) {
   matrix->data[i][j] = value;
 }
 
 
-void nml_set_all(nml_matrix *matrix, double value) {
+void nml_mat_setall(nml_mat *matrix, double value) {
   int i, j;
   for(i = 0; i < matrix->num_rows; i++) {
     for(j = 0; j < matrix->num_cols; j++) {
@@ -171,7 +171,7 @@ void nml_set_all(nml_matrix *matrix, double value) {
   }
 }
 
-int nml_set_diag(nml_matrix *m, double value) {
+int nml_mat_setdiag(nml_mat *m, double value) {
   if (!m->is_square) {
     NML_FERROR(CANNOT_SET_DIAG, value);
     return 0;
@@ -183,11 +183,11 @@ int nml_set_diag(nml_matrix *m, double value) {
   return 1;
 }
 
-void nml_print(nml_matrix *matrix) {
-  nml_printf(matrix, "%2.2f\t");
+void nml_mat_print(nml_mat *matrix) {
+  nml_mat_printf(matrix, "%2.2f\t");
 }
 
-void nml_printf(nml_matrix *matrix, const char *d_fmt) {
+void nml_mat_printf(nml_mat *matrix, const char *d_fmt) {
   int i, j;
   fprintf(stdout, "\n");
   for(i = 0; i < matrix->num_rows; ++i) {
@@ -200,16 +200,48 @@ void nml_printf(nml_matrix *matrix, const char *d_fmt) {
 }
 
 // Checks if two matrices have the same dimesions
-int nml_eq_dim(nml_matrix *m1, nml_matrix *m2) {
+int nml_mat_eqdim(nml_mat *m1, nml_mat *m2) {
   return (m1->num_cols == m2->num_cols) &&
           (m1->num_rows == m2->num_rows);
+}
+
+// Checks if two matrices have the same dimensions, and the elements
+// are all equal to each other with a given tolerance;
+// For exact equality use tolerance = 0.0
+int nml_mat_eq(nml_mat *m1, nml_mat *m2, double tolerance) {
+  if (!nml_mat_eqdim(m1, m2)) {
+    return 0;
+  }
+  int i, j;
+  for(i = 0; i < m1->num_rows; i++) {
+    for(j = 0; i < m1->num_cols; j++) {
+      if (m1->data[i][j] - m2->data[i][j] > tolerance) {
+        return 0;
+      }
+    }
+  }
+  return 1;
+}
+
+int nml_mat_absmaxr(nml_mat *m, unsigned int k) {
+  // Find max id on the column;
+  int i;
+  double max = m->data[k][k];
+  int maxIdx = k;
+  for(i = k+1; i < m->num_rows; i++) {
+    if (m->data[i][k] > max) {
+      max = fabs(m->data[i][k]);
+      maxIdx = i;
+    }
+  }
+  return maxIdx;
 }
 
 //
 // Matrix LU
 //
-nml_matrices_lu *nml_matrices_lu_new(nml_matrix *L, nml_matrix *U, nml_matrix *P, unsigned int num_permutations) {
-  nml_matrices_lu *r = malloc(sizeof(*r));
+nml_mat_lup *nml_mat_lup_new(nml_mat *L, nml_mat *U, nml_mat *P, unsigned int num_permutations) {
+  nml_mat_lup *r = malloc(sizeof(*r));
   NP_CHECK(r);
   r->L = L;
   r->U = U;
@@ -217,7 +249,7 @@ nml_matrices_lu *nml_matrices_lu_new(nml_matrix *L, nml_matrix *U, nml_matrix *P
   r->num_permutations = num_permutations;
   return r;
 }
-void nml_matrices_lu_free(nml_matrices_lu* lu) {
+void nml_mat_lup_free(nml_mat_lup* lu) {
   if (!lu) free(lu);
 }
 
@@ -225,12 +257,12 @@ void nml_matrices_lu_free(nml_matrices_lu* lu) {
 // Basic Row Operations
 //
 
-nml_matrix *nml_rem_col(nml_matrix *m, unsigned int column) {
+nml_mat *nml_mat_rcol(nml_mat *m, unsigned int column) {
   if(column >= m->num_cols) {
     NML_FERROR(CANNOT_REMOVE_COLUMN, column, m->num_cols);
     return NULL;
   }
-  nml_matrix *r = nml_new(m->num_rows, m->num_cols-1);
+  nml_mat *r = nml_mat_new(m->num_rows, m->num_cols-1);
   int i, j, k;
   for(i = 0; i < m->num_rows; i++) {
     for(j = 0, k=0; j < m->num_cols; j++) {
@@ -242,12 +274,12 @@ nml_matrix *nml_rem_col(nml_matrix *m, unsigned int column) {
   return r;
 }
 
-nml_matrix *nml_rem_row(nml_matrix *m, unsigned int row) {
+nml_mat *nml_mat_rrow(nml_mat *m, unsigned int row) {
   if (row >= m->num_rows) {
     NML_FERROR(CANNOT_REMOVE_ROW, row, m->num_rows);
     return NULL;
   }
-  nml_matrix *r = nml_new(m->num_rows-1, m->num_cols);
+  nml_mat *r = nml_mat_new(m->num_rows-1, m->num_cols);
   int i, j, k;
   for(i = 0, k = 0; i < m->num_rows; i++) {
     if (row!=i) {
@@ -260,16 +292,16 @@ nml_matrix *nml_rem_row(nml_matrix *m, unsigned int row) {
   return r;
 }
 
-nml_matrix *nml_swap_rows(nml_matrix *m, unsigned int row1, unsigned int row2) {
-  nml_matrix *r = nml_new_copy(m);
-  if (!nml_swap_rows_r(r, row1, row2)) {
-    nml_free(r);
+nml_mat *nml_mat_swaprs(nml_mat *m, unsigned int row1, unsigned int row2) {
+  nml_mat *r = nml_mat_cp(m);
+  if (!nml_mat_swaprs_r(r, row1, row2)) {
+    nml_mat_free(r);
     return NULL;
   }
   return r;
 }
 
-int nml_swap_rows_r(nml_matrix *m, unsigned int row1, unsigned int row2) {
+int nml_mat_swaprs_r(nml_mat *m, unsigned int row1, unsigned int row2) {
   if (row1 >= m->num_rows || row2 >= m->num_rows) {
     NML_FERROR(CANNOT_SWAP_ROWS, row1, row2, m->num_rows);
     return 0;
@@ -280,16 +312,16 @@ int nml_swap_rows_r(nml_matrix *m, unsigned int row1, unsigned int row2) {
   return 1;
 }
 
-nml_matrix *nml_multiply_row(nml_matrix *m, unsigned int row, double num) {
-  nml_matrix *r = nml_new_copy(m);
-  if (nml_multiply_row_r(r, row, num)) {
-    nml_free(r);
+nml_mat *nml_mat_multr(nml_mat *m, unsigned int row, double num) {
+  nml_mat *r = nml_mat_cp(m);
+  if (nml_mat_multr_r(r, row, num)) {
+    nml_mat_free(r);
     return NULL;
   }
   return r;
 }
 
-int nml_multiply_row_r(nml_matrix *m, unsigned int row, double num) {
+int nml_mat_multr_r(nml_mat *m, unsigned int row, double num) {
   if (row>=m->num_rows) {
     NML_FERROR(CANNOT_ROW_MULTIPLY, row, m->num_rows);
     return 0;
@@ -301,16 +333,16 @@ int nml_multiply_row_r(nml_matrix *m, unsigned int row, double num) {
   return 0;
 }
 
-nml_matrix *nml_add_to_row(nml_matrix *m, unsigned int where, unsigned int row, double multiplier) {
-  nml_matrix *r = nml_new_copy(m);
-  if (!nml_add_to_row_r(m, where, row, multiplier)) {
-    nml_free(r);
+nml_mat *nml_mat_add2r(nml_mat *m, unsigned int where, unsigned int row, double multiplier) {
+  nml_mat *r = nml_mat_cp(m);
+  if (!nml_mat_add2r_r(m, where, row, multiplier)) {
+    nml_mat_free(r);
     return NULL;
   }
   return r;
 }
 
-int nml_add_to_row_r(nml_matrix *m, unsigned int where, unsigned int row, double multiplier) {
+int nml_mat_add2r_r(nml_mat *m, unsigned int where, unsigned int row, double multiplier) {
   if (where >= m->num_rows || row >= m->num_rows) {
     NML_FERROR(CANNOT_ADD_TO_ROW, multiplier, row, where, m->num_rows);
     return 0;
@@ -326,18 +358,18 @@ int nml_add_to_row_r(nml_matrix *m, unsigned int where, unsigned int row, double
 // The concentation is done horizontally this means the matrices need to have
 // the same number of rows, while the number of columns is allowed to
 // be variable
-nml_matrix *nml_concat_h(unsigned int mnum, ...) {
+nml_mat *nml_mat_cath(unsigned int mnum, ...) {
   if (0==mnum) {
     return NULL;
   }
   va_list argp;
   va_start(argp, mnum);
-  nml_matrix * fm = va_arg(argp, nml_matrix*);
+  nml_mat * fm = va_arg(argp, nml_mat*);
   if (1==mnum) {
     // We just return the one matrix supplied as the first param
     // no need for additional logic
     va_end(argp);
-    return nml_new_copy(fm);
+    return nml_mat_cp(fm);
   }
   // We compute to see if the matrices have the same number of rows
   // We fillup the array containing the matrices from the varags
@@ -345,13 +377,13 @@ nml_matrix *nml_concat_h(unsigned int mnum, ...) {
   // for the resulting matrix]
   int i,j,k,jk,offset;
   unsigned int lrow, ncols;
-  nml_matrix **marr;
+  nml_mat **marr;
   marr = malloc(sizeof(*marr) * mnum);
   marr[0] = fm;
   lrow = fm->num_rows;
   ncols = fm->num_cols;
   for(k = 1; k < mnum; k++) {
-    marr[k] = va_arg(argp, nml_matrix*);
+    marr[k] = va_arg(argp, nml_mat*);
     if (lrow!=marr[k]->num_rows) {
       NML_FERROR(CANNOT_CONCATENATE_H, lrow, marr[k]->num_rows);
       free(marr);
@@ -363,8 +395,8 @@ nml_matrix *nml_concat_h(unsigned int mnum, ...) {
 
   // At this point we know how the resulting matrix looks like,
   // we allocate memory for it accordingly
-  nml_matrix *r = nml_new(lrow, ncols);
-  nml_print(r);
+  nml_mat *r = nml_mat_new(lrow, ncols);
+  nml_mat_print(r);
   for(i = 0; i < r->num_rows; i++) {
     k = 0;
     offset = 0;
@@ -387,7 +419,7 @@ nml_matrix *nml_concat_h(unsigned int mnum, ...) {
 // The concentation is done vertically this means the matrices need to have
 // the same number of columns, while the number of rows is allowed to
 // be variable
-nml_matrix *nml_concat_v(unsigned int mnum, ...) {
+nml_mat *nml_concat_v(unsigned int mnum, ...) {
   return NULL;
 }
 
@@ -395,55 +427,75 @@ nml_matrix *nml_concat_v(unsigned int mnum, ...) {
 // Matrix Operations
 //
 
-nml_matrix *nml_plus(nml_matrix *m1, nml_matrix *m2) {
+nml_mat *nml_mat_add(nml_mat *m1, nml_mat *m2) {
+  nml_mat *r = nml_mat_cp(m1);
+  if (!nml_mat_add_r(r, m2)) {
+    nml_mat_free(r);
+    return NULL;
+  }
+  return r;
+}
+
+int nml_mat_add_r(nml_mat *m1, nml_mat *m2) {
   if (!nml_eq_dim(m1, m2)) {
     NML_ERROR(CANNOT_ADD);
-    return NULL;
+    return 0;
   }
   int i, j;
-  nml_matrix *r = nml_new(m1->num_rows, m1->num_cols);
   for(i = 0; i < m1->num_rows; i++) {
     for(j = 0; j < m2->num_rows; j++) {
-      r->data[i][j] = m1->data[i][j] + m2->data[i][j];
+      m1->data[i][j] += m2->data[i][j];
     }
+  }
+  return 1;
+}
+
+nml_mat *nml_mat_sub(nml_mat *m1, nml_mat *m2) {
+  nml_mat *r = nml_mat_cp(m2);
+  if (!nml_mat_sub(r, m2)) {
+    nml_mat_free(r);
+    return NULL;
   }
   return r;
 }
 
-nml_matrix *nml_minus(nml_matrix *m1, nml_matrix *m2) {
+int nml_mat_sub_r(nml_mat *m1, nml_mat *m2) {
   if (!nml_eq_dim(m1, m2)) {
     NML_ERROR(CANNOT_SUBTRACT);
-    return NULL;
+    return 0;
   }
   int i, j;
-  nml_matrix *r = nml_new(m1->num_rows, m1->num_cols);
   for(i = 0; i < m1->num_rows; i++) {
     for(j = 0; j < m2->num_rows; j++) {
-      r->data[i][j] = m1->data[i][j] - m2->data[i][j];
+      m1->data[i][j] -= m2->data[i][j];
     }
   }
+  return 1;
+}
+
+nml_mat *nml_mat_smult(nml_mat *m, double num) {
+  nml_mat *r = nml_mat_cp(m);
+  nml_mat_smult_r(r, num);
   return r;
 }
 
-nml_matrix *nml_smultiply(nml_matrix *m, double num) {
+int nml_mat_smult_r(nml_mat *m, double num) {
   int i, j;
-  nml_matrix *r = nml_new(m->num_rows, m->num_cols);
   for(i = 0; i < m->num_rows; i++) {
     for(j = 0; j < m->num_cols; j++) {
-      r->data[i][j] = m->data[i][j] * num;
+      m->data[i][j] *= num;
     }
   }
-  return r;
+  return 1;
 }
 
-nml_matrix *nml_multiply(nml_matrix *m1, nml_matrix *m2) {
+nml_mat *nml_mat_mult(nml_mat *m1, nml_mat *m2) {
   if (!(m1->num_cols == m2->num_rows)) {
     NML_ERROR(CANNOT_MULITPLY);
     return NULL;
   }
   int i, j, k;
-  nml_matrix *r = nml_new(m1->num_rows, m2->num_cols);
-  nml_set_all(r, 0.0);
+  nml_mat *r = nml_mat_new(m1->num_rows, m2->num_cols);
   for(i = 0; i < r->num_rows; i++) {
     for(j = 0; j < r->num_cols; j++) {
       for(k = 0; k < m1->num_cols; k++) {
@@ -454,9 +506,9 @@ nml_matrix *nml_multiply(nml_matrix *m1, nml_matrix *m2) {
   return r;
 }
 
-nml_matrix *nml_transpose(nml_matrix *m) {
+nml_mat *nml_mat_trans(nml_mat *m) {
   int i, j;
-  nml_matrix *r = nml_new(m->num_cols, m->num_rows);
+  nml_mat *r = nml_mat_new(m->num_cols, m->num_rows);
   for(i = 0; i < r->num_rows; i++) {
     for(j = 0; j < r->num_cols; j++) {
       r->data[i][j] = m->data[j][i];
@@ -465,7 +517,7 @@ nml_matrix *nml_transpose(nml_matrix *m) {
   return r;
 }
 
-double nml_trace(nml_matrix* m) {
+double nml_trace(nml_mat* m) {
   if (!m->is_square) {
     NML_ERROR(CANNOT_TRACE);
   }
@@ -480,28 +532,15 @@ double nml_trace(nml_matrix* m) {
 //
 // LU Decomposition
 //
-int nml_absmax_row(nml_matrix *m, unsigned int k) {
-  // Find max id on the column;
-  int i;
-  double max = m->data[k][k];
-  int maxIdx = k;
-  for(i = k+1; i < m->num_rows; i++) {
-    if (m->data[i][k] > max) {
-      max = fabs(m->data[i][k]);
-      maxIdx = i;
-    }
-  }
-  return maxIdx;
-}
 
-nml_matrices_lu *nml_lup(nml_matrix *m) {
+nml_mat_lup *nml_mat_lup_solve(nml_mat *m) {
   if (!m->is_square) {
     NML_FERROR(CANNOT_LU_MATRIX_SQUARE, m->num_rows, m-> num_cols);
     return NULL;
   }
-  nml_matrix *L = nml_new(m->num_rows, m->num_rows);
-  nml_matrix *U = nml_new_copy(m);
-  nml_matrix *P = nml_new_identity(m->num_rows);
+  nml_mat *L = nml_mat_new(m->num_rows, m->num_rows);
+  nml_mat *U = nml_mat_cp(m);
+  nml_mat *P = nml_mat_id(m->num_rows);
 
   int j,i, pivot;
   unsigned int num_permutations = 0;
@@ -509,16 +548,16 @@ nml_matrices_lu *nml_lup(nml_matrix *m) {
 
   for(j = 0; j < U->num_cols; j++) {
     // Retrieves the row with the biggest element for column (j)
-    pivot = nml_absmax_row(U, j);
+    pivot = nml_mat_absmaxr(U, j);
     if (fabs(U->data[pivot][j]) < DBL_EPSILON) {
       NML_ERROR(CANNOT_LU_MATRIX_DEGENERATE);
       return NULL;
     }
     if (pivot!=j) {
       // Pivots LU and P accordingly to the rule
-      nml_swap_rows_r(U, j, pivot);
-      nml_swap_rows_r(L, j, pivot);
-      nml_swap_rows_r(P, j, pivot);
+      nml_mat_swaprs_r(U, j, pivot);
+      nml_mat_swaprs_r(L, j, pivot);
+      nml_mat_swaprs_r(P, j, pivot);
       // Keep the number of permutations to easily calculate the
       // determinant sign afterwards
       num_permutations++;
@@ -526,24 +565,24 @@ nml_matrices_lu *nml_lup(nml_matrix *m) {
     for(i = j+1; i < U->num_rows; i++) {
       mult = U->data[i][j] / U->data[j][j];
       // Building the U upper rows
-      nml_add_to_row_r(U, i, j, -mult);
+      nml_mat_add2r_r(U, i, j, -mult);
       // Store the multiplier in L
       L->data[i][j] = mult;
     }
   }
-  nml_set_diag(L, 1.0);
+  nml_mat_setdiag(L, 1.0);
 
-  return nml_matrices_lu_new(L, U, P, num_permutations);
+  return nml_mat_lup_new(L, U, P, num_permutations);
 }
 
 // After the LU(P) factorisation the determinant can be easily calculated
 // by multiplying the main diagonal of matrix U with the sign.
 // the sign is -1 if the number of permutations is odd
 // the sign is +1 if the number of permutations is even
-double nml_det(nml_matrices_lu* lup) {
+double nml_mat_det(nml_mat_lup* lup) {
   int k;
   int sign = (lup->num_permutations%2==0) ? 1 : -1;
-  nml_matrix *U = lup->U;
+  nml_mat *U = lup->U;
   double product = 1.0;
   for(k = 0; k < U->num_rows; k++) {
     product *= U->data[k][k];
@@ -570,8 +609,8 @@ double nml_det(nml_matrices_lu* lup) {
 // be solved
 //
 // Note: This function is usually used with an L matrix from a LU decomposition
-nml_matrix *nml_solve_ls_fwdsub(nml_matrix *L, nml_matrix *b) {
-  nml_matrix* x = nml_new(L->num_cols, 1);
+nml_mat *nml_solve_ls_fwdsub(nml_mat *L, nml_mat *b) {
+  nml_mat* x = nml_mat_new(L->num_cols, 1);
   int i,j;
   double tmp;
   for(i = 0; i < L->num_cols; i++) {
@@ -598,8 +637,8 @@ nml_matrix *nml_solve_ls_fwdsub(nml_matrix *L, nml_matrix *b) {
 //
 // Note: In case any of the diagonal elements (U[i][i]) are 0 the system cannot
 // be solved
-nml_matrix *nml_solve_ls_bcksub(nml_matrix *U, nml_matrix *b) {
-  nml_matrix *x = nml_new(U->num_cols, 1);
+nml_mat *nml_solve_ls_bcksub(nml_mat *U, nml_mat *b) {
+  nml_mat *x = nml_mat_new(U->num_cols, 1);
   int i = U->num_cols, j;
   double tmp;
   while(i-->0) {
@@ -624,7 +663,7 @@ nml_matrix *nml_solve_ls_bcksub(nml_matrix *U, nml_matrix *b) {
 //    U * x = y (backward substition)
 //
 // We obtain and return x
-nml_matrix *nml_solve_ls(nml_matrices_lu *lu, nml_matrix* b) {
+nml_mat *nml_solve_ls(nml_mat_lup *lu, nml_mat* b) {
   if (lu->U->num_rows != b->num_rows || b->num_cols != 1) {
     NML_FERROR(CANNOT_SOLVE_LIN_SYS_INVALID_B,
       b->num_rows,
@@ -633,16 +672,16 @@ nml_matrix *nml_solve_ls(nml_matrices_lu *lu, nml_matrix* b) {
       lu->U->num_cols);
       return NULL;
   }
-  nml_matrix *Pb = nml_multiply(lu->P, b);
+  nml_mat *Pb = nml_mat_mult(lu->P, b);
 
   // We solve L*y = P*b using forward substition
-  nml_matrix *y = nml_solve_ls_fwdsub(lu->L, Pb);
+  nml_mat *y = nml_solve_ls_fwdsub(lu->L, Pb);
 
   // We solve U*x=y
-  nml_matrix *x = nml_solve_ls_bcksub(lu->U, y);
+  nml_mat *x = nml_solve_ls_bcksub(lu->U, y);
 
-  nml_free(y);
-  nml_free(Pb);
+  nml_mat_free(y);
+  nml_mat_free(Pb);
   return x;
 }
 
@@ -667,9 +706,9 @@ nml_matrix *nml_solve_ls(nml_matrices_lu *lu, nml_matrix* b) {
 //
 // And then the inverse is:
 // (A^-1) = ( (a^-1)0 | (a^-1)2 | ... | (A^-1)n-1)
-nml_matrix *nml_inverse(nml_matrices_lu *lu) {
+nml_mat *nml_mat_inv(nml_mat_lup *lu) {
   unsigned int N = lu->L->num_cols;
-  nml_matrix *i = nml_new_square(N);
+  nml_mat *i = nml_mat_new_square(N);
   for(i = 0; i < N; i++) {
 
   }
@@ -694,34 +733,34 @@ int main(int argc, char *argv[]) {
     8.00
   };
 
-  nml_matrix *M = nml_new_from(5, 5, 25, MV);
+  nml_mat *M = nml_mat_from(5, 5, 25, MV);
   printf("\nM =\n");
-  nml_print(M);
+  nml_mat_print(M);
 
-  nml_matrix *b3 = nml_new_from(5, 1, 5, B3);
+  nml_mat *b3 = nml_mat_from(5, 1, 5, B3);
   printf("\nb3 =\n");
-  nml_print(b3);
+  nml_mat_print(b3);
 
-  nml_matrices_lu *M_LUP = nml_lup(M);
+  nml_mat_lup *M_LUP = nml_mat_lup_solve(M);
   printf("\nL=\n");
-  nml_print(M_LUP->L);
+  nml_mat_print(M_LUP->L);
   printf("\nU =\n");
-  nml_print(M_LUP->U);
+  nml_mat_print(M_LUP->U);
   printf("\nP =\n");
-  nml_print(M_LUP->P);
+  nml_mat_print(M_LUP->P);
 
-  nml_matrix *x3 = nml_solve_ls(M_LUP, b3);
+  nml_mat *x3 = nml_solve_ls(M_LUP, b3);
   printf("\nx3 =\n");
-  nml_print(x3);
+  nml_mat_print(x3);
 
   printf("--------------");
 
-  nml_matrix *c1 = nml_new_square(4);
-  nml_set_all(c1, 1.0);
-  nml_matrix *c2 = nml_new(4, 3);
-  nml_set_all(c2, 2.0);
+  nml_mat *c1 = nml_mat_new_square(4);
+  nml_mat_setall(c1, 1.0);
+  nml_mat *c2 = nml_mat_new(4, 3);
+  nml_mat_setall(c2, 2.0);
 
-  nml_print(nml_concat_h(1, c1));
+  nml_mat_print(nml_mat_cath(1, c1));
 
   return 0;
 }
