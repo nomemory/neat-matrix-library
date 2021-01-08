@@ -8,11 +8,9 @@ It currently supports:
 
 It's currently work in progress, more algorithms are being added.
 
-# Compile
+# Compile / Run Examples
 
-For building the library and the examples use the `./nml.sh <option>` bash script.
-
-The available options are: `build`, `clean`, `examples`.
+The build file for the library it's called `nml.sh`. It's actually a `bash` script (not a `makefile`!).
 
 ## Building the script
 
@@ -20,7 +18,9 @@ The available options are: `build`, `clean`, `examples`.
 ./nml.sh build
 ```
 
-This will compile the library, create a `dist` folder where you can find `*.a` static library file and the header files.
+This will compile the library, create a `dist` folder where you will find `*.a` static library file and the header files.
+
+`gcc` and `ar` should be available in `$PATH`.
 
 ## Building the examples
 
@@ -28,9 +28,9 @@ This will compile the library, create a `dist` folder where you can find `*.a` s
 ./nml.sh examples
 ```
 
-This will create an `examples/lib` folder where the `libnml.a` and the header files will be copied.
-All the examples will be compiled with the latest version of `libnml` and executables will be created (`*.ex`)
-
+1. This will create an `examples/lib` folder where the `libnml.a` and the header files will be copied;
+2. The `examples/*.c` will be compiled with the latest version of `libnml`;
+3. For each `examples/*.c` an executable (`*.ex`) will be created.
 
 ## Cleaning
 
