@@ -20,7 +20,7 @@ limitations under the License.
 #include <math.h>
 #include <stdarg.h>
 
-#include "nna.h"
+#include "nml.h"
 
 #define DEFAULT_VALUE 0.0
 
@@ -85,16 +85,16 @@ limitations under the License.
 //
 
 // Dynamically allocates a new
-nna_matrix *nna_new(unsigned int num_rows, unsigned int num_cols) {
+nml_matrix *nml_new(unsigned int num_rows, unsigned int num_cols) {
   if (num_rows == 0) {
-    NNA_ERROR(INVALID_ROWS);
+    NML_ERROR(INVALID_ROWS);
     abort();
   }
   if (num_cols == 0) {
-    NNA_ERROR(INVALID_COLS);
+    NML_ERROR(INVALID_COLS);
     abort();
   }
-  nna_matrix *m = calloc(1, sizeof(*m));
+  nml_matrix *m = calloc(1, sizeof(*m));
   NP_CHECK(m);
   m->num_rows = num_rows;
   m->num_cols = num_cols;
@@ -109,12 +109,12 @@ nna_matrix *nna_new(unsigned int num_rows, unsigned int num_cols) {
   return m;
 }
 
-nna_matrix *nna_new_square(unsigned int size) {
-  return nna_new(size, size);
+nml_matrix *nml_new_square(unsigned int size) {
+  return nml_new(size, size);
 }
 
-nna_matrix *nna_new_identity(unsigned int size) {
-  nna_matrix *r = nna_new(size, size);
+nml_matrix *nml_new_identity(unsigned int size) {
+  nml_matrix *r = nml_new(size, size);
   int i;
   for(i = 0; i < r->num_rows; i++) {
     r->data[i][i] = 1.0;
@@ -122,8 +122,8 @@ nna_matrix *nna_new_identity(unsigned int size) {
   return r;
 }
 
-nna_matrix *nna_new_from(unsigned int num_rows, unsigned int num_cols, unsigned int n_vals, double *vals) {
-  nna_matrix *m = nna_new(num_rows, num_cols);
+nml_matrix *nml_new_from(unsigned int num_rows, unsigned int num_cols, unsigned int n_vals, double *vals) {
+  nml_matrix *m = nml_new(num_rows, num_cols);
   int i, j, v_idx;
   for(i = 0; i < m->num_rows; i++) {
     for(j = 0; j < m->num_cols; j++) {
@@ -134,8 +134,8 @@ nna_matrix *nna_new_from(unsigned int num_rows, unsigned int num_cols, unsigned 
   return m;
 }
 
-nna_matrix *nna_new_copy(nna_matrix *m) {
-  nna_matrix *r  = nna_new(m->num_rows, m->num_cols);
+nml_matrix *nml_new_copy(nml_matrix *m) {
+  nml_matrix *r  = nml_new(m->num_rows, m->num_cols);
   int i,j;
   for(i = 0; i < r->num_rows; i++) {
     for(j = 0; j < r->num_cols; j++) {
@@ -145,7 +145,7 @@ nna_matrix *nna_new_copy(nna_matrix *m) {
   return r;
 }
 
-void nna_free(nna_matrix *matrix) {
+void nml_free(nml_matrix *matrix) {
   int i;
   for(i = 0; i < matrix->num_rows; ++i) {
     free(matrix->data[i]);
@@ -153,16 +153,16 @@ void nna_free(nna_matrix *matrix) {
   free(matrix->data);
 }
 
-double nna_get(nna_matrix *matrix, unsigned int i, unsigned int j) {
+double nml_get(nml_matrix *matrix, unsigned int i, unsigned int j) {
   return matrix->data[i][j];
 }
 
-void nna_set(nna_matrix *matrix, unsigned int i, unsigned int j, double value) {
+void nml_set(nml_matrix *matrix, unsigned int i, unsigned int j, double value) {
   matrix->data[i][j] = value;
 }
 
 
-void nna_set_all(nna_matrix *matrix, double value) {
+void nml_set_all(nml_matrix *matrix, double value) {
   int i, j;
   for(i = 0; i < matrix->num_rows; i++) {
     for(j = 0; j < matrix->num_cols; j++) {
@@ -171,9 +171,9 @@ void nna_set_all(nna_matrix *matrix, double value) {
   }
 }
 
-int nna_set_diag(nna_matrix *m, double value) {
+int nml_set_diag(nml_matrix *m, double value) {
   if (!m->is_square) {
-    NNA_FERROR(CANNOT_SET_DIAG, value);
+    NML_FERROR(CANNOT_SET_DIAG, value);
     return 0;
   }
   int i;
@@ -183,11 +183,11 @@ int nna_set_diag(nna_matrix *m, double value) {
   return 1;
 }
 
-void nna_print(nna_matrix *matrix) {
-  nna_printf(matrix, "%2.2f\t");
+void nml_print(nml_matrix *matrix) {
+  nml_printf(matrix, "%2.2f\t");
 }
 
-void nna_printf(nna_matrix *matrix, const char *d_fmt) {
+void nml_printf(nml_matrix *matrix, const char *d_fmt) {
   int i, j;
   fprintf(stdout, "\n");
   for(i = 0; i < matrix->num_rows; ++i) {
@@ -200,7 +200,7 @@ void nna_printf(nna_matrix *matrix, const char *d_fmt) {
 }
 
 // Checks if two matrices have the same dimesions
-int nna_eq_dim(nna_matrix *m1, nna_matrix *m2) {
+int nml_eq_dim(nml_matrix *m1, nml_matrix *m2) {
   return (m1->num_cols == m2->num_cols) &&
           (m1->num_rows == m2->num_rows);
 }
@@ -208,8 +208,8 @@ int nna_eq_dim(nna_matrix *m1, nna_matrix *m2) {
 //
 // Matrix LU
 //
-nna_matrices_lu *nna_matrices_lu_new(nna_matrix *L, nna_matrix *U, nna_matrix *P, unsigned int num_permutations) {
-  nna_matrices_lu *r = malloc(sizeof(*r));
+nml_matrices_lu *nml_matrices_lu_new(nml_matrix *L, nml_matrix *U, nml_matrix *P, unsigned int num_permutations) {
+  nml_matrices_lu *r = malloc(sizeof(*r));
   NP_CHECK(r);
   r->L = L;
   r->U = U;
@@ -217,7 +217,7 @@ nna_matrices_lu *nna_matrices_lu_new(nna_matrix *L, nna_matrix *U, nna_matrix *P
   r->num_permutations = num_permutations;
   return r;
 }
-void nna_matrices_lu_free(nna_matrices_lu* lu) {
+void nml_matrices_lu_free(nml_matrices_lu* lu) {
   if (!lu) free(lu);
 }
 
@@ -225,12 +225,12 @@ void nna_matrices_lu_free(nna_matrices_lu* lu) {
 // Basic Row Operations
 //
 
-nna_matrix *nna_rem_col(nna_matrix *m, unsigned int column) {
+nml_matrix *nml_rem_col(nml_matrix *m, unsigned int column) {
   if(column >= m->num_cols) {
-    NNA_FERROR(CANNOT_REMOVE_COLUMN, column, m->num_cols);
+    NML_FERROR(CANNOT_REMOVE_COLUMN, column, m->num_cols);
     return NULL;
   }
-  nna_matrix *r = nna_new(m->num_rows, m->num_cols-1);
+  nml_matrix *r = nml_new(m->num_rows, m->num_cols-1);
   int i, j, k;
   for(i = 0; i < m->num_rows; i++) {
     for(j = 0, k=0; j < m->num_cols; j++) {
@@ -242,12 +242,12 @@ nna_matrix *nna_rem_col(nna_matrix *m, unsigned int column) {
   return r;
 }
 
-nna_matrix *nna_rem_row(nna_matrix *m, unsigned int row) {
+nml_matrix *nml_rem_row(nml_matrix *m, unsigned int row) {
   if (row >= m->num_rows) {
-    NNA_FERROR(CANNOT_REMOVE_ROW, row, m->num_rows);
+    NML_FERROR(CANNOT_REMOVE_ROW, row, m->num_rows);
     return NULL;
   }
-  nna_matrix *r = nna_new(m->num_rows-1, m->num_cols);
+  nml_matrix *r = nml_new(m->num_rows-1, m->num_cols);
   int i, j, k;
   for(i = 0, k = 0; i < m->num_rows; i++) {
     if (row!=i) {
@@ -260,18 +260,18 @@ nna_matrix *nna_rem_row(nna_matrix *m, unsigned int row) {
   return r;
 }
 
-nna_matrix *nna_swap_rows(nna_matrix *m, unsigned int row1, unsigned int row2) {
-  nna_matrix *r = nna_new_copy(m);
-  if (!nna_swap_rows_r(r, row1, row2)) {
-    nna_free(r);
+nml_matrix *nml_swap_rows(nml_matrix *m, unsigned int row1, unsigned int row2) {
+  nml_matrix *r = nml_new_copy(m);
+  if (!nml_swap_rows_r(r, row1, row2)) {
+    nml_free(r);
     return NULL;
   }
   return r;
 }
 
-int nna_swap_rows_r(nna_matrix *m, unsigned int row1, unsigned int row2) {
+int nml_swap_rows_r(nml_matrix *m, unsigned int row1, unsigned int row2) {
   if (row1 >= m->num_rows || row2 >= m->num_rows) {
-    NNA_FERROR(CANNOT_SWAP_ROWS, row1, row2, m->num_rows);
+    NML_FERROR(CANNOT_SWAP_ROWS, row1, row2, m->num_rows);
     return 0;
   }
   double *tmp = m->data[row2];
@@ -280,18 +280,18 @@ int nna_swap_rows_r(nna_matrix *m, unsigned int row1, unsigned int row2) {
   return 1;
 }
 
-nna_matrix *nna_multiply_row(nna_matrix *m, unsigned int row, double num) {
-  nna_matrix *r = nna_new_copy(m);
-  if (nna_multiply_row_r(r, row, num)) {
-    nna_free(r);
+nml_matrix *nml_multiply_row(nml_matrix *m, unsigned int row, double num) {
+  nml_matrix *r = nml_new_copy(m);
+  if (nml_multiply_row_r(r, row, num)) {
+    nml_free(r);
     return NULL;
   }
   return r;
 }
 
-int nna_multiply_row_r(nna_matrix *m, unsigned int row, double num) {
+int nml_multiply_row_r(nml_matrix *m, unsigned int row, double num) {
   if (row>=m->num_rows) {
-    NNA_FERROR(CANNOT_ROW_MULTIPLY, row, m->num_rows);
+    NML_FERROR(CANNOT_ROW_MULTIPLY, row, m->num_rows);
     return 0;
   }
   int i;
@@ -301,18 +301,18 @@ int nna_multiply_row_r(nna_matrix *m, unsigned int row, double num) {
   return 0;
 }
 
-nna_matrix *nna_add_to_row(nna_matrix *m, unsigned int where, unsigned int row, double multiplier) {
-  nna_matrix *r = nna_new_copy(m);
-  if (!nna_add_to_row_r(m, where, row, multiplier)) {
-    nna_free(r);
+nml_matrix *nml_add_to_row(nml_matrix *m, unsigned int where, unsigned int row, double multiplier) {
+  nml_matrix *r = nml_new_copy(m);
+  if (!nml_add_to_row_r(m, where, row, multiplier)) {
+    nml_free(r);
     return NULL;
   }
   return r;
 }
 
-int nna_add_to_row_r(nna_matrix *m, unsigned int where, unsigned int row, double multiplier) {
+int nml_add_to_row_r(nml_matrix *m, unsigned int where, unsigned int row, double multiplier) {
   if (where >= m->num_rows || row >= m->num_rows) {
-    NNA_FERROR(CANNOT_ADD_TO_ROW, multiplier, row, where, m->num_rows);
+    NML_FERROR(CANNOT_ADD_TO_ROW, multiplier, row, where, m->num_rows);
     return 0;
   }
   int i = 0;
@@ -326,19 +326,18 @@ int nna_add_to_row_r(nna_matrix *m, unsigned int where, unsigned int row, double
 // The concentation is done horizontally this means the matrices need to have
 // the same number of rows, while the number of columns is allowed to
 // be variable
-nna_matrix *nna_concat_h(unsigned int mnum, ...) {
+nml_matrix *nml_concat_h(unsigned int mnum, ...) {
   if (0==mnum) {
     return NULL;
   }
   va_list argp;
   va_start(argp, mnum);
+  nml_matrix * fm = va_arg(argp, nml_matrix*);
   if (1==mnum) {
     // We just return the one matrix supplied as the first param
     // no need for additional logic
-    nna_matrix * fm = va_arg(argp, nna_matrix*);
-    nna_print(fm);
     va_end(argp);
-    return nna_new_copy(fm);
+    return nml_new_copy(fm);
   }
   // We compute to see if the matrices have the same number of rows
   // We fillup the array containing the matrices from the varags
@@ -346,16 +345,15 @@ nna_matrix *nna_concat_h(unsigned int mnum, ...) {
   // for the resulting matrix]
   int i,j,k,jk,offset;
   unsigned int lrow, ncols;
-  nna_matrix **marr;
-  nna_matrix *fm;
+  nml_matrix **marr;
   marr = malloc(sizeof(*marr) * mnum);
   marr[0] = fm;
   lrow = fm->num_rows;
   ncols = fm->num_cols;
   for(k = 1; k < mnum; k++) {
-    marr[k] = va_arg(argp, nna_matrix*);
+    marr[k] = va_arg(argp, nml_matrix*);
     if (lrow!=marr[k]->num_rows) {
-      NNA_FERROR(CANNOT_CONCATENATE_H, lrow, marr[k]->num_rows);
+      NML_FERROR(CANNOT_CONCATENATE_H, lrow, marr[k]->num_rows);
       free(marr);
       return NULL;
     }
@@ -365,8 +363,8 @@ nna_matrix *nna_concat_h(unsigned int mnum, ...) {
 
   // At this point we know how the resulting matrix looks like,
   // we allocate memory for it accordingly
-  nna_matrix *r = nna_new(lrow, ncols);
-  nna_print(r);
+  nml_matrix *r = nml_new(lrow, ncols);
+  nml_print(r);
   for(i = 0; i < r->num_rows; i++) {
     k = 0;
     offset = 0;
@@ -389,21 +387,21 @@ nna_matrix *nna_concat_h(unsigned int mnum, ...) {
 // The concentation is done vertically this means the matrices need to have
 // the same number of columns, while the number of rows is allowed to
 // be variable
-nna_matrix *nna_concat_v(unsigned int mnum, ...) {
-  
+nml_matrix *nml_concat_v(unsigned int mnum, ...) {
+  return NULL;
 }
 
 //
 // Matrix Operations
 //
 
-nna_matrix *nna_plus(nna_matrix *m1, nna_matrix *m2) {
-  if (!nna_eq_dim(m1, m2)) {
-    NNA_ERROR(CANNOT_ADD);
+nml_matrix *nml_plus(nml_matrix *m1, nml_matrix *m2) {
+  if (!nml_eq_dim(m1, m2)) {
+    NML_ERROR(CANNOT_ADD);
     return NULL;
   }
   int i, j;
-  nna_matrix *r = nna_new(m1->num_rows, m1->num_cols);
+  nml_matrix *r = nml_new(m1->num_rows, m1->num_cols);
   for(i = 0; i < m1->num_rows; i++) {
     for(j = 0; j < m2->num_rows; j++) {
       r->data[i][j] = m1->data[i][j] + m2->data[i][j];
@@ -412,13 +410,13 @@ nna_matrix *nna_plus(nna_matrix *m1, nna_matrix *m2) {
   return r;
 }
 
-nna_matrix *nna_minus(nna_matrix *m1, nna_matrix *m2) {
-  if (!nna_eq_dim(m1, m2)) {
-    NNA_ERROR(CANNOT_SUBTRACT);
+nml_matrix *nml_minus(nml_matrix *m1, nml_matrix *m2) {
+  if (!nml_eq_dim(m1, m2)) {
+    NML_ERROR(CANNOT_SUBTRACT);
     return NULL;
   }
   int i, j;
-  nna_matrix *r = nna_new(m1->num_rows, m1->num_cols);
+  nml_matrix *r = nml_new(m1->num_rows, m1->num_cols);
   for(i = 0; i < m1->num_rows; i++) {
     for(j = 0; j < m2->num_rows; j++) {
       r->data[i][j] = m1->data[i][j] - m2->data[i][j];
@@ -427,9 +425,9 @@ nna_matrix *nna_minus(nna_matrix *m1, nna_matrix *m2) {
   return r;
 }
 
-nna_matrix *nna_smultiply(nna_matrix *m, double num) {
+nml_matrix *nml_smultiply(nml_matrix *m, double num) {
   int i, j;
-  nna_matrix *r = nna_new(m->num_rows, m->num_cols);
+  nml_matrix *r = nml_new(m->num_rows, m->num_cols);
   for(i = 0; i < m->num_rows; i++) {
     for(j = 0; j < m->num_cols; j++) {
       r->data[i][j] = m->data[i][j] * num;
@@ -438,14 +436,14 @@ nna_matrix *nna_smultiply(nna_matrix *m, double num) {
   return r;
 }
 
-nna_matrix *nna_multiply(nna_matrix *m1, nna_matrix *m2) {
+nml_matrix *nml_multiply(nml_matrix *m1, nml_matrix *m2) {
   if (!(m1->num_cols == m2->num_rows)) {
-    NNA_ERROR(CANNOT_MULITPLY);
+    NML_ERROR(CANNOT_MULITPLY);
     return NULL;
   }
   int i, j, k;
-  nna_matrix *r = nna_new(m1->num_rows, m2->num_cols);
-  nna_set_all(r, 0.0);
+  nml_matrix *r = nml_new(m1->num_rows, m2->num_cols);
+  nml_set_all(r, 0.0);
   for(i = 0; i < r->num_rows; i++) {
     for(j = 0; j < r->num_cols; j++) {
       for(k = 0; k < m1->num_cols; k++) {
@@ -456,9 +454,9 @@ nna_matrix *nna_multiply(nna_matrix *m1, nna_matrix *m2) {
   return r;
 }
 
-nna_matrix *nna_transpose(nna_matrix *m) {
+nml_matrix *nml_transpose(nml_matrix *m) {
   int i, j;
-  nna_matrix *r = nna_new(m->num_cols, m->num_rows);
+  nml_matrix *r = nml_new(m->num_cols, m->num_rows);
   for(i = 0; i < r->num_rows; i++) {
     for(j = 0; j < r->num_cols; j++) {
       r->data[i][j] = m->data[j][i];
@@ -467,9 +465,9 @@ nna_matrix *nna_transpose(nna_matrix *m) {
   return r;
 }
 
-double nna_trace(nna_matrix* m) {
+double nml_trace(nml_matrix* m) {
   if (!m->is_square) {
-    NNA_ERROR(CANNOT_TRACE);
+    NML_ERROR(CANNOT_TRACE);
   }
   int i;
   double trace = 0.0;
@@ -482,7 +480,7 @@ double nna_trace(nna_matrix* m) {
 //
 // LU Decomposition
 //
-int nna_absmax_row(nna_matrix *m, unsigned int k) {
+int nml_absmax_row(nml_matrix *m, unsigned int k) {
   // Find max id on the column;
   int i;
   double max = m->data[k][k];
@@ -496,14 +494,14 @@ int nna_absmax_row(nna_matrix *m, unsigned int k) {
   return maxIdx;
 }
 
-nna_matrices_lu *nna_lup(nna_matrix *m) {
+nml_matrices_lu *nml_lup(nml_matrix *m) {
   if (!m->is_square) {
-    NNA_FERROR(CANNOT_LU_MATRIX_SQUARE, m->num_rows, m-> num_cols);
+    NML_FERROR(CANNOT_LU_MATRIX_SQUARE, m->num_rows, m-> num_cols);
     return NULL;
   }
-  nna_matrix *L = nna_new(m->num_rows, m->num_rows);
-  nna_matrix *U = nna_new_copy(m);
-  nna_matrix *P = nna_new_identity(m->num_rows);
+  nml_matrix *L = nml_new(m->num_rows, m->num_rows);
+  nml_matrix *U = nml_new_copy(m);
+  nml_matrix *P = nml_new_identity(m->num_rows);
 
   int j,i, pivot;
   unsigned int num_permutations = 0;
@@ -511,16 +509,16 @@ nna_matrices_lu *nna_lup(nna_matrix *m) {
 
   for(j = 0; j < U->num_cols; j++) {
     // Retrieves the row with the biggest element for column (j)
-    pivot = nna_absmax_row(U, j);
+    pivot = nml_absmax_row(U, j);
     if (fabs(U->data[pivot][j]) < DBL_EPSILON) {
-      NNA_ERROR(CANNOT_LU_MATRIX_DEGENERATE);
+      NML_ERROR(CANNOT_LU_MATRIX_DEGENERATE);
       return NULL;
     }
     if (pivot!=j) {
       // Pivots LU and P accordingly to the rule
-      nna_swap_rows_r(U, j, pivot);
-      nna_swap_rows_r(L, j, pivot);
-      nna_swap_rows_r(P, j, pivot);
+      nml_swap_rows_r(U, j, pivot);
+      nml_swap_rows_r(L, j, pivot);
+      nml_swap_rows_r(P, j, pivot);
       // Keep the number of permutations to easily calculate the
       // determinant sign afterwards
       num_permutations++;
@@ -528,24 +526,24 @@ nna_matrices_lu *nna_lup(nna_matrix *m) {
     for(i = j+1; i < U->num_rows; i++) {
       mult = U->data[i][j] / U->data[j][j];
       // Building the U upper rows
-      nna_add_to_row_r(U, i, j, -mult);
+      nml_add_to_row_r(U, i, j, -mult);
       // Store the multiplier in L
       L->data[i][j] = mult;
     }
   }
-  nna_set_diag(L, 1.0);
+  nml_set_diag(L, 1.0);
 
-  return nna_matrices_lu_new(L, U, P, num_permutations);
+  return nml_matrices_lu_new(L, U, P, num_permutations);
 }
 
 // After the LU(P) factorisation the determinant can be easily calculated
 // by multiplying the main diagonal of matrix U with the sign.
 // the sign is -1 if the number of permutations is odd
 // the sign is +1 if the number of permutations is even
-double nna_det(nna_matrices_lu* lup) {
+double nml_det(nml_matrices_lu* lup) {
   int k;
   int sign = (lup->num_permutations%2==0) ? 1 : -1;
-  nna_matrix *U = lup->U;
+  nml_matrix *U = lup->U;
   double product = 1.0;
   for(k = 0; k < U->num_rows; k++) {
     product *= U->data[k][k];
@@ -572,8 +570,8 @@ double nna_det(nna_matrices_lu* lup) {
 // be solved
 //
 // Note: This function is usually used with an L matrix from a LU decomposition
-nna_matrix *nna_solve_ls_fwdsub(nna_matrix *L, nna_matrix *b) {
-  nna_matrix* x = nna_new(L->num_cols, 1);
+nml_matrix *nml_solve_ls_fwdsub(nml_matrix *L, nml_matrix *b) {
+  nml_matrix* x = nml_new(L->num_cols, 1);
   int i,j;
   double tmp;
   for(i = 0; i < L->num_cols; i++) {
@@ -600,8 +598,8 @@ nna_matrix *nna_solve_ls_fwdsub(nna_matrix *L, nna_matrix *b) {
 //
 // Note: In case any of the diagonal elements (U[i][i]) are 0 the system cannot
 // be solved
-nna_matrix *nna_solve_ls_bcksub(nna_matrix *U, nna_matrix *b) {
-  nna_matrix *x = nna_new(U->num_cols, 1);
+nml_matrix *nml_solve_ls_bcksub(nml_matrix *U, nml_matrix *b) {
+  nml_matrix *x = nml_new(U->num_cols, 1);
   int i = U->num_cols, j;
   double tmp;
   while(i-->0) {
@@ -626,25 +624,25 @@ nna_matrix *nna_solve_ls_bcksub(nna_matrix *U, nna_matrix *b) {
 //    U * x = y (backward substition)
 //
 // We obtain and return x
-nna_matrix *nna_solve_ls(nna_matrices_lu *lu, nna_matrix* b) {
+nml_matrix *nml_solve_ls(nml_matrices_lu *lu, nml_matrix* b) {
   if (lu->U->num_rows != b->num_rows || b->num_cols != 1) {
-    NNA_FERROR(CANNOT_SOLVE_LIN_SYS_INVALID_B,
+    NML_FERROR(CANNOT_SOLVE_LIN_SYS_INVALID_B,
       b->num_rows,
       b->num_cols,
       lu->U->num_rows,
       lu->U->num_cols);
       return NULL;
   }
-  nna_matrix *Pb = nna_multiply(lu->P, b);
+  nml_matrix *Pb = nml_multiply(lu->P, b);
 
   // We solve L*y = P*b using forward substition
-  nna_matrix *y = nna_solve_ls_fwdsub(lu->L, Pb);
+  nml_matrix *y = nml_solve_ls_fwdsub(lu->L, Pb);
 
   // We solve U*x=y
-  nna_matrix *x = nna_solve_ls_bcksub(lu->U, y);
+  nml_matrix *x = nml_solve_ls_bcksub(lu->U, y);
 
-  nna_free(y);
-  nna_free(Pb);
+  nml_free(y);
+  nml_free(Pb);
   return x;
 }
 
@@ -669,9 +667,9 @@ nna_matrix *nna_solve_ls(nna_matrices_lu *lu, nna_matrix* b) {
 //
 // And then the inverse is:
 // (A^-1) = ( (a^-1)0 | (a^-1)2 | ... | (A^-1)n-1)
-nna_matrix *nna_inverse(nna_matrices_lu *lu) {
+nml_matrix *nml_inverse(nml_matrices_lu *lu) {
   unsigned int N = lu->L->num_cols;
-  nna_matrix *i = nna_new_square(N);
+  nml_matrix *i = nml_new_square(N);
   for(i = 0; i < N; i++) {
 
   }
@@ -696,34 +694,34 @@ int main(int argc, char *argv[]) {
     8.00
   };
 
-  nna_matrix *M = nna_new_from(5, 5, 25, MV);
+  nml_matrix *M = nml_new_from(5, 5, 25, MV);
   printf("\nM =\n");
-  nna_print(M);
+  nml_print(M);
 
-  nna_matrix *b3 = nna_new_from(5, 1, 5, B3);
+  nml_matrix *b3 = nml_new_from(5, 1, 5, B3);
   printf("\nb3 =\n");
-  nna_print(b3);
+  nml_print(b3);
 
-  nna_matrices_lu *M_LUP = nna_lup(M);
+  nml_matrices_lu *M_LUP = nml_lup(M);
   printf("\nL=\n");
-  nna_print(M_LUP->L);
+  nml_print(M_LUP->L);
   printf("\nU =\n");
-  nna_print(M_LUP->U);
+  nml_print(M_LUP->U);
   printf("\nP =\n");
-  nna_print(M_LUP->P);
+  nml_print(M_LUP->P);
 
-  nna_matrix *x3 = nna_solve_ls(M_LUP, b3);
+  nml_matrix *x3 = nml_solve_ls(M_LUP, b3);
   printf("\nx3 =\n");
-  nna_print(x3);
+  nml_print(x3);
 
   printf("--------------");
 
-  nna_matrix *c1 = nna_new_square(4);
-  nna_set_all(c1, 1.0);
-  nna_matrix *c2 = nna_new(4, 3);
-  nna_set_all(c2, 2.0);
+  nml_matrix *c1 = nml_new_square(4);
+  nml_set_all(c1, 1.0);
+  nml_matrix *c2 = nml_new(4, 3);
+  nml_set_all(c2, 2.0);
 
-  nna_print(nna_concat_h(1, c1));
+  nml_print(nml_concat_h(1, c1));
 
   return 0;
 }

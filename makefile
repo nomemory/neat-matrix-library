@@ -1,8 +1,8 @@
 CC = gcc
 CFLAGS = -Wall
 LDFLAGS =
-OBJFILES = nna.o nna_util.o
-TARGET = nna
+OBJFILES = nml.o nml_util.o
+TARGET = nml
 
 all: $(TARGET)
 

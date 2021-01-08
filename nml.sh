@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 
 make all
-./nna
+./nml
 make clean

@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#ifndef nna_UTIL_H
-#define nna_UTIL_H
+#ifndef nml_UTIL_H
+#define nml_UTIL_H
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -32,30 +32,30 @@ limitations under the License.
 // Enable this to allow debugging messages
 #define DEBUG_TRUE 1
 
-void nna_log(FILE *stream, const char *file_name,
+void nml_log(FILE *stream, const char *file_name,
   unsigned int line, const char *format, ...);
 
-void nna_vlog(FILE* stream, const char *file_name,
+void nml_vlog(FILE* stream, const char *file_name,
   unsigned int line, const char *format, va_list argp);
 
-#define NNA_FLOG(stream, fmt, ...) \
+#define NML_FLOG(stream, fmt, ...) \
       if (DEBUG_TRUE) { \
-        nna_log(stream, __FILE__, __LINE__, fmt, __VA_ARGS__); \
+        nml_log(stream, __FILE__, __LINE__, fmt, __VA_ARGS__); \
       } \
 
-#define NNA_FINFO(fmt, ...) \
+#define NML_FINFO(fmt, ...) \
       if (DEBUG_TRUE) { \
-          nna_log(stdout, __FILE__, __LINE__, fmt, __VA_ARGS__); \
+          nml_log(stdout, __FILE__, __LINE__, fmt, __VA_ARGS__); \
       } \
 
-#define NNA_FERROR(fmt, ...) \
+#define NML_FERROR(fmt, ...) \
       if (DEBUG_TRUE) { \
-          nna_log(stderr, __FILE__, __LINE__, fmt, __VA_ARGS__); \
+          nml_log(stderr, __FILE__, __LINE__, fmt, __VA_ARGS__); \
       } \
 
-#define NNA_ERROR(fmt) \
+#define NML_ERROR(fmt) \
       if (DEBUG_TRUE) { \
-        nna_log(stderr, __FILE__, __LINE__, fmt); \
+        nml_log(stderr, __FILE__, __LINE__, fmt); \
       } \
 
 #endif
