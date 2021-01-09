@@ -420,11 +420,15 @@ int nml_mat_swaprows_r(nml_mat *m, unsigned int row1, unsigned int row2) {
   return 1;
 }
 
+nml_mat *nml_mat_concath(unsigned int mnun, nml_mat **matrices) {
+  return NULL;
+}
+
 // Concatenates a variable number of matrices into one
 // The concentation is done horizontally this means the matrices need to have
 // the same number of rows, while the number of columns is allowed to
 // be variable
-nml_mat *nml_mat_concath(unsigned int mnum, ...) {
+nml_mat *nml_mat_concath_va(unsigned int mnum, ...) {
   if (0==mnum) {
     return NULL;
   }
@@ -676,6 +680,19 @@ double nml_mat_determinant(nml_mat_lup* lup) {
   return product * sign;
 }
 
+// Returns LU matrix from a LUP structure
+nml_mat *nml_mat_getlu(nml_mat_lup* lup) {
+  nml_mat *r = nml_mat_cp(lup->U);
+  // Copy L (without first diagonal in result)
+  int i, j;
+  for(i = 1; i < lup->L->num_rows; i++) {
+    for(j = 0; j < i; j++) {
+      r->data[i][j] = lup->L->data[i][j];
+    }
+  }
+  return r;
+}
+
 // *****************************************************************************
 //
 // Solving linear systems of equations
@@ -697,7 +714,7 @@ double nml_mat_determinant(nml_mat_lup* lup) {
 // be solved
 //
 // Note: This function is usually used with an L matrix from a LU decomposition
-nml_mat *nml_solve_ls_fwdsub(nml_mat *L, nml_mat *b) {
+nml_mat *nml_ls_solvefwd(nml_mat *L, nml_mat *b) {
   nml_mat* x = nml_mat_new(L->num_cols, 1);
   int i,j;
   double tmp;
@@ -725,7 +742,7 @@ nml_mat *nml_solve_ls_fwdsub(nml_mat *L, nml_mat *b) {
 //
 // Note: In case any of the diagonal elements (U[i][i]) are 0 the system cannot
 // be solved
-nml_mat *nml_solve_ls_bcksub(nml_mat *U, nml_mat *b) {
+nml_mat *nml_ls_solvebck(nml_mat *U, nml_mat *b) {
   nml_mat *x = nml_mat_new(U->num_cols, 1);
   int i = U->num_cols, j;
   double tmp;
@@ -751,54 +768,45 @@ nml_mat *nml_solve_ls_bcksub(nml_mat *U, nml_mat *b) {
 //    U * x = y (backward substition)
 //
 // We obtain and return x
-nml_mat *nml_solve_ls(nml_mat_lup *lu, nml_mat* b) {
+nml_mat *nml_ls_solve(nml_mat_lup *lu, nml_mat* b) {
   if (lu->U->num_rows != b->num_rows || b->num_cols != 1) {
     NML_FERROR(CANNOT_SOLVE_LIN_SYS_INVALID_B,
       b->num_rows,
       b->num_cols,
       lu->U->num_rows,
-      lu->U->num_cols);
+      1);
       return NULL;
   }
   nml_mat *Pb = nml_mat_mult(lu->P, b);
 
   // We solve L*y = P*b using forward substition
-  nml_mat *y = nml_solve_ls_fwdsub(lu->L, Pb);
+  nml_mat *y = nml_ls_solvefwd(lu->L, Pb);
 
   // We solve U*x=y
-  nml_mat *x = nml_solve_ls_bcksub(lu->U, y);
+  nml_mat *x = nml_ls_solvebck(lu->U, y);
 
   nml_mat_free(y);
   nml_mat_free(Pb);
   return x;
 }
 
-// A * (A^-1) = I , where A[N][N]
-// We need to find (A^-1) which is the inverse
-//
-// We can write this as a series of N linear systems:
-// A * (a^-1)k = ik
-//
-// where:
-// (a^-1)k is the column vector k of the inverse
-// ik is the column vector k of the identity
-//
-// but:
-// PA = LU =>
-// P * A * (a^-1)k = P * ik =>
-// L * U * (a^-1)k = P * ik
-//
-// this means we will have to solve N systems of linear equations in this form:
-// L * U * (a^-1)k = P * ik
-// where 0 <= k < N
-//
-// And then the inverse is:
-// (A^-1) = ( (a^-1)0 | (a^-1)2 | ... | (A^-1)n-1)
-// nml_mat *nml_mat_inverse(nml_mat_lup *lu) {
-//   unsigned int N = lu->L->num_cols;
-//   nml_mat *i = nml_mat_new_square(N);
-//   for(i = 0; i < N; i++) {
-//
-//   }
-//   return i;
-// }
+// Calculates the inverse of a matrix
+nml_mat *nml_mat_inverse(nml_mat_lup *lup) {
+  unsigned n = lup->L->num_cols;
+  nml_mat *r = nml_mat_sqr(n);
+  nml_mat *I = nml_mat_id(lup->U->num_rows);
+  nml_mat *invx;
+  nml_mat *Ix;
+  int i,j;
+  for(j =0; j < n; j++) {
+    Ix = nml_mat_getcol(I, j);
+    invx = nml_ls_solve(lup, Ix);
+    for(i = 0; i < invx->num_rows; i++) {
+      r->data[i][j] = invx->data[i][0];
+    }
+    nml_mat_free(invx);
+    nml_mat_free(Ix);
+  }
+  nml_mat_free(I);
+  return r;
+}

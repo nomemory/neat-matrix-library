@@ -99,8 +99,13 @@ int nml_mat_swaprows_r(nml_mat *m, unsigned int row1, unsigned int row2);
 nml_mat *nml_mat_swapcols(nml_mat *m, unsigned int col1, unsigned int col2);
 //TODO
 int nml_mat_swapcols_r(nml_mat *m, unsigned int col1, unsigned int col2);
-nml_mat *nml_mat_concath(unsigned int mnun, ...);
-nml_mat *nml_mat_concatv(unsigned int mnum, ...);
+//TODO
+nml_mat *nml_mat_concath(unsigned int mnun, nml_mat **matrices);
+nml_mat *nml_mat_concath_va(unsigned int mnum, ...);
+//TODO
+nml_mat *nml_mat_concatv(unsigned int mnum, nml_mat **matrices);
+//TODO
+nml_mat *nml_mat_concatv_va(unsigned int mnum, ...);
 
 // *****************************************************************************
 //
@@ -128,6 +133,7 @@ nml_mat_lup *nml_mat_lup_new(nml_mat *L, nml_mat *U, nml_mat *P, unsigned int nu
 nml_mat_lup *nml_mat_lup_solve(nml_mat *m);
 void nml_mat_lup_free(nml_mat_lup* lu);
 double nml_mat_determinant(nml_mat_lup* lup);
+nml_mat *nml_mat_getlu(nml_mat_lup* lup);
 nml_mat *nml_mat_inverse(nml_mat_lup *m);
 
 // *****************************************************************************
