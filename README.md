@@ -6,13 +6,19 @@ It currently supports:
 * Inverse and Determinant computation
 * Solving [linear systems of equations](https://en.wikipedia.org/wiki/System_of_linear_equations);
 
-The library is still under heavy development.
+The library is still under heavy development. The plan for the near future:
+
+* Implement Cholesky decomposition;
+* Implement QR decomposition
+* (... more ...)
+
+Documentation is under heavy editing.
 
 # Compile / Run Examples
 
 The build file for the library it's called `nml.sh`. It's actually a `bash` script (not a `makefile`!).
 
-## Building the script
+## Building the library
 
 ```bash
 ./nml.sh build
@@ -44,7 +50,270 @@ To build the code:
 
 This will clean everything (`*.o`,`*.ex`,`*.a`) and will leave the library folder in a clean state.
 
-# Supported methods
+# Suported methods
+
+
+
+```c
+// *****************************************************************************
+//
+// Library structures
+//
+// *****************************************************************************
+typedef struct nml_mat_s {
+  unsigned int num_rows;
+  unsigned int num_cols;
+  double **data;
+  int is_square;
+} nml_mat;
+
+typedef struct nml_mat_lup_s {
+  nml_mat *L;
+  nml_mat *U;
+  nml_mat *P;
+  unsigned int num_permutations;
+} nml_mat_lup;
+
+// *****************************************************************************
+//
+// Matrix Construction / Destruction
+//
+// *****************************************************************************
+
+// Dynamically allocates memory for a new matrix struct
+// All values are initialised with zero (0.0)
+nml_mat *nml_mat_new(unsigned int num_rows, unsigned int num_cols);
+
+// Dynamically allocates memory a new matrix struct
+// All values are initialised with random values in the [min, max) interval
+// call srand(time(NULL)); once before using this
+nml_mat *nml_mat_new_rnd(unsigned int num_rows, unsigned int num_cols, double min, double max);
+
+// Dynamically allocates memory for a new square matrix (num_rows = num_cols)
+// All values are initialised with zero (0.0)
+nml_mat *nml_mat_sqr(unsigned int size);
+
+// Dynamically allocates memory for a new squqare matrix (num_rows = num_cols)
+// All values are initialised with random values in the [min, max] interval
+// call srand(time(NULL)); once before using this
+nml_mat *nml_mat_sqr_rnd(unsigned int size, double min, double max);
+
+// Dynamically allocates memory for an Identity (I) matrix
+nml_mat *nml_mat_id(unsigned int size);
+
+// Copies all the content from an existing matrix to a new matrix
+nml_mat *nml_mat_cp(nml_mat *m);
+
+// Creates a matrix from an array of values
+nml_mat *nml_mat_from(unsigned int num_rows, unsigned int num_cols, unsigned int n_vals, double *vals);
+
+// Frees the matrix struct object
+void nml_mat_free(nml_mat *matrix);
+
+// *****************************************************************************
+//
+// Matrix Equality
+//
+// *****************************************************************************
+
+// 1 if m2 and m1 have the same dimensions
+// 0 otherwise
+int nml_mat_eqdim(nml_mat *m1, nml_mat *m2);
+
+// 1 if (m2 and m1 have the same dimensions) and (the same values)
+// 0 oterwise
+int nml_mat_eq(nml_mat *m1, nml_mat *m2, double tolerance);
+
+// *****************************************************************************
+//
+// Matrix pretty printing
+//
+// *****************************************************************************
+
+// Prints a matrix to stdout
+void nml_mat_print(nml_mat *matrix);
+
+// Prints a matrix to stdout using a custom format for the element
+// E.g.: d_fmt = "%e\t"
+void nml_mat_printf(nml_mat *matrix, const char *d_fmt);
+
+// *****************************************************************************
+//
+// Accessing and modifying matrix elements
+//
+// *****************************************************************************
+double nml_mat_get(nml_mat *matrix, unsigned int i, unsigned int j);
+
+// Retrieves the column matrix of a given matrix
+nml_mat *nml_mat_getcol(nml_mat *m, unsigned int col);
+
+// Retrieves the row matrix of a given matrix
+nml_mat *nml_mat_getrow(nml_mat *m, unsigned int row);
+
+void nml_mat_set(nml_mat *matrix, unsigned int i, unsigned int j, double value);
+
+// Sets all values of the matrix to a given value
+void nml_mat_setall(nml_mat *matrix, double value);
+
+// Sets all the values from the first diagonal to a given value
+int nml_mat_setdiag(nml_mat *matrix, double value);
+
+// Multiplies all elements from a row with scalar
+// Returns a new matrix
+nml_mat *nml_mat_multrow(nml_mat *m, unsigned int row, double num);
+
+// Multuplies all elemenets from a row with scalar
+// Changes are done on the m matrix through reference
+int nml_mat_multrow_r(nml_mat *m, unsigned int row, double num);
+
+// Adds all elements from a row to another row so that:
+// m->data[where][*] += multiplier * m->data[row][*]
+// Returns a new matrix
+nml_mat *nml_mat_rowplusrow(nml_mat *m, unsigned int where, unsigned int row, double multiplier);
+
+// Adds all elements from a row to another row so that:
+// m->data[where][*] += multiplier * m->data[row][*]
+// Changes are done on the m matrix through reference
+int nml_mat_rowplusrow_r(nml_mat *m, unsigned int where, unsigned int row, double multiplier);
+
+// Multiplies all elements from a matrix with scalar
+// Returns a new matrix
+nml_mat *nml_mat_scalarmult(nml_mat *m, double num);
+
+// Multiplies all elements from a matrix with scalar
+// Changes are done on the m matrix through reference
+int nml_mat_scalarmult_r(nml_mat *m, double num);
+
+// *****************************************************************************
+//
+// Modifying the matrix structure
+//
+// *****************************************************************************
+
+// Removes a column from the matrix
+// Returns a new matrix
+nml_mat *nml_mat_remcol(nml_mat *m, unsigned int column);
+
+// Removes a row from the matrix
+// Returns a new matrix
+nml_mat *nml_mat_remrow(nml_mat *m, unsigned int row);
+
+// Swaps two rows inside the matrix
+// Returns a new matrix
+nml_mat *nml_mat_swaprows(nml_mat *m, unsigned int row1, unsigned int row2);
+
+// Swaps two rows inside the matrix
+// Changes are done on the m matrix through reference
+int nml_mat_swaprows_r(nml_mat *m, unsigned int row1, unsigned int row2);
+
+// Swaps two columns inside the matrix
+// Returns a new matrix
+nml_mat *nml_mat_swapcols(nml_mat *m, unsigned int col1, unsigned int col2);
+
+// Swaps two rows inside the matrix
+// Changes are done on the m matrix through reference
+int nml_mat_swapcols_r(nml_mat *m, unsigned int col1, unsigned int col2);
+
+// Horizontally concatenates matrices
+// Returns a new matrix
+nml_mat *nml_mat_concath(unsigned int mnun, nml_mat **matrices);
+nml_mat *nml_mat_concath_va(unsigned int mnum, ...);
+
+// Horizontally concatenates matrices
+// Returns a new matrix
+nml_mat *nml_mat_concatv(unsigned int mnum, nml_mat **matrices);
+nml_mat *nml_mat_concatv_va(unsigned int mnum, ...);
+
+// *****************************************************************************
+//
+// Matrix Operations
+//
+// *****************************************************************************
+
+// A + B = C
+// Returns C
+nml_mat *nml_mat_add(nml_mat *m1, nml_mat *m2);
+
+// A + B
+// Changes are kept in A (no new matrix is allocated)
+int nml_mat_add_r(nml_mat *m1, nml_mat *m2);
+
+// A - B = C
+// Returns C
+nml_mat *nml_mat_sub(nml_mat *m1, nml_mat *m2);
+
+// A - B
+// Changes are kept in A
+int nml_mat_sub_r(nml_mat *m1, nml_mat *m2);
+
+// A * B
+nml_mat *nml_mat_mult(nml_mat *m1, nml_mat *m2);
+
+// Transpose A
+nml_mat *nml_mat_trs(nml_mat *m);
+
+// Trace A
+double nml_mat_trace(nml_mat* m);
+
+// *****************************************************************************
+//
+// Row Echelon
+//
+// *****************************************************************************
+
+// Returns the Row Echelon Form of the Matrix A (using Guassian Elimination)
+nml_mat *nml_mat_ref(nml_mat *m);
+
+// Returns the Row Echelon form of Matrix A (using Gauss-Jordan)
+nml_mat *nml_mat_rref(nml_mat *m);
+
+// *****************************************************************************
+//
+// LUP Decomposition
+//
+// *****************************************************************************
+
+nml_mat_lup *nml_mat_lup_new(nml_mat *L, nml_mat *U, nml_mat *P, unsigned int num_permutations);
+
+// If possible decompose a Matrix in LU
+// P * A = L * U
+// Where P is row permutation of I (identity matrix)
+// L - lower triangular matrix (with 1s on the first diagonal)
+// U - upper triangular matrix
+nml_mat_lup *nml_mat_lup_solve(nml_mat *m);
+
+// Deallocates memory
+void nml_mat_lup_free(nml_mat_lup* lu);
+
+// Computes determinant(A) using the LU decomposition of the matrix
+double nml_mat_determinant(nml_mat_lup* lup);
+
+// Computes the LU matrix from L and U
+nml_mat *nml_mat_getlu(nml_mat_lup* lup);
+
+// Calculates the inverse matrix of A
+nml_mat *nml_mat_inverse(nml_mat_lup *m);
+
+// *****************************************************************************
+//
+// Solving linear systems of equations
+//
+// *****************************************************************************
+
+// Solves a linear system of equations as long as the matrix is lower triangular
+// uses forward substitution
+nml_mat *nml_ls_solvefwd(nml_mat *low_triang, nml_mat *b);
+
+// Solves a linear system of equations as long as the matrix is upper triangular
+// uses backward subsistution
+nml_mat *nml_ls_solvebck(nml_mat *upper_triang, nml_mat *b);
+
+// Solves a lineary systems of equations using LU(P) decomposition of the matrix m
+nml_mat *nml_ls_solve(nml_mat_lup *lup, nml_mat* b);
+
+#endif
+```
+
 
 # Short Example:
 
