@@ -95,9 +95,7 @@ nml_mat *nml_mat_remcol(nml_mat *m, unsigned int column);
 nml_mat *nml_mat_remrow(nml_mat *m, unsigned int row);
 nml_mat *nml_mat_swaprows(nml_mat *m, unsigned int row1, unsigned int row2);
 int nml_mat_swaprows_r(nml_mat *m, unsigned int row1, unsigned int row2);
-//TODO
 nml_mat *nml_mat_swapcols(nml_mat *m, unsigned int col1, unsigned int col2);
-//TODO
 int nml_mat_swapcols_r(nml_mat *m, unsigned int col1, unsigned int col2);
 //TODO
 nml_mat *nml_mat_concath(unsigned int mnun, nml_mat **matrices);
@@ -122,13 +120,18 @@ double nml_mat_trace(nml_mat* m);
 
 // *****************************************************************************
 //
+// Row Echelon
+//
+// *****************************************************************************
+nml_mat *nml_mat_ref(nml_mat *m);
+nml_mat *nml_mat_rref(nml_mat *m);
+
+// *****************************************************************************
+//
 // LUP Decomposition
 //
 // *****************************************************************************
 
-// Determines the row index for which the value on column k is the absolute max.
-// Function is used for pivoting rows for PA=LU decomposition.
-int nml_mat_absmaxr(nml_mat *m1, unsigned int k);
 nml_mat_lup *nml_mat_lup_new(nml_mat *L, nml_mat *U, nml_mat *P, unsigned int num_permutations);
 nml_mat_lup *nml_mat_lup_solve(nml_mat *m);
 void nml_mat_lup_free(nml_mat_lup* lu);
@@ -144,6 +147,6 @@ nml_mat *nml_mat_inverse(nml_mat_lup *m);
 
 nml_mat *nml_ls_solvefwd(nml_mat *low_triang, nml_mat *b);
 nml_mat *nml_ls_solvebck(nml_mat *upper_triang, nml_mat *b);
-nml_mat *nml_ls_solve(nml_mat_lup *lu, nml_mat* b);
+nml_mat *nml_ls_solve(nml_mat_lup *lup, nml_mat* b);
 
 #endif

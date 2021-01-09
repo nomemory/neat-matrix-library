@@ -12,8 +12,21 @@ int main(int argc, char *argv[]) {
     3.0, 5.0, 1.0, 9.0
   };
   nml_mat *m = nml_mat_from(4,4,16, m_v);
-  nml_mat_print(m);
   nml_mat_lup *lup = nml_mat_lup_solve(m);
-  nml_mat_print(nml_mat_inverse(lup));
+  nml_mat* minv = nml_mat_inverse(lup);
+  nml_mat *mdotminv = nml_mat_mult(m, minv);
+
+  printf("m=");
+  nml_mat_print(m);
+  printf("minv=");
+  nml_mat_print(minv);
+  printf("(%%e) m * minv=");
+  nml_mat_printf(mdotminv, "%e\t");
+  printf("(%%f) m * minv=");
+  nml_mat_printf(mdotminv, "%f\t");
+
+  nml_mat_free(m);
+  nml_mat_free(minv);
+  nml_mat_free(mdotminv);
   return 0;
 }

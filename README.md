@@ -44,6 +44,8 @@ To build the code:
 
 This will clean everything (`*.o`,`*.ex`,`*.a`) and will leave the library folder in a clean state.
 
+# Supported methods
+
 # Short Example:
 
 ```c

@@ -57,6 +57,9 @@ limitations under the License.
 #define CANNOT_SWAP_ROWS \
      "Cannot swap rows (%d, %d) because the matrix number of rows is %d.\n" \
 
+#define CANNOT_SWAP_COLUMNS \
+      "Cannot swap columns (%d, %d) because the matrix number or columns is %d.\n" \
+
 #define CANNOT_ROW_MULTIPLY \
       "Cannot multiply row (%d), maximum number of rows is %d.\n" \
 
@@ -420,6 +423,30 @@ int nml_mat_swaprows_r(nml_mat *m, unsigned int row1, unsigned int row2) {
   return 1;
 }
 
+nml_mat *nml_mat_swapcols(nml_mat *m, unsigned int col1, unsigned int col2) {
+  nml_mat *r = nml_mat_cp(m);
+  if (!nml_mat_swapcols_r(r, col1, col2)) {
+    nml_mat_free(r);
+    return NULL;
+  }
+  return r;
+}
+
+int nml_mat_swapcols_r(nml_mat *m, unsigned int col1, unsigned int col2) {
+  if (col1 >= m->num_cols || col2 >= m->num_rows) {
+    NML_FERROR(CANNOT_SWAP_ROWS, col1, col2, m->num_cols);
+    return 0;
+  }
+  double tmp;
+  int j;
+  for(j = 0; j < m->num_rows; j++) {
+    tmp = m->data[j][col1];
+    m->data[j][col1] = m->data[j][col2];
+    m->data[j][col2] = tmp;
+  }
+  return 1;
+}
+
 nml_mat *nml_mat_concath(unsigned int mnun, nml_mat **matrices) {
   return NULL;
 }
@@ -489,7 +516,7 @@ nml_mat *nml_mat_concath_va(unsigned int mnum, ...) {
 // The concentation is done vertically this means the matrices need to have
 // the same number of columns, while the number of rows is allowed to
 // be variable
-nml_mat *nml_concat_v(unsigned int mnum, ...) {
+nml_mat *nml_mat_concat_v(unsigned int mnum, ...) {
   return NULL;
 }
 
@@ -576,7 +603,7 @@ nml_mat *nml_mat_trs(nml_mat *m) {
   return r;
 }
 
-double nml_trace(nml_mat* m) {
+double nml_mat_trace(nml_mat* m) {
   if (!m->is_square) {
     NML_ERROR(CANNOT_TRACE);
   }
@@ -590,13 +617,43 @@ double nml_trace(nml_mat* m) {
 
 // *****************************************************************************
 //
+// Row Echelon
+//
+// *****************************************************************************
+
+// Finds the first non-zero element on the col column, under the row row.
+// This is used to determine the pivot in gauss Elimination
+// If not pivot is found, returns -1
+int _nml_mat_pivotidx(nml_mat *m, unsigned int col, unsigned int row) {
+  // No validations are made, this is an API Method
+  int i;
+  for(i = row; i < m->num_rows; i++) {
+    if (m->data[i][col]!=0) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+// Retrieves the matrix in Row Echelon form using Gauss Elimination
+nml_mat *nml_mat_ref(nml_mat *m) {
+  return NULL;
+}
+
+// Retrieves the matrix in Reduced Row Echelon using Guass-Jordan Elimination
+nml_mat *nml_mat_rref(nml_mat *m) {
+  return NULL;
+}
+
+// *****************************************************************************
+//
 // LUP Decomposition
 //
 // *****************************************************************************
 
 // Finds the maxid on the column (starting from k -> num_rows)
 // This method is used for pivoting in LUP decomposition
-int nml_mat_absmaxr(nml_mat *m, unsigned int k) {
+int _nml_mat_absmaxr(nml_mat *m, unsigned int k) {
   // Find max id on the column;
   int i;
   double max = m->data[k][k];
@@ -638,7 +695,7 @@ nml_mat_lup *nml_mat_lup_solve(nml_mat *m) {
 
   for(j = 0; j < U->num_cols; j++) {
     // Retrieves the row with the biggest element for column (j)
-    pivot = nml_mat_absmaxr(U, j);
+    pivot = _nml_mat_absmaxr(U, j);
     if (fabs(U->data[pivot][j]) < DBL_EPSILON) {
       NML_ERROR(CANNOT_LU_MATRIX_DEGENERATE);
       return NULL;

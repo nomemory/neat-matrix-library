@@ -24,6 +24,9 @@ YELLOW='\033[0;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
+# exit when any command fails
+set -e
+
 function sanity_checks {
   echo -e "${YELLOW}Sanity Checks:${NC}"
 
@@ -90,14 +93,15 @@ function dist_lib {
 }
 
 function clean {
-  echo -e "${YELLOW}Cleaning `pwd` for '*.o' files.${NC}"
+  echo -e "${YELLOW}Deleting:${NC}"
+  echo -e "\tAll files (*.o) in `pwd`files."
   rm -f *.o
-  echo -e "${YELLOW}Cleaning distribution folder `pwd`/${DIST_DIR}${NC}"
-  rm -rf ${DIST_DIR}
-  echo -e "${YELLOW}Cleaning the folder `pwd`/${EXAMPLES_LIB}${NC}"
-  rm -rf ${EXAMPLES_LIB}
-  echo -e "${YELLOW}Cleaning the folder `pwd`/${EXAMPLES}/*.ex"
+  echo -e "\tAll files (*.x) in `pwd`/${EXAMPLES}/*.ex"
   rm -rf ${EXAMPLES}/*.ex
+  echo -e "\tFolder `pwd`/${DIST_DIR}${NC}"
+  rm -rf ${DIST_DIR}
+  echo -e "\tFolder `pwd`/${EXAMPLES_LIB}${NC}"
+  rm -rf ${EXAMPLES_LIB}
 }
 
 function examples {
@@ -107,46 +111,43 @@ function examples {
   echo -e "${YELLOW}Compiling Examples:${NC}"
   ls ${EXAMPLES}/*.c | while read file ;
     do
-      echo -e "\t ${EXAMPLES}/$file"
+      echo -e "\t $file -> ${GREEN}${file%%.*}.ex${NC}"
       ${CC} ${CCFLAGS_EXAMPLES} ${file} -L ./${EXAMPLES}/lib -l${LIB_NAME_SIMPLE} -o ${file%%.*}.ex
     done
 }
 
-function build_opt {
-  sanity_checks
-  compile_objects
-  archive_lib
-  dist_lib
-  examples
-}
-
 ### MAIN ###
 
-case "$1" in
-"build")
-  sanity_checks
-  compile_objects
-  archive_lib
-  dist_lib
-  ;;
-"examples")
-  sanity_checks
-  compile_objects
-  archive_lib
-  dist_lib
-  examples
-  ;;
-"clean")
-  clean
-  ;;
-*)
-  echo -e "${RED}Unknown Option: '${1}'.${NC}"
-  echo -e "Usage:"
-  echo -e "\t ${YELLOW}./nml.sh build${NC}"
-  echo -e "\t\t Builds the lib in: ${YELLOW}${DIST_DIR}/${NC}."
-  echo -e "\t ${YELLOW}./nml.sh examples${NC}"
-  echo -e "\t\t Builds ${YELLOW}${EXAMPLES}${NC}/ folder with the latest build."
-  echo -e "\t ${YELLOW}./nml.sh clean${NC}"
-  echo -e "\t\t Cleans the folder for *.o and *.a files. Deletes the ${YELLOW}${DIST_DIR}/${NC} folder."
-  ;;
-esac
+echo "${@}"
+
+for token in "${@}" ;
+do
+  case $token in
+  "build")
+    sanity_checks
+    compile_objects
+    archive_lib
+    dist_lib
+    ;;
+  "examples")
+    sanity_checks
+    compile_objects
+    archive_lib
+    dist_lib
+    examples
+    ;;
+  "clean")
+    clean
+    ;;
+  *)
+    echo -e "${RED}Unknown Option: '${1}'.${NC}"
+    echo -e "Usage:"
+    echo -e "\t ${YELLOW}./nml.sh build${NC}"
+    echo -e "\t\t Builds the lib in: ${YELLOW}${DIST_DIR}/${NC}."
+    echo -e "\t ${YELLOW}./nml.sh examples${NC}"
+    echo -e "\t\t Builds ${YELLOW}${EXAMPLES}${NC}/ folder with the latest build."
+    echo -e "\t ${YELLOW}./nml.sh clean${NC}"
+    echo -e "\t\t Cleans the folder for *.o and *.a files. Deletes the ${YELLOW}${DIST_DIR}/${NC} folder."
+    ;;
+  esac
+done
