@@ -74,13 +74,35 @@ typedef struct nml_mat_lup_s {
 // Matrix Construction / Destruction
 //
 // *****************************************************************************
+
+// Dynamically allocates memory for a new matrix struct
+// All values are initialised with zero (0.0)
 nml_mat *nml_mat_new(unsigned int num_rows, unsigned int num_cols);
+
+// Dynamically allocates memory a new matrix struct
+// All values are initialised with random values in the [min, max) interval
+// call srand(time(NULL)); once before using this
 nml_mat *nml_mat_new_rnd(unsigned int num_rows, unsigned int num_cols, double min, double max);
+
+// Dynamically allocates memory for a new square matrix (num_rows = num_cols)
+// All values are initialised with zero (0.0)
 nml_mat *nml_mat_sqr(unsigned int size);
+
+// Dynamically allocates memory for a new squqare matrix (num_rows = num_cols)
+// All values are initialised with random values in the [min, max] interval
+// call srand(time(NULL)); once before using this
 nml_mat *nml_mat_sqr_rnd(unsigned int size, double min, double max);
+
+// Dynamically allocates memory for an Identity (I) matrix 
 nml_mat *nml_mat_id(unsigned int size);
+
+// Copies all the content from an existing matrix to a new matrix
 nml_mat *nml_mat_cp(nml_mat *m);
+
+// Creates a matrix from an array of values
 nml_mat *nml_mat_from(unsigned int num_rows, unsigned int num_cols, unsigned int n_vals, double *vals);
+
+// Frees the matrix struct object
 void nml_mat_free(nml_mat *matrix);
 
 // *****************************************************************************
@@ -88,7 +110,13 @@ void nml_mat_free(nml_mat *matrix);
 // Matrix Equality
 //
 // *****************************************************************************
+
+// 1 if m2 and m1 have the same dimensions
+// 0 otherwise
 int nml_mat_eqdim(nml_mat *m1, nml_mat *m2);
+
+// 1 if (m2 and m1 have the same dimensions) and (the same values)
+// 0 oterwise
 int nml_mat_eq(nml_mat *m1, nml_mat *m2, double tolerance);
 
 // *****************************************************************************
@@ -96,7 +124,12 @@ int nml_mat_eq(nml_mat *m1, nml_mat *m2, double tolerance);
 // Matrix pretty printing
 //
 // *****************************************************************************
+
+// Prints a matrix to stdout
 void nml_mat_print(nml_mat *matrix);
+
+// Prints a matrix to stdout using a custom format for the element
+// E.g.: d_fmt = "%e\t"
 void nml_mat_printf(nml_mat *matrix, const char *d_fmt);
 
 // *****************************************************************************
@@ -105,6 +138,8 @@ void nml_mat_printf(nml_mat *matrix, const char *d_fmt);
 //
 // *****************************************************************************
 double nml_mat_get(nml_mat *matrix, unsigned int i, unsigned int j);
+
+// 
 nml_mat *nml_mat_getcol(nml_mat *m, unsigned int col);
 nml_mat *nml_mat_getrow(nml_mat *m, unsigned int row);
 void nml_mat_set(nml_mat *matrix, unsigned int i, unsigned int j, double value);
@@ -128,12 +163,9 @@ nml_mat *nml_mat_swaprows(nml_mat *m, unsigned int row1, unsigned int row2);
 int nml_mat_swaprows_r(nml_mat *m, unsigned int row1, unsigned int row2);
 nml_mat *nml_mat_swapcols(nml_mat *m, unsigned int col1, unsigned int col2);
 int nml_mat_swapcols_r(nml_mat *m, unsigned int col1, unsigned int col2);
-//TODO
 nml_mat *nml_mat_concath(unsigned int mnun, nml_mat **matrices);
 nml_mat *nml_mat_concath_va(unsigned int mnum, ...);
-//TODO
 nml_mat *nml_mat_concatv(unsigned int mnum, nml_mat **matrices);
-//TODO
 nml_mat *nml_mat_concatv_va(unsigned int mnum, ...);
 
 // *****************************************************************************
