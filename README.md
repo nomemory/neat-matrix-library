@@ -6,7 +6,12 @@ It currently supports:
 * Inverse and Determinant computation
 * Solving [linear systems of equations](https://en.wikipedia.org/wiki/System_of_linear_equations);
 
-The library is still under heavy development.
+The library is still under heavy development. The plan for the near future:
+
+* Implement Cholesky decomposition;
+* Implement QR decomposition
+* (... more ...)
+
 Documentation is under heavy editing.
 
 # Compile / Run Examples
