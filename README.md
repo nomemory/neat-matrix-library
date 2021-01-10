@@ -2,14 +2,18 @@
 
 It currently supports:
 * Basic Matrix Operations;
-* [LUP Decomposition](https://en.wikipedia.org/wiki/LU_decomposition);
-* Inverse and Determinant computation
+* [LU Decomposition](https://en.wikipedia.org/wiki/LU_decomposition);
+* Inverse(A);
+* Determinant(A) 
 * Solving [linear systems of equations](https://en.wikipedia.org/wiki/System_of_linear_equations);
 
 The library is still under heavy development. The plan for the near future:
 
-* Implement Cholesky decomposition;
-* Implement QR decomposition
+* Row Echelon Form (close to ready) - [Gaussian Elimination](https://en.wikipedia.org/wiki/Gaussian_elimination);
+* Reduced Row Echelon Form (close to ready) - [Gauss-Jordan](https://brilliant.org/wiki/gaussian-elimination/);
+* Implement [Cholesky decomposition](https://en.wikipedia.org/wiki/Cholesky_decomposition);
+* Implement [QR decomposition](https://en.wikipedia.org/wiki/QR_decomposition)
+* Tests 
 * (... more ...)
 
 Documentation is under heavy editing.
