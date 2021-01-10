@@ -447,8 +447,47 @@ int nml_mat_swapcols_r(nml_mat *m, unsigned int col1, unsigned int col2) {
   return 1;
 }
 
-nml_mat *nml_mat_concath(unsigned int mnun, nml_mat **matrices) {
-  return NULL;
+nml_mat *nml_mat_concath(unsigned int mnum, nml_mat **marr) {
+  if (0==mnum) {
+    return NULL;
+  }
+  if (1==mnum) {
+    // We just return the one matrix supplied as the first param
+    // no need for additional logic
+    return nml_mat_cp(marr[0]);
+  }
+  // We compute to see if the matrices have the same number of rows
+  // We fillup the array containing the matrices from the varags
+  // We calculate the total number of columns to know how to allocate memory
+  // for the resulting matrix]
+  int i,j,k,offset;
+  unsigned int lrow, ncols;
+  lrow = marr[0]->num_rows;
+  ncols = marr[0]->num_cols;
+  for(k = 1; k < mnum; k++) {
+    if (lrow!=marr[k]->num_rows) {
+      NML_FERROR(CANNOT_CONCATENATE_H, lrow, marr[k]->num_rows);
+      return NULL;
+    }
+    ncols+=marr[k]->num_cols;
+  }
+  // At this point we know how the resulting matrix looks like,
+  // we allocate memory for it accordingly
+  nml_mat *r = nml_mat_new(lrow, ncols);
+  for(i = 0; i < r->num_rows; i++) {
+    k = 0;
+    offset = 0;
+    for(j = 0; j < r->num_cols; j++) {
+      // If the column index of marr[k] overflows
+      // We jump to the next matrix in the array
+      if (j-offset == marr[k]->num_cols) {
+        offset += marr[k]->num_cols;
+        k++;
+      }
+      r->data[i][j] = marr[k]->data[i][j - offset];
+    }
+  }
+  return r;
 }
 
 // Concatenates a variable number of matrices into one
@@ -456,60 +495,15 @@ nml_mat *nml_mat_concath(unsigned int mnun, nml_mat **matrices) {
 // the same number of rows, while the number of columns is allowed to
 // be variable
 nml_mat *nml_mat_concath_va(unsigned int mnum, ...) {
-  if (0==mnum) {
-    return NULL;
-  }
+  nml_mat **marr = malloc(sizeof(*marr) * mnum);
   va_list argp;
   va_start(argp, mnum);
-  nml_mat * fm = va_arg(argp, nml_mat*);
-  if (1==mnum) {
-    // We just return the one matrix supplied as the first param
-    // no need for additional logic
-    va_end(argp);
-    return nml_mat_cp(fm);
-  }
-  // We compute to see if the matrices have the same number of rows
-  // We fillup the array containing the matrices from the varags
-  // We calculate the total number of columns to know how to allocate memory
-  // for the resulting matrix]
-  int i,j,k,jk,offset;
-  unsigned int lrow, ncols;
-  nml_mat **marr;
-  marr = malloc(sizeof(*marr) * mnum);
-  marr[0] = fm;
-  lrow = fm->num_rows;
-  ncols = fm->num_cols;
-  for(k = 1; k < mnum; k++) {
+  int k;
+  for(k = 0; k < mnum; k++) {
     marr[k] = va_arg(argp, nml_mat*);
-    if (lrow!=marr[k]->num_rows) {
-      NML_FERROR(CANNOT_CONCATENATE_H, lrow, marr[k]->num_rows);
-      free(marr);
-      return NULL;
-    }
-    ncols+=marr[k]->num_cols;
   }
   va_end(argp);
-
-  // At this point we know how the resulting matrix looks like,
-  // we allocate memory for it accordingly
-  nml_mat *r = nml_mat_new(lrow, ncols);
-  nml_mat_print(r);
-  for(i = 0; i < r->num_rows; i++) {
-    k = 0;
-    offset = 0;
-    for(j = 0; j < r->num_cols; j++) {
-      jk = j - offset;
-      // If the column index of marr[k] overflows
-      // We jump to the next matrix in the array
-      if (jk >= marr[k]->num_cols) {
-        offset = marr[k]->num_cols;
-        k++;
-      }
-      r->data[i][j] = marr[k]->data[i][jk];
-    }
-  }
-  free(marr);
-  return r;
+  return nml_mat_concath(mnum, marr);
 }
 
 // Concatenates a variable number of matrices into one.
