@@ -2,8 +2,9 @@
 
 It currently supports:
 * Basic Matrix Operations;
-* [LUP Decomposition](https://en.wikipedia.org/wiki/LU_decomposition);
-* Inverse(A) and Determinant(A) 
+* [LU Decomposition](https://en.wikipedia.org/wiki/LU_decomposition);
+* Inverse(A);
+* Determinant(A) 
 * Solving [linear systems of equations](https://en.wikipedia.org/wiki/System_of_linear_equations);
 
 The library is still under heavy development. The plan for the near future:
