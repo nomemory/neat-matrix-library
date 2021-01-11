@@ -97,13 +97,8 @@ nml_mat *nml_mat_swaprows(nml_mat *m, unsigned int row1, unsigned int row2);
 int nml_mat_swaprows_r(nml_mat *m, unsigned int row1, unsigned int row2);
 nml_mat *nml_mat_swapcols(nml_mat *m, unsigned int col1, unsigned int col2);
 int nml_mat_swapcols_r(nml_mat *m, unsigned int col1, unsigned int col2);
-//TODO
 nml_mat *nml_mat_concath(unsigned int mnun, nml_mat **matrices);
-nml_mat *nml_mat_concath_va(unsigned int mnum, ...);
-//TODO
 nml_mat *nml_mat_concatv(unsigned int mnum, nml_mat **matrices);
-//TODO
-nml_mat *nml_mat_concatv_va(unsigned int mnum, ...);
 
 // *****************************************************************************
 //

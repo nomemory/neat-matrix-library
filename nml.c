@@ -90,6 +90,15 @@ limitations under the License.
 #define CANNOT_GET_ROW \
       "Cannot get row (%d). The matrix has %d number of rows.\n" \
 
+#define INCONSITENT_ARRAY \
+      "Cannot found element %d in the array (NULL). Expected a total of : %d elements.\n"  \
+
+#define INCONSITENT_VARGS \
+      "Cannot find element %d in the varargs. Expecteda total of : %d varargs.\n" \
+
+#define CANNOT_REF_MATRIX_DEGENERATE \
+      "Cannot compute REF. Matrix is degenerate or near degenerate.\n" \
+
 // *****************************************************************************
 //
 // Constructing and destroying a matrix struct
@@ -336,6 +345,7 @@ nml_mat *nml_mat_rowplusrow(nml_mat *m, unsigned int where, unsigned int row, do
 }
 
 int nml_mat_rowplusrow_r(nml_mat *m, unsigned int where, unsigned int row, double multiplier) {
+
   if (where >= m->num_rows || row >= m->num_rows) {
     NML_FERROR(CANNOT_ADD_TO_ROW, multiplier, row, where, m->num_rows);
     return 0;
@@ -456,16 +466,18 @@ nml_mat *nml_mat_concath(unsigned int mnum, nml_mat **marr) {
     // no need for additional logic
     return nml_mat_cp(marr[0]);
   }
-  // We compute to see if the matrices have the same number of rows
-  // We fillup the array containing the matrices from the varags
   // We calculate the total number of columns to know how to allocate memory
-  // for the resulting matrix]
+  // for the resulting matrix
   int i,j,k,offset;
   unsigned int lrow, ncols;
   lrow = marr[0]->num_rows;
   ncols = marr[0]->num_cols;
   for(k = 1; k < mnum; k++) {
-    if (lrow!=marr[k]->num_rows) {
+    if (NULL == marr[k]) {
+      NML_FERROR(INCONSITENT_ARRAY, k, mnum);
+      return NULL;
+    }
+    if (lrow != marr[k]->num_rows) {
       NML_FERROR(CANNOT_CONCATENATE_H, lrow, marr[k]->num_rows);
       return NULL;
     }
@@ -490,28 +502,51 @@ nml_mat *nml_mat_concath(unsigned int mnum, nml_mat **marr) {
   return r;
 }
 
-// Concatenates a variable number of matrices into one
-// The concentation is done horizontally this means the matrices need to have
-// the same number of rows, while the number of columns is allowed to
-// be variable
-nml_mat *nml_mat_concath_va(unsigned int mnum, ...) {
-  nml_mat **marr = malloc(sizeof(*marr) * mnum);
-  va_list argp;
-  va_start(argp, mnum);
-  int k;
-  for(k = 0; k < mnum; k++) {
-    marr[k] = va_arg(argp, nml_mat*);
-  }
-  va_end(argp);
-  return nml_mat_concath(mnum, marr);
-}
-
 // Concatenates a variable number of matrices into one.
 // The concentation is done vertically this means the matrices need to have
 // the same number of columns, while the number of rows is allowed to
 // be variable
-nml_mat *nml_mat_concat_v(unsigned int mnum, ...) {
-  return NULL;
+nml_mat *nml_mat_concatv(unsigned int mnum, nml_mat **marr) {
+  if (0 == mnum) {
+    return NULL;
+  }
+  if (1 == mnum) {
+    return nml_mat_cp(marr[0]);
+  }
+  // We check to see if the matrices have the same number of columns
+  int lcol, i, j, k, offset;
+  unsigned int numrows;
+  nml_mat *r;
+  lcol = marr[0]->num_cols;
+  numrows = 0;
+  for(i = 0; i < mnum; i++) {
+    if (NULL==marr[i]) {
+      NML_FERROR(INCONSITENT_ARRAY, i, mnum);
+      return NULL;
+    }
+    if (lcol != marr[i]->num_cols) {
+      NML_FERROR(CANNOT_CONCATENATE_V,lcol,marr[i]->num_cols);
+      return NULL;
+    }
+    // In the same time we calculate the resulting matrix number of rows
+    numrows+=marr[i]->num_rows;
+  }
+  // At this point we know the dimensions of the resulting Matrix
+  r = nml_mat_new(numrows, lcol);
+  // We start copying the values one by one
+  for(j = 0; j < r->num_cols; j++) {
+    offset = 0;
+    k = 0;
+    for(i = 0; i < r->num_rows; i++) {
+      if (i - offset == marr[k]->num_rows) {
+        offset += marr[k]->num_rows;
+        k++;
+      }
+      r->data[i][j] = marr[k]->data[i-offset][j];
+    }
+  }
+  nml_mat_print(r);
+  return r;
 }
 
 // *****************************************************************************
@@ -622,7 +657,7 @@ int _nml_mat_pivotidx(nml_mat *m, unsigned int col, unsigned int row) {
   // No validations are made, this is an API Method
   int i;
   for(i = row; i < m->num_rows; i++) {
-    if (m->data[i][col]!=0) {
+    if (fabs(m->data[i][col]) > DBL_EPSILON) {
       return i;
     }
   }
@@ -631,7 +666,33 @@ int _nml_mat_pivotidx(nml_mat *m, unsigned int col, unsigned int row) {
 
 // Retrieves the matrix in Row Echelon form using Gauss Elimination
 nml_mat *nml_mat_ref(nml_mat *m) {
-  return NULL;
+  nml_mat *r = nml_mat_cp(m);
+  int i, j, k, pivot;
+  j = 0, i = 0;
+  while(j < r->num_cols) {
+    // Find the pivot - the first non-zero entry in the first column of the matrix
+    pivot = _nml_mat_pivotidx(r, j, i);
+    if (pivot<0) {
+      // All elements on the column are zeros
+      // We move to the next column without doing anything
+      j++;
+      continue;
+    }
+    // We interchange rows moving the pivot to the first row that doesn't have
+    // already a pivot in place
+    nml_mat_swaprows_r(r, i, pivot);
+    // Multiply each element in the pivot row by the inverse of the pivot
+    nml_mat_multrow_r(r, j, 1/r->data[i][j]);
+    // We add multiplies of the pivot so every element on the column equals 0
+    for(k = i+1; k < r->num_rows; k++) {
+      if (fabs(r->data[k][i]) > DBL_EPSILON) {
+        nml_mat_rowplusrow_r(r, k, i, -(r->data[k][i]));
+      }
+    }
+    i++;
+    j++;
+  }
+  return r;
 }
 
 // Retrieves the matrix in Reduced Row Echelon using Guass-Jordan Elimination
@@ -661,6 +722,7 @@ int _nml_mat_absmaxr(nml_mat *m, unsigned int k) {
   return maxIdx;
 }
 
+// Allocates memory for a new nml_mat_lup structure
 nml_mat_lup *nml_mat_lup_new(nml_mat *L, nml_mat *U, nml_mat *P, unsigned int num_permutations) {
   nml_mat_lup *r = malloc(sizeof(*r));
   NP_CHECK(r);
