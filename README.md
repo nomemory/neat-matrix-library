@@ -54,9 +54,20 @@ To build the code:
 
 This will clean everything (`*.o`,`*.ex`,`*.a`) and will leave the library folder in a clean state.
 
+# Examples
+
+(work in progress)
+
+| Example | Description |
+| ------- | ----------- |
+| [creating_a_matrix.c]() | Creating a `nml_mat` using various methods. |
+| [column_matrices.c](https://github.com/nomemory/neat-matrix-library/blob/main/examples/column_matrices.c) | |
+| [concatenate_matrices.c](https://github.com/nomemory/neat-matrix-library/blob/main/examples/concatenate_matrices.c) | Examples for concatenating matrices. |
+| [inverse.c](https://github.com/nomemory/neat-matrix-library/blob/main/examples/inverse.c) | Calculate the Inverse of a Matrix. |
+| [row_echelon.c](https://github.com/nomemory/neat-matrix-library/blob/main/examples/row_echelon.c) | Calculate the Row Echelon of a Matrix using Gauss Elimination. |
+| [swap_rows_and_columns.c](https://github.com/nomemory/neat-matrix-library/blob/main/examples/swap_rows_and_columns.c) | Swapping rows and colums inside of Matrix. |
+
 # Suported methods
-
-
 
 ```c
 // *****************************************************************************
