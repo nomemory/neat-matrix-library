@@ -1,15 +1,15 @@
 **nml** is simple [matrix](https://en.wikipedia.org/wiki/Matrix_(mathematics)) and [linear algebra](https://en.wikipedia.org/wiki/Linear_algebra) library written in pure C.
 
 It currently supports:
-* Basic Matrix Operations;
+* Basic Matrix Operations (row swaps, colum swaps, multiplication, addition, etc.)
 * [LU Decomposition](https://en.wikipedia.org/wiki/LU_decomposition);
 * Inverse(A);
 * Determinant(A) 
-* Solving [linear systems of equations](https://en.wikipedia.org/wiki/System_of_linear_equations);
+* Solving [linear systems of equations](https://en.wikipedia.org/wiki/System_of_linear_equations) using LU decomposition;
+* [Row Echelon Form](https://en.wikipedia.org/wiki/Gaussian_elimination);
 
 The library is still under heavy development. The plan for the near future:
 
-* Row Echelon Form (close to ready) - [Gaussian Elimination](https://en.wikipedia.org/wiki/Gaussian_elimination);
 * Reduced Row Echelon Form (close to ready) - [Gauss-Jordan](https://brilliant.org/wiki/gaussian-elimination/);
 * Implement [Cholesky decomposition](https://en.wikipedia.org/wiki/Cholesky_decomposition);
 * Implement [QR decomposition](https://en.wikipedia.org/wiki/QR_decomposition)
