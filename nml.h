@@ -50,6 +50,7 @@ nml_mat *nml_mat_sqr_rnd(unsigned int size, double min, double max);
 nml_mat *nml_mat_id(unsigned int size);
 nml_mat *nml_mat_cp(nml_mat *m);
 nml_mat *nml_mat_from(unsigned int num_rows, unsigned int num_cols, unsigned int n_vals, double *vals);
+nml_mat *nml_mat_fromfile(const char *file);
 void nml_mat_free(nml_mat *matrix);
 
 // *****************************************************************************

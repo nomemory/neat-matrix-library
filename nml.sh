@@ -11,11 +11,14 @@ ARFLAGS="crs"
 SOURCE_FILES=(nml.c nml_util.c)
 OBJECT_FILES=(nml.o nml_util.o)
 HEADER_FILES=(nml.h nml_util.h)
+LIB_NAME="libnml.a"
+LIB_NAME_SIMPLE="nml"
 DIST_DIR="dist"
 EXAMPLES="examples"
 EXAMPLES_LIB="examples/lib"
-LIB_NAME="libnml.a"
-LIB_NAME_SIMPLE="nml"
+TESTS="tests"
+TESTS_LIB="tests/lib"
+
 CMDS=($CC ar nm)
 
 RED='\033[0;31m'
@@ -96,12 +99,16 @@ function clean {
   echo -e "${YELLOW}Deleting:${NC}"
   echo -e "\tAll files (*.o) in `pwd`files."
   rm -f *.o
-  echo -e "\tAll files (*.x) in `pwd`/${EXAMPLES}/*.ex"
+  echo -e "\tAll files (*.ex) in `pwd`/${EXAMPLES}/*.ex"
   rm -rf ${EXAMPLES}/*.ex
+  echo -e "\tAll files (*.ex) in `pwd`/${TESTS}/*.ex"
+  rm -rf ${TESTS}/*.ex
   echo -e "\tFolder `pwd`/${DIST_DIR}${NC}"
   rm -rf ${DIST_DIR}
   echo -e "\tFolder `pwd`/${EXAMPLES_LIB}${NC}"
   rm -rf ${EXAMPLES_LIB}
+  echo -e "\tFolder `pwd`/${TESTS_LIB}${NC}"
+  rm -rf ${TESTS_LIB}
 }
 
 function examples {
@@ -115,6 +122,23 @@ function examples {
       ${CC} ${CCFLAGS_EXAMPLES} ${file} -L ./${EXAMPLES}/lib -l${LIB_NAME_SIMPLE} -o ${file%%.*}.ex
     done
 }
+
+function tests {
+  echo -e "${YELLOW}Preparing tests/ folder with the latest versions: ${NC}"
+  echo -e "\tMoving ${DIST_DIR}/* to ${TESTS_LIB}/*"
+  cp -r ${DIST_DIR} ${TESTS_LIB}
+  echo -e "${YELLOW}Compiling Tests:${NC}"
+  ls ${TESTS}/*.c | while read file ;
+    do 
+      echo -e "\t $file -> ${file%%.*}.ex${NC}"
+      ${CC} ${CCFLAGS_EXAMPLES} ${file} -L ./${TESTS}/lib -l${LIB_NAME_SIMPLE} -o ${file%%.*}.ex
+    done
+  echo -e "${YELLOW}Running Tests:${NC}"
+  ls ${TESTS}/*ex | while read file ;
+    do
+      ./${file} `pwd`/${file%%.*}.data
+    done   
+} 
 
 ### MAIN ###
 
@@ -136,6 +160,13 @@ do
     dist_lib
     examples
     ;;
+  "test")
+    sanity_checks
+    compile_objects
+    archive_lib
+    dist_lib
+    tests
+    ;;
   "clean")
     clean
     ;;
@@ -144,6 +175,8 @@ do
     echo -e "Usage:"
     echo -e "\t ${YELLOW}./nml.sh build${NC}"
     echo -e "\t\t Builds the lib in: ${YELLOW}${DIST_DIR}/${NC}."
+    echo -e "\t ${YELLOW}./nml.sh tests${NC}"
+    echo -e "\t\t Runs lib tests."
     echo -e "\t ${YELLOW}./nml.sh examples${NC}"
     echo -e "\t\t Builds ${YELLOW}${EXAMPLES}${NC}/ folder with the latest build."
     echo -e "\t ${YELLOW}./nml.sh clean${NC}"

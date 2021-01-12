@@ -25,22 +25,18 @@ limitations under the License.
 
 #define DEFAULT_VALUE 0.0
 
-#define CANNOT_ADD \
-  "Cannot add two matrices with different dimensions.\n" \
+#define CANNOT_ADD "Cannot add two matrices with different dimensions.\n"
 
-#define CANNOT_SUBTRACT \
-  "Cannot subctract two matrices with different dimensions.\n" \
+#define CANNOT_SUBTRACT "Cannot subctract two matrices with different dimensions.\n"
 
 #define CANNOT_MULITPLY \
   "Cannot multiply two matrices where \
   the number of columns of the first one \
   is different than the number of rows of the second one.\n" \
 
-#define CANNOT_REMOVE_COLUMN \
-  "Cannot remove matrix column %d. The value should be less than %d.\n" \
+#define CANNOT_REMOVE_COLUMN "Cannot remove matrix column %d. The value should be less than %d.\n" 
 
-#define CANNOT_REMOVE_ROW \
-  "Cannot remove matrix row %d. The value should be less than %d.\n" \
+#define CANNOT_REMOVE_ROW "Cannot remove matrix row %d. The value should be less than %d.\n" 
 
 #define INVALID_ROWS \
   "Cannot create matrix with 0 number of rows. Aborting.\n" \
@@ -98,6 +94,12 @@ limitations under the License.
 
 #define CANNOT_REF_MATRIX_DEGENERATE \
       "Cannot compute REF. Matrix is degenerate or near degenerate.\n" \
+
+#define CANNOT_OPEN_FILE "Cannot open file '%s'. Please check the path is correct and you have reading rights.\n"
+#define INVALID_MATRIX_FILE \
+      "Invalid matrix file: %s. Cannot read data.\n" \
+
+
 
 // *****************************************************************************
 //
@@ -191,6 +193,28 @@ nml_mat *nml_mat_cp(nml_mat *m) {
   return r;
 }
 
+nml_mat *nml_mat_fromfile(const char *file) {
+  FILE *m_file = fopen(file, "r");
+  if (NULL == m_file) {
+    NML_FERROR(CANNOT_OPEN_FILE, file);
+    return NULL;
+  }
+  int i, j;
+  unsigned int num_rows = 0, num_cols = 0;
+  
+  fscanf(m_file, "%d", &num_rows);
+  fscanf(m_file, "%d", &num_cols);
+
+  nml_mat *r = nml_mat_new(num_rows, num_cols);
+  for(i = 0; i < r->num_rows; i++) {
+    for(j = 0; j < num_cols; j++) {
+      fscanf(m_file, "%lf\t", &r->data[i][j]);
+    }
+  }
+  fclose(m_file);
+  return r;
+}
+
 // Frees a matrix structure
 void nml_mat_free(nml_mat *matrix) {
   int i;
@@ -221,8 +245,9 @@ int nml_mat_eq(nml_mat *m1, nml_mat *m2, double tolerance) {
   }
   int i, j;
   for(i = 0; i < m1->num_rows; i++) {
-    for(j = 0; i < m1->num_cols; j++) {
-      if (m1->data[i][j] - m2->data[i][j] > tolerance) {
+    for(j = 0; j < m1->num_cols; j++) {
+      if (fabs(fabs(m1->data[i][j]) - fabs(m2->data[i][j])) > tolerance) {
+        printf("[%d][%d]: m1[%lf]-m2[%lf]=%lf\n",i,j,fabs(m1->data[i][j]), fabs(m2->data[i][j]), fabs(fabs(m1->data[i][j]) - fabs(m2->data[i][j])));
         return 0;
       }
     }
@@ -238,7 +263,7 @@ int nml_mat_eq(nml_mat *m1, nml_mat *m2, double tolerance) {
 
 // Prints the matrix on the stdout
 void nml_mat_print(nml_mat *matrix) {
-  nml_mat_printf(matrix, "%2.2f\t");
+  nml_mat_printf(matrix, "%lf\t ");
 }
 
 // Prints the matrix on the stdout (with a custom formatting for elements)
@@ -324,7 +349,7 @@ nml_mat *nml_mat_multrow(nml_mat *m, unsigned int row, double num) {
 }
 
 int nml_mat_multrow_r(nml_mat *m, unsigned int row, double num) {
-  if (row>=m->num_rows) {
+  if (row>= m->num_rows) {
     NML_FERROR(CANNOT_ROW_MULTIPLY, row, m->num_rows);
     return 0;
   }
@@ -424,6 +449,7 @@ nml_mat *nml_mat_swaprows(nml_mat *m, unsigned int row1, unsigned int row2) {
 
 int nml_mat_swaprows_r(nml_mat *m, unsigned int row1, unsigned int row2) {
   if (row1 >= m->num_rows || row2 >= m->num_rows) {
+    printf("ERR: %d <-> %d\n", row1, row2);
     NML_FERROR(CANNOT_SWAP_ROWS, row1, row2, m->num_rows);
     return 0;
   }
@@ -669,7 +695,7 @@ nml_mat *nml_mat_ref(nml_mat *m) {
   nml_mat *r = nml_mat_cp(m);
   int i, j, k, pivot;
   j = 0, i = 0;
-  while(j < r->num_cols) {
+  while(j < r->num_cols && i < r->num_cols) {
     // Find the pivot - the first non-zero entry in the first column of the matrix
     pivot = _nml_mat_pivotidx(r, j, i);
     if (pivot<0) {
@@ -695,9 +721,54 @@ nml_mat *nml_mat_ref(nml_mat *m) {
   return r;
 }
 
+
+// Find the maximul element from the column "col" under the row "row"
+// This is needed to pivot in Gauss-Jordan elimination
+// If pivot is not found, return -1
+int _nml_mat_pivotmaxidx(nml_mat *m, unsigned int col, unsigned int row) {
+  int i, maxi;
+  double micol;
+  double max = fabs(m->data[row][col]);
+  maxi = row;
+  for(i = row; i < m->num_rows; i++) {
+    micol = fabs(m->data[i][col]);
+    if (micol>max) {
+      max = micol;
+      maxi = i;
+    }
+  }
+  return (max > DBL_EPSILON) ? maxi : -1;
+}
+
 // Retrieves the matrix in Reduced Row Echelon using Guass-Jordan Elimination
 nml_mat *nml_mat_rref(nml_mat *m) {
-  return NULL;
+  nml_mat* r = nml_mat_cp(m);
+  int i,j,k,pivot;
+  i = 0;
+  j = 0;
+  while(j < r->num_cols && i < r->num_rows) {
+    // We find the pivot, the maximum row id (fabs) in the column
+    pivot = _nml_mat_pivotmaxidx(r, j, i);
+    if (pivot<0) {
+      // No pivot, we change columns
+      j++;
+      continue;
+    }
+    // We interchange rows to out the pivot row into the 
+    // desired position
+    nml_mat_swaprows_r(r, i, pivot);
+    // We create 1 in the pivot position
+    nml_mat_multrow_r(r, i, 1/r->data[i][j]);
+     // We put zeros on the colum with the pivot
+    for(k = 0; k < r->num_rows; k++) {
+      if (!(k==i) && fabs(r->data[k][i]) > DBL_EPSILON) {
+        nml_mat_rowplusrow_r(r, k, i, -(r->data[k][i]));
+      }
+    }
+    i++;
+    j++;
+  }
+  return r;
 }
 
 // *****************************************************************************
