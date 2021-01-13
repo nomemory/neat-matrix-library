@@ -263,7 +263,7 @@ int nml_mat_eq(nml_mat *m1, nml_mat *m2, double tolerance) {
 
 // Prints the matrix on the stdout
 void nml_mat_print(nml_mat *matrix) {
-  nml_mat_printf(matrix, "%lf\t ");
+  nml_mat_printf(matrix, "%lf\t\t");
 }
 
 // Prints the matrix on the stdout (with a custom formatting for elements)
@@ -449,7 +449,6 @@ nml_mat *nml_mat_swaprows(nml_mat *m, unsigned int row1, unsigned int row2) {
 
 int nml_mat_swaprows_r(nml_mat *m, unsigned int row1, unsigned int row2) {
   if (row1 >= m->num_rows || row2 >= m->num_rows) {
-    printf("ERR: %d <-> %d\n", row1, row2);
     NML_FERROR(CANNOT_SWAP_ROWS, row1, row2, m->num_rows);
     return 0;
   }
@@ -683,7 +682,7 @@ int _nml_mat_pivotidx(nml_mat *m, unsigned int col, unsigned int row) {
   // No validations are made, this is an API Method
   int i;
   for(i = row; i < m->num_rows; i++) {
-    if (fabs(m->data[i][col]) > DBL_EPSILON) {
+    if (fabs(m->data[i][col]) > NML_MIN_COEF) {
       return i;
     }
   }
@@ -706,13 +705,15 @@ nml_mat *nml_mat_ref(nml_mat *m) {
     }
     // We interchange rows moving the pivot to the first row that doesn't have
     // already a pivot in place
-    nml_mat_swaprows_r(r, i, pivot);
+    if (pivot!=i) {
+      nml_mat_swaprows_r(r, i, pivot);
+    }
     // Multiply each element in the pivot row by the inverse of the pivot
     nml_mat_multrow_r(r, j, 1/r->data[i][j]);
     // We add multiplies of the pivot so every element on the column equals 0
     for(k = i+1; k < r->num_rows; k++) {
-      if (fabs(r->data[k][i]) > DBL_EPSILON) {
-        nml_mat_rowplusrow_r(r, k, i, -(r->data[k][i]));
+      if (fabs(r->data[k][j]) > NML_MIN_COEF) {
+        nml_mat_rowplusrow_r(r, k, i, -(r->data[k][j]));
       }
     }
     i++;
@@ -737,7 +738,7 @@ int _nml_mat_pivotmaxidx(nml_mat *m, unsigned int col, unsigned int row) {
       maxi = i;
     }
   }
-  return (max > DBL_EPSILON) ? maxi : -1;
+  return (max < NML_MIN_COEF) ? -1 : maxi;
 }
 
 // Retrieves the matrix in Reduced Row Echelon using Guass-Jordan Elimination
@@ -756,13 +757,15 @@ nml_mat *nml_mat_rref(nml_mat *m) {
     }
     // We interchange rows to out the pivot row into the 
     // desired position
-    nml_mat_swaprows_r(r, i, pivot);
+    if (pivot!=i) {
+      nml_mat_swaprows_r(r, i, pivot);
+    }
     // We create 1 in the pivot position
     nml_mat_multrow_r(r, i, 1/r->data[i][j]);
      // We put zeros on the colum with the pivot
     for(k = 0; k < r->num_rows; k++) {
-      if (!(k==i) && fabs(r->data[k][i]) > DBL_EPSILON) {
-        nml_mat_rowplusrow_r(r, k, i, -(r->data[k][i]));
+      if (!(k==i)) {
+        nml_mat_rowplusrow_r(r, k, i, -(r->data[k][j]));
       }
     }
     i++;
@@ -823,7 +826,7 @@ nml_mat_lup *nml_mat_lup_solve(nml_mat *m) {
   for(j = 0; j < U->num_cols; j++) {
     // Retrieves the row with the biggest element for column (j)
     pivot = _nml_mat_absmaxr(U, j);
-    if (fabs(U->data[pivot][j]) < DBL_EPSILON) {
+    if (fabs(U->data[pivot][j]) < NML_MIN_COEF) {
       NML_ERROR(CANNOT_LU_MATRIX_DEGENERATE);
       return NULL;
     }

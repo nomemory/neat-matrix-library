@@ -7,7 +7,7 @@ from sympy.abc import x
 
 filename = "test_nml_mat_rref.data"
 
-num_tests = 100
+num_tests = 5000
 min_M_cols = 2
 min_M_rows = 2
 max_M_cols = 20
@@ -19,7 +19,7 @@ fs = open(filename, "w");
 
 fs.write("{}\n\n".format(num_tests))
 
-for i in range(100):
+for i in range(num_tests):
     M_rows = randrange(min_M_rows, max_M_rows)
     M_cols = randrange(min_M_cols, max_M_cols)
     M = randMatrix(M_rows, M_cols, min=0, max=10, percent=randrange(50, 100));

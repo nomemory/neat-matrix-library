@@ -4,18 +4,14 @@
 #include "lib/nml.h"
 
 int main(int argc, char *argv[]) {
-  printf("\nInverse of a matrix:\n");
-  double m_v[16] = {
-    2.0, 7.0, 6.0, 1.0,
-    9.0, 5.0, 0.0, 2.0,
-    4.0, 3.0, 8.0, 3.0,
-    3.0, 5.0, 1.0, 9.0
-  };
-  nml_mat *m = nml_mat_from(4,4,16,m_v);
+  nml_mat *m = nml_mat_fromfile("examples/data/matrix3.data");
   nml_mat_print(m);
-  nml_mat_lup *lup = nml_mat_lup_solve(m);
-  nml_mat_print(lup->L);
-  nml_mat_print(lup->U);
-  nml_mat_print(nml_mat_inverse(lup));
+  nml_mat *rrefm = nml_mat_rref(m);
+  nml_mat_print(rrefm);
+  nml_mat *frefm_expected = nml_mat_fromfile("examples/data/matrix4.data");
+  // nml_mat_print(frefm_expected);
+  nml_mat_free(m);
+  nml_mat_free(rrefm);
+  nml_mat_free(frefm_expected);
   return 0;
 }

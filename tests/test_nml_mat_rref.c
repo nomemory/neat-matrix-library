@@ -3,26 +3,7 @@
 #include <time.h>
 
 #include "lib/nml.h"
-
-// nml_mat *nml_mat_fromfile(const char *file) {
-//   FILE *m_file = fopen(file, "r");
-//   if (NULL == m_file) {
-//     NML_FERROR(CANNOT_OPEN_FILE, file);
-//     return NULL;
-//   }
-//   int i, j;
-//   unsigned int num_rows = 0, num_cols = 0;
-//   fscanf(m_file, "%d", &num_rows);
-//   fscanf(m_file, "%d", &num_cols);
-//   nml_mat *r = nml_mat_new(num_rows, num_cols);
-//   for(i = 0; i < r->num_rows; i++) {
-//     for(j = 0; j < num_cols; j++) {
-//       fscanf(m_file, "%lf\t", &r->data[i][j]);
-//     }
-//   }
-//   fclose(m_file);
-//   return r;
-// }
+#include "nml_test_colors.h"
 
 int main(int argc, char *argv[]) {
 
@@ -40,10 +21,9 @@ int main(int argc, char *argv[]) {
 
     fscanf(t_file, "%d", &num_cases);
 
-    printf("\nFound %d test cases in file: '%s'\n", num_cases, argv[1]);
+    printf("Found %d test cases in file: '%s'\n", num_cases, argv[1]);
 
     for(k = 0; k < num_cases; k++) {
-        printf("\nTest case %d.\n", k);
         fscanf(t_file, "%d", &num_rows);
         fscanf(t_file, "%d", &num_cols);
         
@@ -66,7 +46,7 @@ int main(int argc, char *argv[]) {
         computed = nml_mat_rref(input);
 
         if (nml_mat_eq(computed, expected, 0.001)) {
-            printf("\nTest passed\n");
+            printf("Test %d from " YELLOW "'%s'" RESET " with input " YELLOW "'%s'" RESET "-> "GREEN "OK"  RESET "\n", k, argv[0], argv[1]);
         } else {
             printf("\ninput =\n");
             nml_mat_print(input);
