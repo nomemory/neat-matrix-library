@@ -34,6 +34,16 @@ limitations under the License.
 // Enable this to allow debugging messages
 #define DEBUG_TRUE 1
 
+#define BLACK "\033[0;30m"
+#define RED "\033[0;31m"
+#define GREEN "\033[0;32m"
+#define BLUE "\033[0;34m"
+#define PURPLE "\033[0;35m"
+#define CYAN "\033[0;36m"
+#define WHITE "\033[0;37m"
+#define YELLOW "\033[0;33m"
+#define RESET "\033[0m"
+
 double nml_rand_interval(double min, double max);
 
 void nml_log(FILE *stream, const char *file_name,
@@ -54,12 +64,12 @@ void nml_vlog(FILE* stream, const char *file_name,
 
 #define NML_FERROR(fmt, ...) \
       if (DEBUG_TRUE) { \
-          nml_log(stderr, __FILE__, __LINE__, fmt, __VA_ARGS__); \
+          nml_log(stderr, __FILE__, __LINE__, RED fmt RESET, __VA_ARGS__); \
       } \
 
 #define NML_ERROR(fmt) \
       if (DEBUG_TRUE) { \
-        nml_log(stderr, __FILE__, __LINE__, fmt); \
+        nml_log(stderr, __FILE__, __LINE__, RED fmt RESET); \
       } \
 
 #endif

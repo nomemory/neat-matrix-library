@@ -199,19 +199,22 @@ nml_mat *nml_mat_fromfile(const char *file) {
     NML_FERROR(CANNOT_OPEN_FILE, file);
     return NULL;
   }
+  nml_mat *r = nml_mat_fromfilef(m_file);
+  fclose(m_file);
+  return r;
+}
+
+nml_mat *nml_mat_fromfilef(FILE *f) {
   int i, j;
   unsigned int num_rows = 0, num_cols = 0;
-  
-  fscanf(m_file, "%d", &num_rows);
-  fscanf(m_file, "%d", &num_cols);
-
+  fscanf(f, "%d", &num_rows);
+  fscanf(f, "%d", &num_cols);
   nml_mat *r = nml_mat_new(num_rows, num_cols);
   for(i = 0; i < r->num_rows; i++) {
     for(j = 0; j < num_cols; j++) {
-      fscanf(m_file, "%lf\t", &r->data[i][j]);
+      fscanf(f, "%lf\t", &r->data[i][j]);
     }
   }
-  fclose(m_file);
   return r;
 }
 
@@ -689,6 +692,24 @@ int _nml_mat_pivotidx(nml_mat *m, unsigned int col, unsigned int row) {
   return -1;
 }
 
+// Find the maximul element from the column "col" under the row "row"
+// This is needed to pivot in Gauss-Jordan elimination
+// If pivot is not found, return -1
+int _nml_mat_pivotmaxidx(nml_mat *m, unsigned int col, unsigned int row) {
+  int i, maxi;
+  double micol;
+  double max = fabs(m->data[row][col]);
+  maxi = row;
+  for(i = row; i < m->num_rows; i++) {
+    micol = fabs(m->data[i][col]);
+    if (micol>max) {
+      max = micol;
+      maxi = i;
+    }
+  }
+  return (max < NML_MIN_COEF) ? -1 : maxi;
+}
+
 // Retrieves the matrix in Row Echelon form using Gauss Elimination
 nml_mat *nml_mat_ref(nml_mat *m) {
   nml_mat *r = nml_mat_cp(m);
@@ -714,31 +735,12 @@ nml_mat *nml_mat_ref(nml_mat *m) {
     for(k = i+1; k < r->num_rows; k++) {
       if (fabs(r->data[k][j]) > NML_MIN_COEF) {
         nml_mat_rowplusrow_r(r, k, i, -(r->data[k][j]));
-      }
+      } 
     }
     i++;
     j++;
   }
   return r;
-}
-
-
-// Find the maximul element from the column "col" under the row "row"
-// This is needed to pivot in Gauss-Jordan elimination
-// If pivot is not found, return -1
-int _nml_mat_pivotmaxidx(nml_mat *m, unsigned int col, unsigned int row) {
-  int i, maxi;
-  double micol;
-  double max = fabs(m->data[row][col]);
-  maxi = row;
-  for(i = row; i < m->num_rows; i++) {
-    micol = fabs(m->data[i][col]);
-    if (micol>max) {
-      max = micol;
-      maxi = i;
-    }
-  }
-  return (max < NML_MIN_COEF) ? -1 : maxi;
 }
 
 // Retrieves the matrix in Reduced Row Echelon using Guass-Jordan Elimination
