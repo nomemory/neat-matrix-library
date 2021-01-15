@@ -163,4 +163,10 @@ int main(int argc, char *argv[]) {
 }
 ```
 
+To run the example:
+
+```
+./nml.sh clean examples && examples/creating_a_matrix_from_user_input.ex
+```
+
 ### Creating a square Matrix
