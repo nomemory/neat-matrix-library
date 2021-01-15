@@ -98,9 +98,9 @@ A few examples can be found in the [`./examples` folder](https://github.com/nome
 
 An array can be used as the "data source" for the Matrix by using:
 * `nml_mat *nml_mat_from(unsigned int num_rows, unsigned int num_cols, unsigned int n_vals, double *vals)`
- * `num_rows` and `num_cols` represent the dimensions of the matrix;
- * `n_vals` how many values to read from the `vals` source. If `n_vals` is smaller than the product `num_cols * num_rows`, `0.0` will be used as the default value;
- * `vals` the array containing double values. 
+ - `num_rows` and `num_cols` represent the dimensions of the matrix;
+ - `n_vals` how many values to read from the `vals` source. If `n_vals` is smaller than the product `num_cols * num_rows`, `0.0` will be used as the default value;
+ - `vals` the array containing double values. 
 
 ```c
 #include <stdlib.h>
