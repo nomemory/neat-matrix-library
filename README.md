@@ -11,10 +11,8 @@ It currently supports:
 
 The library is still under heavy development. The plan for the near future:
 
-* Implement [Cholesky decomposition](https://en.wikipedia.org/wiki/Cholesky_decomposition);
 * Implement [QR decomposition](https://en.wikipedia.org/wiki/QR_decomposition)
 * Tests 
-* (... more ...)
 
 Documentation is under heavy editing.
 
