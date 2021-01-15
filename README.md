@@ -392,11 +392,106 @@ To run the example:
 
 ### Select rows and columns
 
+Two methods can be used to select rows and columns from a source matrix (`nm_mat*`):
+
+* `nml_mat *nml_mat_getcol(nml_mat *m, unsigned int col)`
+* `nml_mat *nml_mat_getrow(nml_mat *m, unsigned int row)`
+
+The following code extracts every column of a given random matrix into a temporary column matrix (`nml_mat*`):
+
+```c
+#include <stdlib.h>
+#include <stdio.h>
+#include <time.h>
+
+#include "lib/nml.h"
+
+int main(int argc, char *argv[]) {
+  printf("\nExtract all matrix columns from a Matrix as matrices\n");
+  srand(time(NULL));
+  nml_mat *m = nml_mat_new_rnd(5, 5, -10.0, 10.0);
+  nml_mat *col;
+  nml_mat_print(m);
+  int i = 0;
+  for(i = 0; i < m->num_cols; i++) {
+    col = nml_mat_getcol(m, i);
+    nml_mat_print(col);
+    nml_mat_free(col);
+  }
+  nml_mat_free(m);
+  return 0;
+}
+```
+
+To run the example:
+
+```sh
+./nml.sh clean examples && examples/select_columns.ex
+```
+
 ### Set all elements to a value
+
+Use: `void nml_mat_setall(nml_mat *matrix, double value)`
+
+```c
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+
+#include "lib/nml.h"
+
+int main(int argc, char *argv[]) {
+    // Creates a matrix of zeros of size = 5
+    nml_mat *pi_mat = nml_mat_sqr(5);
+
+    // Sets all elements to PI
+    nml_mat_setall(pi_mat, M_PI);
+
+    nml_mat_print(pi_mat);
+    nml_mat_free(pi_mat);
+    return 0;
+}
+```
+
+To run the example:
+
+```sh
+./nml.sh clean examples && ./examples/set_all_elements.ex
+```
 
 ### Set the first diagonal to a value
 
+Use: `int nml_mat_setdiag(nml_mat *matrix, double value)`
+
+```c
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+
+#include "lib/nml.h"
+
+int main(int argc, char *argv[]) {
+    // Creates a matrix of zeros of size = 5
+    nml_mat *pi_mat = nml_mat_sqr(5);
+
+    // Sets the first diagonal to PI
+    nml_mat_setdiag(pi_mat, M_PI);
+
+    nml_mat_print(pi_mat);
+    nml_mat_free(pi_mat);
+    return 0;
+}
+```
+
+To run the example:
+
+```sh
+./nml.sh clean examples && examples/set_diagonal_elements.ex
+```
+
 ### Scalar multiply the matrix
+
+
 
 ### Multiply rows
 
