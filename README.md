@@ -90,7 +90,7 @@ This will clean everything (`*.o`,`*.ex`,`*.a`) and will leave the library folde
 
 A few examples can be found in the [`./examples` folder](https://github.com/nomemory/neat-matrix-library/tree/main/examples) folder.
 
-## Creating a Matrix
+## Creating matrices
 
 ### Creating a new Matrix
 
@@ -146,7 +146,7 @@ To run the example:
 ./nml.sh clean examples && examples/creating_a_matrix.ex
 ```
 
-### Creating a Matrix from an array
+### Creating a marray from an array (`double[N]`)
 
 An array can be used as the "data source" for the Matrix by using:
 * `nml_mat *nml_mat_from(unsigned int num_rows, unsigned int num_cols, unsigned int n_vals, double *vals)`
@@ -347,3 +347,49 @@ To run the example:
 ```sh
 ./nml.sh clean examples && ./examples/matrix_equality.ex
 ```
+
+## Accesing and modifying matrix elements
+
+### Select rows and columns
+
+### Set all elements to a value
+
+### Set the first diagonal to a value
+
+### Scalar multiply the matrix
+
+### Multiply rows
+
+### Add rows
+
+## Modifying the matrix structure
+
+### Remove rows and columns
+
+### Swap rows and columns
+
+### Concatenate matrices
+
+## Matrices operations
+
+### Add and subtract matrices
+
+### Multiply matrices (dot)
+
+## Transpose matrices
+
+## Calculate trace
+
+## Row Echelon 
+
+### Calculate Row Echelon Form using Gaussian Elimination
+
+### Calculate Reduced Row Echelon Form using Gauss-Jordan
+
+## LU(P) Decomposition
+
+## Matrix inverse
+
+## Matrix determinant
+
+## Solve linear systems of equations
