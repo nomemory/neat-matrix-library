@@ -94,7 +94,47 @@ A few examples can be found in the [`./examples` folder](https://github.com/nome
 
 ### Creating a Matrix manually
 
-### Creating a Matrix from existing data
+### Creating a Matrix from an array
+
+An array can be used as the "data source" for the Matrix by using:
+* `nml_mat *nml_mat_from(unsigned int num_rows, unsigned int num_cols, unsigned int n_vals, double *vals)`
+ * `num_rows` and `num_cols` represent the dimensions of the matrix;
+ * `n_vals` how many values to read from the `vals` source. If `n_vals` is smaller than the product `num_cols * num_rows`, `0.0` will be used as the default value;
+ * `vals` the array containing double values. 
+
+```c
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "lib/nml.h"
+
+int main(int argc, char *argv[]) { 
+    double array[6] = { 
+        1.0, 0.2, 3.0, 4.0, 5.0, 3.1 
+    };
+    nml_mat* my;
+    
+    // 3 rows, 2 columns
+    // read exactly 6 numbers from array[6]
+    my = nml_mat_from(3, 2, 6, array);
+    nml_mat_print(my);
+    nml_mat_free(my);
+
+    // 4 rows, 2 columns
+    // read exactly 3 numbers from array[6]
+    my = nml_mat_from(4, 2, 3, array);
+    nml_mat_print(my);
+    nml_mat_free(my);
+
+    return 0;
+}
+```
+
+To run the example:
+
+```sh
+./nml.sh clean examples && examples/creating_a_matrix_from_an_array.ex
+```
 
 ### Creating a Matrix from an external file
 
