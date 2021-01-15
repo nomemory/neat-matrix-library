@@ -675,6 +675,81 @@ To run the example:
 
 ## Matrix inverse
 
+Calculating the inverse requires to decompose the matrix LU(P) decomposition first.
+
+Afterwards obtaining the inverse is straightforward: `nml_mat *nml_mat_inverse(nml_mat_lup *m)`.
+
+Example:
+
+```c
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "lib/nml.h"
+
+int main(int argc, char *argv[]) {
+  printf("\nInverse of a matrix:\n");
+  double m_v[16] = {
+    2.0, 7.0, 6.0, 1.0,
+    9.0, 5.0, 0.0, 2.0,
+    4.0, 3.0, 8.0, 3.0,
+    3.0, 5.0, 1.0, 9.0
+  };
+  nml_mat *m = nml_mat_from(4,4,16, m_v);
+  nml_mat_lup *lup = nml_mat_lup_solve(m);
+  nml_mat* minv = nml_mat_inverse(lup);
+  nml_mat *mdotminv = nml_mat_dot(m, minv);
+
+  printf("m=");
+  nml_mat_print(m);
+  printf("minv=");
+  nml_mat_print(minv);
+  printf("(%%e) m * minv=");
+  nml_mat_printf(mdotminv, "%e\t");
+  printf("(%%f) m * minv=");
+  nml_mat_printf(mdotminv, "%f\t");
+
+  nml_mat_free(m);
+  nml_mat_free(minv);
+  nml_mat_free(mdotminv);
+  return 0;
+}
+```
+
+Output:
+
+```
+m=
+2.000000		7.000000		6.000000		1.000000
+9.000000		5.000000		0.000000		2.000000
+4.000000		3.000000		8.000000		3.000000
+3.000000		5.000000		1.000000		9.000000
+
+minv=
+-0.081577		0.112583		0.065924		-0.037929
+0.174895		0.013245		-0.133955		0.022276
+0.001505		-0.046358		0.127935		-0.032511
+-0.070138		-0.039735		0.038230		0.114991
+
+(%e) m * minv=
+1.000000e+00	4.163336e-17	4.163336e-17	-1.387779e-17
+0.000000e+00	1.000000e+00	-2.775558e-17	2.775558e-17
+5.551115e-17	6.938894e-17	1.000000e+00	5.551115e-17
+0.000000e+00	5.551115e-17	-5.551115e-17	1.000000e+00
+
+(%f) m * minv=
+1.000000	0.000000	0.000000	-0.000000
+0.000000	1.000000	-0.000000	0.000000
+0.000000	0.000000	1.000000	0.000000
+0.000000	0.000000	-0.000000	1.000000
+```
+
+To run the example:
+
+```sh
+./nml.sh clean examples && ./examples/inverse.ex
+```
+
 ## Matrix determinant
 
 ## Solve linear systems of equations
