@@ -99,11 +99,10 @@ A few examples can be found in the [`./examples` folder](https://github.com/nome
 ### Creating a Matrix from an external file
 
 The two methods that can be used to create a matrix from a file on disk are:
-
-| Method | Description |
-| ------ | ----------- |
-| `nml_mat *nml_mat_fromfile(const char *file)` | Create a matrix from `file`. If the file cannot be opened a `NULL` matrix will be returned. |
-| `nml_mat *nml_mat_fromfilef(FILE *f)` | Creates a matrix from am already opened stream `f`. Does not automatically close the stream (`FILE`). |
+* `nml_mat *nml_mat_fromfile(const char *file)` 
+  * Create a matrix from `file`. If the file cannot be opened a `NULL` matrix will be returned. 
+* `nml_mat *nml_mat_fromfilef(FILE *f)` 
+  * Creates a matrix from am already opened stream `f`. Does not automatically close the stream (`FILE`). 
 
 
 ### Creating a square Matrix
