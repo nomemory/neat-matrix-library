@@ -505,7 +505,7 @@ To run the example:
 
 ### Scalar multiply the matrix
 
-Use the following:
+Use:
 * `nml_mat *nml_mat_scalarmult(nml_mat *m, double num)`
    - Multiplies all elements of matrix `m` with `num`. A new matrix is returned.
 * `int nml_mat_scalarmult_r(nml_mat *m, double num)`
@@ -539,16 +539,67 @@ int main(int argc, char *argv[]) {
 
     nml_mat_free(m);
     nml_mat_free(new_m);
+    
+    return 0;
 }
 ```
 
-To run the test:
+To run the example:
 
 ```sh
 ./nml.sh clean examples && examples/scalar_multiply.ex
 ```
 
 ### Multiply rows
+
+Use:
+
+* `nml_mat *nml_mat_multrow(nml_mat *m, unsigned int row, double num)`
+   - Multiplies all elements from row `row` in matrix `m` with scalar `num`. A new matrix is returned. `m` remains un-altered.
+* `int nml_mat_multrow_r(nml_mat *m, unsigned int row, double num)`
+   - Multiplies all elements from row `row` in matrix `m` with scalar `num`. The changes are done directly on matrix `m`.
+   
+Example:  
+
+```c
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "lib/nml.h"
+
+int main(int argc, char *argv[]) {
+    nml_mat *a = nml_mat_new(4,5);
+    nml_mat_setall(a, 1.0);
+    int i = 0;
+    for(; i < a->num_rows; ++i) {
+        // Changes are doing on matrix a
+        // row[i] is multiplied with (double) i
+        nml_mat_multrow_r(a, i, (double)i);
+    }
+    nml_mat_print(a);
+
+    // Create a new matrix b by multiplying row[1] 
+    // in matrix a with 5.0.
+    // Matrix a remains unchanged
+    nml_mat *b = nml_mat_multrow(a, 1, 5.0);
+    nml_mat_free(a);
+    nml_mat_print(b);
+    return 0;
+}
+````
+
+
+To run the example:
+
+```sh
+./nml.sh clean examples && examples/multiply_rows.ex
+```
+
+To run the example:
+
+```sh
+./nml.sh clean examples && examples/multiply_rows.ex
+```
 
 ### Add rows
 
