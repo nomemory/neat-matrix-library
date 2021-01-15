@@ -157,7 +157,7 @@ nml_mat *nml_mat_sqr_rnd(unsigned int size, double min, double max) {
 // The resulting matrix is an ID matrix (I)
 // I has 1.0 on the first diagonal
 // I is square
-nml_mat *nml_mat_id(unsigned int size) {
+nml_mat *nml_mat_eye(unsigned int size) {
   nml_mat *r = nml_mat_new(size, size);
   int i;
   for(i = 0; i < r->num_rows; i++) {
@@ -354,6 +354,7 @@ nml_mat *nml_mat_multrow(nml_mat *m, unsigned int row, double num) {
 int nml_mat_multrow_r(nml_mat *m, unsigned int row, double num) {
   if (row>= m->num_rows) {
     NML_FERROR(CANNOT_ROW_MULTIPLY, row, m->num_rows);
+    abort();
     return 0;
   }
   int i;
@@ -632,7 +633,7 @@ int nml_mat_sub_r(nml_mat *m1, nml_mat *m2) {
   return 1;
 }
 
-nml_mat *nml_mat_mult(nml_mat *m1, nml_mat *m2) {
+nml_mat *nml_mat_dot(nml_mat *m1, nml_mat *m2) {
   if (!(m1->num_cols == m2->num_rows)) {
     NML_ERROR(CANNOT_MULITPLY);
     return NULL;
@@ -649,7 +650,7 @@ nml_mat *nml_mat_mult(nml_mat *m1, nml_mat *m2) {
   return r;
 }
 
-nml_mat *nml_mat_trs(nml_mat *m) {
+nml_mat *nml_mat_transp(nml_mat *m) {
   int i, j;
   nml_mat *r = nml_mat_new(m->num_cols, m->num_rows);
   for(i = 0; i < r->num_rows; i++) {
@@ -730,7 +731,7 @@ nml_mat *nml_mat_ref(nml_mat *m) {
       nml_mat_swaprows_r(r, i, pivot);
     }
     // Multiply each element in the pivot row by the inverse of the pivot
-    nml_mat_multrow_r(r, j, 1/r->data[i][j]);
+    nml_mat_multrow_r(r, i, 1/r->data[i][j]);
     // We add multiplies of the pivot so every element on the column equals 0
     for(k = i+1; k < r->num_rows; k++) {
       if (fabs(r->data[k][j]) > NML_MIN_COEF) {
@@ -790,7 +791,7 @@ int _nml_mat_absmaxr(nml_mat *m, unsigned int k) {
   double max = m->data[k][k];
   int maxIdx = k;
   for(i = k+1; i < m->num_rows; i++) {
-    if (m->data[i][k] > max) {
+    if (fabs(m->data[i][k]) > max) {
       max = fabs(m->data[i][k]);
       maxIdx = i;
     }
@@ -809,7 +810,22 @@ nml_mat_lup *nml_mat_lup_new(nml_mat *L, nml_mat *U, nml_mat *P, unsigned int nu
   return r;
 }
 void nml_mat_lup_free(nml_mat_lup* lu) {
-  if (!lu) free(lu);
+  nml_mat_free(lu->P);
+  nml_mat_free(lu->L);
+  nml_mat_free(lu->U);
+  free(lu);
+}
+
+void nml_mat_lup_print(nml_mat_lup *lu) {
+  nml_mat_print(lu->L);
+  nml_mat_print(lu->U);
+  nml_mat_print(lu->P);
+}
+
+void nml_mat_lup_printf(nml_mat_lup *lu, const char *fmt) {
+  nml_mat_printf(lu->L, fmt);
+  nml_mat_printf(lu->U, fmt);
+  nml_mat_printf(lu->P, fmt);
 }
 
 nml_mat_lup *nml_mat_lup_solve(nml_mat *m) {
@@ -819,7 +835,7 @@ nml_mat_lup *nml_mat_lup_solve(nml_mat *m) {
   }
   nml_mat *L = nml_mat_new(m->num_rows, m->num_rows);
   nml_mat *U = nml_mat_cp(m);
-  nml_mat *P = nml_mat_id(m->num_rows);
+  nml_mat *P = nml_mat_eye(m->num_rows);
 
   int j,i, pivot;
   unsigned int num_permutations = 0;
@@ -966,7 +982,7 @@ nml_mat *nml_ls_solve(nml_mat_lup *lu, nml_mat* b) {
       1);
       return NULL;
   }
-  nml_mat *Pb = nml_mat_mult(lu->P, b);
+  nml_mat *Pb = nml_mat_dot(lu->P, b);
 
   // We solve L*y = P*b using forward substition
   nml_mat *y = nml_ls_solvefwd(lu->L, Pb);
@@ -983,7 +999,7 @@ nml_mat *nml_ls_solve(nml_mat_lup *lu, nml_mat* b) {
 nml_mat *nml_mat_inverse(nml_mat_lup *lup) {
   unsigned n = lup->L->num_cols;
   nml_mat *r = nml_mat_sqr(n);
-  nml_mat *I = nml_mat_id(lup->U->num_rows);
+  nml_mat *I = nml_mat_eye(lup->U->num_rows);
   nml_mat *invx;
   nml_mat *Ix;
   int i,j;

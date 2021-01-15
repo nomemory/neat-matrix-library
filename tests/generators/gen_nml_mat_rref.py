@@ -14,7 +14,7 @@ max_M_cols = 15
 max_M_rows = 15
 min_val = 0
 max_val = 15
-percent_min = 50
+percent_min = 90
 percent_max = 100
 
 fs = open(filename, "w")
@@ -26,7 +26,7 @@ for i in range(num_tests):
     M_cols = randrange(min_M_cols, max_M_cols)
     M = randMatrix(M_rows, M_cols, min=0, max=10, percent=randrange(percent_min, percent_max))
     MRREF = M.rref()[0].applyfunc(N)
-    print("Creating test cases {}", i)
+    print("Creating test cases: ", i)
     fs.write("{} {}\n".format(M_rows, M_cols))
     fs.write(M.table(StrPrinter(), rowstart="", rowend="", colsep="\t"))
     fs.write("\n")

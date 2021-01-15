@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
   nml_mat_free(m);
 
   printf("\nCreating an ID 7x7 Matrix and copying it into another matrix:\n");
-  m = nml_mat_id(7);
+  m = nml_mat_eye(7);
   mx = nml_mat_cp(m);
   nml_mat_print(m);
   nml_mat_print(mx);

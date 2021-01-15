@@ -31,11 +31,6 @@ int main(int argc, char *argv[]) {
 
         if (nml_mat_eq(computed_rref, expected_rref, 0.00001)) {
             printf(GREEN "%d " RESET, k);
-            // if (k==19) {
-            //     // nnl_mat_print()
-            //     // nml_mat_print(expected_rref);
-            //     // nml_mat_print(computed_rref);
-            // }
         } else {
             printf(RED "%d" RESET, k);;
             printf("\ninput =\n");
@@ -50,6 +45,7 @@ int main(int argc, char *argv[]) {
 
         nml_mat_free(input);
         nml_mat_free(expected_rref);
+        nml_mat_free(computed_ref);
         nml_mat_free(computed_rref);
     }
 

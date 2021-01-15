@@ -49,7 +49,7 @@ nml_mat *nml_mat_new(unsigned int num_rows, unsigned int num_cols);
 nml_mat *nml_mat_new_rnd(unsigned int num_rows, unsigned int num_cols, double min, double max);
 nml_mat *nml_mat_sqr(unsigned int size);
 nml_mat *nml_mat_sqr_rnd(unsigned int size, double min, double max);
-nml_mat *nml_mat_id(unsigned int size);
+nml_mat *nml_mat_eye(unsigned int size);
 nml_mat *nml_mat_cp(nml_mat *m);
 nml_mat *nml_mat_from(unsigned int num_rows, unsigned int num_cols, unsigned int n_vals, double *vals);
 nml_mat *nml_mat_fromfile(const char *file);
@@ -113,8 +113,8 @@ nml_mat *nml_mat_add(nml_mat *m1, nml_mat *m2);
 int nml_mat_add_r(nml_mat *m1, nml_mat *m2);
 nml_mat *nml_mat_sub(nml_mat *m1, nml_mat *m2);
 int nml_mat_sub_r(nml_mat *m1, nml_mat *m2);
-nml_mat *nml_mat_mult(nml_mat *m1, nml_mat *m2);
-nml_mat *nml_mat_trs(nml_mat *m);
+nml_mat *nml_mat_dot(nml_mat *m1, nml_mat *m2);
+nml_mat *nml_mat_transp(nml_mat *m);
 double nml_mat_trace(nml_mat* m);
 
 // *****************************************************************************
@@ -134,6 +134,8 @@ nml_mat *nml_mat_rref(nml_mat *m);
 nml_mat_lup *nml_mat_lup_new(nml_mat *L, nml_mat *U, nml_mat *P, unsigned int num_permutations);
 nml_mat_lup *nml_mat_lup_solve(nml_mat *m);
 void nml_mat_lup_free(nml_mat_lup* lu);
+void nml_mat_lup_print(nml_mat_lup *lu);
+void nml_mat_lup_printf(nml_mat_lup *lu, const char *fmt);
 double nml_mat_determinant(nml_mat_lup* lup);
 nml_mat *nml_mat_getlu(nml_mat_lup* lup);
 nml_mat *nml_mat_inverse(nml_mat_lup *m);

@@ -4,7 +4,7 @@
 #include "lib/nml.h"
 
 int main(int argc, char *argv[]) {
-  nml_mat *I = nml_mat_id(3);
+  nml_mat *I = nml_mat_eye(3);
   nml_mat *Ix2 = nml_mat_scalarmult(I, 2.0);
   nml_mat *rndm = nml_mat_new_rnd(3, 4, 1.0, 5.0);
   // Concatenate using a pointer
@@ -36,7 +36,7 @@ int main(int argc, char *argv[]) {
 
   nml_mat *A = nml_mat_new_rnd(3, 4, 1.0, 4.0);
   nml_mat *B = nml_mat_new_rnd(5, 4, 10.0, 20.0);
-  nml_mat *C = nml_mat_id(4);
+  nml_mat *C = nml_mat_eye(4);
 
   nml_mat **ABarr = malloc(sizeof(*ABarr) * 2);
   ABarr[0] = A;
