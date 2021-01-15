@@ -307,7 +307,9 @@ There are two "equality" methods for matrices:
   - Tests if two matrices have the same dimension.
   
 * `int nml_mat_eq(nml_mat *m1, nml_mat *m2, double tolerance)`
-  - Test if two matrices are equal, meaning they have the same dimensions, and the elements are equal or close of being equal.
+  - Test if two matrices are equal:
+    - They have the same dimensions
+    - The elements are equal or close of being equal.
   - If you want the elements to be "exactly" eqaul, `tolerance=0.0`
 
 
