@@ -73,7 +73,7 @@ To run the tests
 3. For each test `tests/*/c` an executable (`*.ex`) will be created.
 
 The test data was generated using [sympy](https://docs.sympy.org/). 
-In the `tests/generators/*.py` you can find the python3 scripts used to generate the data.
+In the `tests/generators/` folder you can find the python3 (`.py`) scripts used to generate the data.
 
 ## Cleaning
 
