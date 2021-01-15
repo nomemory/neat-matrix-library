@@ -8,8 +8,8 @@
 | | _| |_\   |_  | || | _| |_\/_| |_ | || |   _| |__/ |  | |
 | ||_____|\____| | || ||_____||_____|| || |  |________|  | |
 | |              | || |              | || |              | |
-| '--------------' || '--------------' || '--------------' |
- '----------------'  '----------------'  '----------------' 
+| '--------------' || '--------------' || '--------------' |      Neat Matrix Library
+ '----------------'  '----------------'  '----------------'  
 ```
 
 **nml** is a simple [matrix](https://en.wikipedia.org/wiki/Matrix_(mathematics)) and [linear algebra](https://en.wikipedia.org/wiki/Linear_algebra) library written in standard C. Code should be portable and there are no dependencies.
