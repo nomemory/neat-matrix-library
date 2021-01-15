@@ -11,6 +11,45 @@ It currently supports:
 
 The library is still under development, but a few thousands test cases are already implemented.
 
+# Table of Contents
+
+* [Compile / Run Examples](#compile--run-examples)
+      * [Building the library](#building-the-library)
+      * [Building the examples](#building-the-examples)
+      * [Running the tests](#running-the-tests)
+      * [Cleaning](#cleaning)
+   * [How to use the library](#how-to-use-the-library)
+      * [Creating matrices](#creating-matrices)
+         * [Creating a new Matrix](#creating-a-new-matrix)
+         * [Creating a marray from an array (double[N])](#creating-a-marray-from-an-array-doublen)
+         * [Creating a Matrix from an external file](#creating-a-matrix-from-an-external-file)
+         * [Creating a matrix from user input](#creating-a-matrix-from-user-input)
+         * [Creating randomized matrices](#creating-randomized-matrices)
+      * [Check if two matrices are equal](#check-if-two-matrices-are-equal)
+      * [Accesing and modifying matrix elements](#accesing-and-modifying-matrix-elements)
+         * [Select rows and columns](#select-rows-and-columns)
+         * [Set all elements to a value](#set-all-elements-to-a-value)
+         * [Set the first diagonal to a value](#set-the-first-diagonal-to-a-value)
+         * [Scalar multiply the matrix](#scalar-multiply-the-matrix)
+         * [Multiply rows](#multiply-rows)
+         * [Add rows](#add-rows)
+      * [Modifying the matrix structure](#modifying-the-matrix-structure)
+         * [Remove rows and columns](#remove-rows-and-columns)
+         * [Swap rows and columns](#swap-rows-and-columns)
+         * [Concatenate matrices](#concatenate-matrices)
+      * [Matrices operations](#matrices-operations)
+         * [Add and subtract matrices](#add-and-subtract-matrices)
+         * [Multiply matrices (dot)](#multiply-matrices-dot)
+      * [Transpose matrices](#transpose-matrices)
+      * [Calculate trace](#calculate-trace)
+      * [Row Echelon](#row-echelon)
+         * [Calculate Row Echelon Form using Gaussian Elimination](#calculate-row-echelon-form-using-gaussian-elimination)
+         * [Calculate Reduced Row Echelon Form using Gauss-Jordan](#calculate-reduced-row-echelon-form-using-gauss-jordan)
+      * [LU(P) Decomposition](#lup-decomposition)
+      * [Matrix inverse](#matrix-inverse)
+      * [Matrix determinant](#matrix-determinant)
+      * [Solve linear systems of equations](#solve-linear-systems-of-equations)
+
 Next feature:
 
 * Implement [QR decomposition](https://en.wikipedia.org/wiki/QR_decomposition)
