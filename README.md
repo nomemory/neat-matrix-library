@@ -17,14 +17,15 @@ Next feature:
 
 Documentation is under construction.
 
-# Table of Contents
+Table of Contents
+=================
 
-* [Compile / Run Examples](#compile--run-examples)
+   * [Compile / Run Examples](#compile--run-examples)
       * [Building the library](#building-the-library)
       * [Building the examples](#building-the-examples)
       * [Running the tests](#running-the-tests)
       * [Cleaning](#cleaning)
-* [How to use the library](#how-to-use-the-library)
+   * [How to use the library](#how-to-use-the-library)
       * [Creating matrices](#creating-matrices)
          * [Creating a new Matrix](#creating-a-new-matrix)
          * [Creating a marray from an array (double[N])](#creating-a-marray-from-an-array-doublen)
@@ -55,7 +56,7 @@ Documentation is under construction.
       * [Matrix inverse](#matrix-inverse)
       * [Matrix determinant](#matrix-determinant)
       * [Solve linear systems of equations](#solve-linear-systems-of-equations)
-
+      
 # Compile / Run Examples
 
 The build file for the library it's called `nml.sh`. 
