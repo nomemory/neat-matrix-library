@@ -11,6 +11,12 @@ It currently supports:
 
 The library is still under development, but a few thousands test cases are already implemented.
 
+Next feature:
+
+* Implement [QR decomposition](https://en.wikipedia.org/wiki/QR_decomposition)
+
+Documentation is under construction.
+
 # Table of Contents
 
 * [Compile / Run Examples](#compile--run-examples)
@@ -18,7 +24,7 @@ The library is still under development, but a few thousands test cases are alrea
       * [Building the examples](#building-the-examples)
       * [Running the tests](#running-the-tests)
       * [Cleaning](#cleaning)
-   * [How to use the library](#how-to-use-the-library)
+* [How to use the library](#how-to-use-the-library)
       * [Creating matrices](#creating-matrices)
          * [Creating a new Matrix](#creating-a-new-matrix)
          * [Creating a marray from an array (double[N])](#creating-a-marray-from-an-array-doublen)
@@ -49,12 +55,6 @@ The library is still under development, but a few thousands test cases are alrea
       * [Matrix inverse](#matrix-inverse)
       * [Matrix determinant](#matrix-determinant)
       * [Solve linear systems of equations](#solve-linear-systems-of-equations)
-
-Next feature:
-
-* Implement [QR decomposition](https://en.wikipedia.org/wiki/QR_decomposition)
-
-Documentation is under construction.
 
 # Compile / Run Examples
 
