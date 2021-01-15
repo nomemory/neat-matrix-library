@@ -1,3 +1,17 @@
+```
+ .----------------.  .----------------.  .----------------. 
+| .--------------. || .--------------. || .--------------. |
+| | ____  _____  | || | ____    ____ | || |   _____      | |
+| ||_   \|_   _| | || ||_   \  /   _|| || |  |_   _|     | |
+| |  |   \ | |   | || |  |   \/   |  | || |    | |       | |
+| |  | |\ \| |   | || |  | |\  /| |  | || |    | |   _   | |
+| | _| |_\   |_  | || | _| |_\/_| |_ | || |   _| |__/ |  | |
+| ||_____|\____| | || ||_____||_____|| || |  |________|  | |
+| |              | || |              | || |              | |
+| '--------------' || '--------------' || '--------------' |      Neat Matrix Library
+ '----------------'  '----------------'  '----------------'       
+```
+
 **nml** is a simple [matrix](https://en.wikipedia.org/wiki/Matrix_(mathematics)) and [linear algebra](https://en.wikipedia.org/wiki/Linear_algebra) library written in standard C. Code should be portable and there are no dependencies.
 
 It currently supports:
@@ -17,6 +31,46 @@ Next feature:
 
 Documentation is under construction.
 
+Table of Contents
+=================
+
+   * [Compile / Run Examples](#compile--run-examples)
+      * [Building the library](#building-the-library)
+      * [Building the examples](#building-the-examples)
+      * [Running the tests](#running-the-tests)
+      * [Cleaning](#cleaning)
+   * [How to use the library](#how-to-use-the-library)
+      * [Creating matrices](#creating-matrices)
+         * [Creating a new Matrix](#creating-a-new-matrix)
+         * [Creating a marray from an array (double[N])](#creating-a-marray-from-an-array-doublen)
+         * [Creating a Matrix from an external file](#creating-a-matrix-from-an-external-file)
+         * [Creating a matrix from user input](#creating-a-matrix-from-user-input)
+         * [Creating randomized matrices](#creating-randomized-matrices)
+      * [Check if two matrices are equal](#check-if-two-matrices-are-equal)
+      * [Accesing and modifying matrix elements](#accesing-and-modifying-matrix-elements)
+         * [Select rows and columns](#select-rows-and-columns)
+         * [Set all elements to a value](#set-all-elements-to-a-value)
+         * [Set the first diagonal to a value](#set-the-first-diagonal-to-a-value)
+         * [Scalar multiply the matrix](#scalar-multiply-the-matrix)
+         * [Multiply rows](#multiply-rows)
+         * [Add rows](#add-rows)
+      * [Modifying the matrix structure](#modifying-the-matrix-structure)
+         * [Remove rows and columns](#remove-rows-and-columns)
+         * [Swap rows and columns](#swap-rows-and-columns)
+         * [Concatenate matrices](#concatenate-matrices)
+      * [Matrices operations](#matrices-operations)
+         * [Add and subtract matrices](#add-and-subtract-matrices)
+         * [Multiply matrices (dot)](#multiply-matrices-dot)
+      * [Transpose matrices](#transpose-matrices)
+      * [Calculate trace](#calculate-trace)
+      * [Row Echelon](#row-echelon)
+         * [Calculate Row Echelon Form using Gaussian Elimination](#calculate-row-echelon-form-using-gaussian-elimination)
+         * [Calculate Reduced Row Echelon Form using Gauss-Jordan](#calculate-reduced-row-echelon-form-using-gauss-jordan)
+      * [LU(P) Decomposition](#lup-decomposition)
+      * [Matrix inverse](#matrix-inverse)
+      * [Matrix determinant](#matrix-determinant)
+      * [Solve linear systems of equations](#solve-linear-systems-of-equations)
+      
 # Compile / Run Examples
 
 The build file for the library it's called `nml.sh`. 
@@ -352,23 +406,347 @@ To run the example:
 
 ### Select rows and columns
 
+Two methods can be used to select rows and columns from a source matrix (`nm_mat*`):
+
+* `nml_mat *nml_mat_getcol(nml_mat *m, unsigned int col)`
+* `nml_mat *nml_mat_getrow(nml_mat *m, unsigned int row)`
+
+The following code extracts every column of a given random matrix into a temporary column matrix (`nml_mat*`):
+
+```c
+#include <stdlib.h>
+#include <stdio.h>
+#include <time.h>
+
+#include "lib/nml.h"
+
+int main(int argc, char *argv[]) {
+  printf("\nExtract all matrix columns from a Matrix as matrices\n");
+  srand(time(NULL));
+  nml_mat *m = nml_mat_new_rnd(5, 5, -10.0, 10.0);
+  nml_mat *col;
+  nml_mat_print(m);
+  int i = 0;
+  for(i = 0; i < m->num_cols; i++) {
+    col = nml_mat_getcol(m, i);
+    nml_mat_print(col);
+    nml_mat_free(col);
+  }
+  nml_mat_free(m);
+  return 0;
+}
+```
+
+To run the example:
+
+```sh
+./nml.sh clean examples && examples/select_columns.ex
+```
+
 ### Set all elements to a value
+
+Use: `void nml_mat_setall(nml_mat *matrix, double value)`
+
+```c
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+
+#include "lib/nml.h"
+
+int main(int argc, char *argv[]) {
+    // Creates a matrix of zeros of size = 5
+    nml_mat *pi_mat = nml_mat_sqr(5);
+
+    // Sets all elements to PI
+    nml_mat_setall(pi_mat, M_PI);
+
+    nml_mat_print(pi_mat);
+    nml_mat_free(pi_mat);
+    return 0;
+}
+```
+
+To run the example:
+
+```sh
+./nml.sh clean examples && ./examples/set_all_elements.ex
+```
 
 ### Set the first diagonal to a value
 
+Use: `int nml_mat_setdiag(nml_mat *matrix, double value)`
+
+```c
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+
+#include "lib/nml.h"
+
+int main(int argc, char *argv[]) {
+    // Creates a matrix of zeros of size = 5
+    nml_mat *pi_mat = nml_mat_sqr(5);
+
+    // Sets the first diagonal to PI
+    nml_mat_setdiag(pi_mat, M_PI);
+
+    nml_mat_print(pi_mat);
+    nml_mat_free(pi_mat);
+    return 0;
+}
+```
+
+To run the example:
+
+```sh
+./nml.sh clean examples && examples/set_diagonal_elements.ex
+```
+
 ### Scalar multiply the matrix
+
+Use:
+* `nml_mat *nml_mat_scalarmult(nml_mat *m, double num)`
+   - Multiplies all elements of matrix `m` with `num`. A new matrix is returned.
+* `int nml_mat_scalarmult_r(nml_mat *m, double num)`
+   - Multiplies all elements of matrix `m` with `num`. All changes are done on matrix `m`.
+
+```c
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "lib/nml.h"
+
+int main(int argc, char *argv[]) {
+    nml_mat *m = nml_mat_eye(5);
+
+    // Multiply all elements of m with 2.0
+    // and return a new matrix
+
+    nml_mat *new_m = nml_mat_scalarmult(m, 2.0);
+
+    if (!(nml_mat_eq(m, new_m, 0.0))) {
+        printf("It's normal to see this message.\n");
+    }
+
+    // Multiply all elements of m with 2.0
+    // m is modified, no new matrix is created
+    nml_mat_scalarmult_r(m, 2.0);
+
+    if (nml_mat_eq(m, new_m, 0.0)) {
+        printf("It's even more normal to see this message.\n");
+    }
+
+    nml_mat_free(m);
+    nml_mat_free(new_m);
+    
+    return 0;
+}
+```
+
+To run the example:
+
+```sh
+./nml.sh clean examples && examples/scalar_multiply.ex
+```
 
 ### Multiply rows
 
+Use:
+
+* `nml_mat *nml_mat_multrow(nml_mat *m, unsigned int row, double num)`
+   - Multiplies all elements from row `row` in matrix `m` with scalar `num`. A new matrix is returned. `m` remains un-altered.
+* `int nml_mat_multrow_r(nml_mat *m, unsigned int row, double num)`
+   - Multiplies all elements from row `row` in matrix `m` with scalar `num`. The changes are done directly on matrix `m`.
+   
+Example:  
+
+```c
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "lib/nml.h"
+
+int main(int argc, char *argv[]) {
+    nml_mat *a = nml_mat_new(4,5);
+    nml_mat_setall(a, 1.0);
+    int i = 0;
+    for(; i < a->num_rows; ++i) {
+        // Changes are doing on matrix a
+        // row[i] is multiplied with (double) i
+        nml_mat_multrow_r(a, i, (double)i);
+    }
+    nml_mat_print(a);
+
+    // Create a new matrix b by multiplying row[1] 
+    // in matrix a with 5.0.
+    // Matrix a remains unchanged
+    nml_mat *b = nml_mat_multrow(a, 1, 5.0);
+    nml_mat_print(b);
+    nml_mat_free(a);
+    nml_mat_free(b);
+    return 0;
+}
+````
+
+
+To run the example:
+
+```sh
+./nml.sh clean examples && examples/multiply_rows.ex
+```
+
+To run the example:
+
+```sh
+./nml.sh clean examples && examples/multiply_rows.ex
+```
+
 ### Add rows
+
+The following methods are used to add a row to another row (with a multiplicator). This method is usally used when implementing various forms of matrix reduction or decompositions.
+
+Use:
+
+* `nml_mat *nml_mat_rowplusrow(nml_mat *m, unsigned int where, unsigned int row, double multiplier)`
+   - This will do the following: `m->data[where][...] *= m->data[row][...] * multiplier`. The results will be kept in a new matrix. Matrix `m` remains unchanged.
+* `int nml_mat_rowplusrow_r(nml_mat *m, unsigned int where, unsigned int row, double multiplier)`
+   - This will do the following: `m->data[where][...] *= m->data[row][...] * multiplier`. The changes are done directly on `m`.
+
+```c
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "lib/nml.h"
+
+int main(int argc, char *argv[]) {
+
+    nml_mat *m = nml_mat_new_rnd(5, 4, 1.0, 2.0);
+    nml_mat_print(m);
+
+    // Add row[1] elements to row[2] elements
+
+    nml_mat_rowplusrow_r(m, 2, 1, 1.0);
+
+    // Add row[1] to row[0] with a multiplier of 2.0
+
+    nml_mat_rowplusrow_r(m, 0, 1, 2.0);
+
+    nml_mat_print(m);
+    nml_mat_free(m);
+
+    return 0;
+}
+```
+
+To run the example:
+
+```sh
+./nml.sh clean examples && ./examples/row_plus_row.ex
+```
 
 ## Modifying the matrix structure
 
 ### Remove rows and columns
 
+
+
 ### Swap rows and columns
 
 ### Concatenate matrices
+
+Two or more matrices can be concatenated (horizontally) or (vertically) into one matrix.
+
+To achieve this, please use:
+
+* `nml_mat *nml_mat_concath(unsigned int mnun, nml_mat **matrices)`
+   - For horizontal concatenation. A new matrix is returned.
+   - `num` represents the number of matrices to concatenate.
+   - `matrices` the matrices to be concatenated.
+* `nml_mat *nml_mat_concatv(unsigned int mnum, nml_mat **matrices)`
+   - For vertical concatenation. A new matrix is returned.
+   - `num` represents the number of matrices to concatenate.
+   - `matrices` the matrices to be concatenated.  
+   
+Example:
+
+```c
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "lib/nml.h"
+
+int main(int argc, char *argv[]) {
+  nml_mat *I = nml_mat_eye(3);
+  nml_mat *Ix2 = nml_mat_scalarmult(I, 2.0);
+  nml_mat *rndm = nml_mat_new_rnd(3, 4, 1.0, 5.0);
+
+  nml_mat **ms = malloc(sizeof(*ms) * 2);
+  ms[0] = I;
+  ms[1] = Ix2;
+  
+  nml_mat *concats1 = nml_mat_concath(2, ms);
+
+  ms[0] = concats1;
+  ms[1] = rndm;
+
+  nml_mat *concats2 = nml_mat_concath(2, ms);
+
+  printf("\nConcatenate horizontally\n");
+  printf("I=\n");
+  nml_mat_print(I);
+  printf("Ix2=\n");
+  nml_mat_print(Ix2);
+  printf("rndm=\n");
+  nml_mat_print(rndm);
+  printf("concats1=\n");
+  nml_mat_print(concats1);
+  printf("concats2=\n");
+  nml_mat_print(concats2);
+
+  free(ms);
+  nml_mat_free(I);
+  nml_mat_free(Ix2);
+  nml_mat_free(concats1);
+  nml_mat_free(concats2);
+  nml_mat_free(rndm);
+
+  // -------------------------------------
+  // Vertical concatenation
+  // -------------------------------------
+
+  nml_mat *A = nml_mat_new_rnd(3, 4, 1.0, 4.0);
+  nml_mat *B = nml_mat_new_rnd(5, 4, 10.0, 20.0);
+  nml_mat *C = nml_mat_eye(4);
+
+  nml_mat **ABarr = malloc(sizeof(*ABarr) * 2);
+  ABarr[0] = A;
+  ABarr[1] = B;
+  nml_mat *ABCat = nml_mat_concatv(2, ABarr);
+
+  printf("\nA=\n");
+  nml_mat_print(A);
+  printf("\nB=\n");
+  nml_mat_print(B);
+  printf("\nC=\n");
+  nml_mat_print(C);
+  printf("\nA concat B =\n");
+  nml_mat_print(ABCat);
+
+  free(ABarr);
+  nml_mat_free(A);
+  nml_mat_free(B);
+  nml_mat_free(C);
+
+  return 0;
+}
+```
+
+To run the example:
+
+```sh
+./nml.sh clean examples && ./examples/concatenate_matrices.ex
+```
 
 ## Matrices operations
 
@@ -389,6 +767,81 @@ To run the example:
 ## LU(P) Decomposition
 
 ## Matrix inverse
+
+Calculating the inverse requires to decompose the matrix LU(P) decomposition first.
+
+Afterwards obtaining the inverse is straightforward: `nml_mat *nml_mat_inverse(nml_mat_lup *m)`.
+
+Example:
+
+```c
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "lib/nml.h"
+
+int main(int argc, char *argv[]) {
+  printf("\nInverse of a matrix:\n");
+  double m_v[16] = {
+    2.0, 7.0, 6.0, 1.0,
+    9.0, 5.0, 0.0, 2.0,
+    4.0, 3.0, 8.0, 3.0,
+    3.0, 5.0, 1.0, 9.0
+  };
+  nml_mat *m = nml_mat_from(4,4,16, m_v);
+  nml_mat_lup *lup = nml_mat_lup_solve(m);
+  nml_mat* minv = nml_mat_inverse(lup);
+  nml_mat *mdotminv = nml_mat_dot(m, minv);
+
+  printf("m=");
+  nml_mat_print(m);
+  printf("minv=");
+  nml_mat_print(minv);
+  printf("(%%e) m * minv=");
+  nml_mat_printf(mdotminv, "%e\t");
+  printf("(%%f) m * minv=");
+  nml_mat_printf(mdotminv, "%f\t");
+
+  nml_mat_free(m);
+  nml_mat_free(minv);
+  nml_mat_free(mdotminv);
+  return 0;
+}
+```
+
+Output:
+
+```
+m=
+2.000000		7.000000		6.000000		1.000000
+9.000000		5.000000		0.000000		2.000000
+4.000000		3.000000		8.000000		3.000000
+3.000000		5.000000		1.000000		9.000000
+
+minv=
+-0.081577		0.112583		0.065924		-0.037929
+0.174895		0.013245		-0.133955		0.022276
+0.001505		-0.046358		0.127935		-0.032511
+-0.070138		-0.039735		0.038230		0.114991
+
+(%e) m * minv=
+1.000000e+00	4.163336e-17	4.163336e-17	-1.387779e-17
+0.000000e+00	1.000000e+00	-2.775558e-17	2.775558e-17
+5.551115e-17	6.938894e-17	1.000000e+00	5.551115e-17
+0.000000e+00	5.551115e-17	-5.551115e-17	1.000000e+00
+
+(%f) m * minv=
+1.000000	0.000000	0.000000	-0.000000
+0.000000	1.000000	-0.000000	0.000000
+0.000000	0.000000	1.000000	0.000000
+0.000000	0.000000	-0.000000	1.000000
+```
+
+To run the example:
+
+```sh
+./nml.sh clean examples && ./examples/inverse.ex
+```
 
 ## Matrix determinant
 
