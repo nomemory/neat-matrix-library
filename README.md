@@ -143,6 +143,12 @@ int main(int argc, char *argv[]) {
 }
 ```
 
+To run the example:
+
+```sh
+./nml.sh clean examples && ./examples/creating_a_matrix_from_file.ex
+```
+
 ### Creating a matrix from user input
 
 The `nml_mat *nml_mat_fromfilef(FILE *f)` can be called, with `f=stdin`.
@@ -165,7 +171,7 @@ int main(int argc, char *argv[]) {
 
 To run the example:
 
-```
+```sh
 ./nml.sh clean examples && examples/creating_a_matrix_from_user_input.ex
 ```
 
