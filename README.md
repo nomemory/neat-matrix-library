@@ -582,8 +582,9 @@ int main(int argc, char *argv[]) {
     // in matrix a with 5.0.
     // Matrix a remains unchanged
     nml_mat *b = nml_mat_multrow(a, 1, 5.0);
-    nml_mat_free(a);
     nml_mat_print(b);
+    nml_mat_free(a);
+    nml_mat_free(b);
     return 0;
 }
 ````
