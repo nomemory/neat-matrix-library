@@ -267,4 +267,34 @@ To run the example:
 ./nml.sh clean examples && examples/creating_a_matrix_from_user_input.ex
 ```
 
-### Creating a square Matrix
+### Creating randomized matrices
+
+Creating a randomized matrix can be done with the following two methods:
+* `nml_mat *nml_mat_new_rnd(unsigned int num_rows, unsigned int num_cols, double min, double max)`
+  - Creates a randomized matrix of size `num_rows * num_cols`;
+  - The random values are between `min` and `max`;
+* `nml_mat *nml_mat_sqr_rnd(unsigned int size, double min, double max)`
+  - Creates a randomized matrix of size `size * size`;
+  - The random values are between `min` and `max`;
+  
+```c
+#include <stdlib.h>
+#include <stdio.h>
+#include <time.h>
+
+#include "lib/nml.h"
+
+int main(int argc, char *argv[]) {
+  srand(time(NULL)); // Should be called once per program
+  nml_mat *m = nml_mat_new_rnd(5, 5, -10.0, 10.0);
+  nml_mat_print(m);
+  nml_mat_free(m);
+  return 0;
+}
+```
+
+To run the example:
+
+```sh
+./nml.sh clean examples && examples/create_randomized_matrix.e
+```
