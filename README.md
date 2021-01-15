@@ -296,5 +296,5 @@ int main(int argc, char *argv[]) {
 To run the example:
 
 ```sh
-./nml.sh clean examples && examples/create_randomized_matrix.e
+./nml.sh clean examples && examples/create_randomized_matrix.ex
 ```
