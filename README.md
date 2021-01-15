@@ -7,10 +7,10 @@ It currently supports:
 * Determinant(A) 
 * Solving [linear systems of equations](https://en.wikipedia.org/wiki/System_of_linear_equations) using LU decomposition;
 * [Row Echelon Form](https://en.wikipedia.org/wiki/Gaussian_elimination);
+* Reduced Row Echelon Form [Gauss-Jordan](https://brilliant.org/wiki/gaussian-elimination/);
 
 The library is still under heavy development. The plan for the near future:
 
-* Reduced Row Echelon Form (close to ready) - [Gauss-Jordan](https://brilliant.org/wiki/gaussian-elimination/);
 * Implement [Cholesky decomposition](https://en.wikipedia.org/wiki/Cholesky_decomposition);
 * Implement [QR decomposition](https://en.wikipedia.org/wiki/QR_decomposition)
 * Tests 
