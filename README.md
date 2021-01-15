@@ -604,9 +604,52 @@ To run the example:
 
 ### Add rows
 
+The following methods are used to add a row to another row (with a multiplicator). This method is usally used when implementing various forms of matrix reduction or decompositions.
+
+Use:
+
+* `nml_mat *nml_mat_rowplusrow(nml_mat *m, unsigned int where, unsigned int row, double multiplier)`
+   - This will do the following: `m->data[where][...] *= m->data[row][...] * multiplier`. The results will be kept in a new matrix. Matrix `m` remains unchanged.
+* `int nml_mat_rowplusrow_r(nml_mat *m, unsigned int where, unsigned int row, double multiplier)`
+   - This will do the following: `m->data[where][...] *= m->data[row][...] * multiplier`. The changes are done directly on `m`.
+
+```c
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "lib/nml.h"
+
+int main(int argc, char *argv[]) {
+
+    nml_mat *m = nml_mat_new_rnd(5, 4, 1.0, 2.0);
+    nml_mat_print(m);
+
+    // Add row[1] elements to row[2] elements
+
+    nml_mat_rowplusrow_r(m, 2, 1, 1.0);
+
+    // Add row[1] to row[0] with a multiplier of 2.0
+
+    nml_mat_rowplusrow_r(m, 0, 1, 2.0);
+
+    nml_mat_print(m);
+    nml_mat_free(m);
+
+    return 0;
+}
+```
+
+To run the example:
+
+```sh
+./nml.sh clean examples && ./examples/row_plus_row.ex
+```
+
 ## Modifying the matrix structure
 
 ### Remove rows and columns
+
+
 
 ### Swap rows and columns
 
