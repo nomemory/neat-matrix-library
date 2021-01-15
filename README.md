@@ -9,8 +9,7 @@
 | ||_____|\____| | || ||_____||_____|| || |  |________|  | |
 | |              | || |              | || |              | |
 | '--------------' || '--------------' || '--------------' |      Neat Matrix Library
- '----------------'  '----------------'  '----------------'       github.com/nomemory
-                                                                  Andrei N. Ciobanu
+ '----------------'  '----------------'  '----------------'       
 ```
 
 **nml** is a simple [matrix](https://en.wikipedia.org/wiki/Matrix_(mathematics)) and [linear algebra](https://en.wikipedia.org/wiki/Linear_algebra) library written in standard C. Code should be portable and there are no dependencies.
