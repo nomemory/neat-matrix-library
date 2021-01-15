@@ -505,7 +505,48 @@ To run the example:
 
 ### Scalar multiply the matrix
 
+Use the following:
+* `nml_mat *nml_mat_scalarmult(nml_mat *m, double num)`
+   - Multiplies all elements of matrix `m` with `num`. A new matrix is returned.
+* `int nml_mat_scalarmult_r(nml_mat *m, double num)`
+   - Multiplies all elements of matrix `m` with `num`. All changes are done on matrix `m`.
 
+```c
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "lib/nml.h"
+
+int main(int argc, char *argv[]) {
+    nml_mat *m = nml_mat_eye(5);
+
+    // Multiply all elements of m with 2.0
+    // and return a new matrix
+
+    nml_mat *new_m = nml_mat_scalarmult(m, 2.0);
+
+    if (!(nml_mat_eq(m, new_m, 0.0))) {
+        printf("It's normal to see this message.\n");
+    }
+
+    // Multiply all elements of m with 2.0
+    // m is modified, no new matrix is created
+    nml_mat_scalarmult_r(m, 2.0);
+
+    if (nml_mat_eq(m, new_m, 0.0)) {
+        printf("It's even more normal to see this message.\n");
+    }
+
+    nml_mat_free(m);
+    nml_mat_free(new_m);
+}
+```
+
+To run the test:
+
+```sh
+./nml.sh clean examples && examples/scalar_multiply.ex
+```
 
 ### Multiply rows
 
