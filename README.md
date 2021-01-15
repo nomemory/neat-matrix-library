@@ -103,6 +103,9 @@ The methods for a creating a new matrix are:
   - Creates an identity `size * size` matrix.
 * `nml_mat *nml_mat_cp(nml_mat *m)`
   - Returns a new identitcal copy of matrix `m`.
+  
+Everytime we create a matrix, we dynamically allocate memory. 
+To free the memory please use: `nml_mat_free(nml_mat *m)`.  
 
 ```c
 #include <stdlib.h>
@@ -135,12 +138,12 @@ int main(int argc, char *argv[]) {
 
   return 0;
 }
-
 ```
 
 To run the example:
 
 ```sh
+./nml.sh clean examples && examples/creating_a_matrix.ex
 ```
 
 ### Creating a Matrix from an array
