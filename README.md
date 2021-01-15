@@ -30,6 +30,15 @@ This will compile the library, create a `dist` folder where you will find `*.a` 
 
 `gcc` and `ar` should be available in `$PATH`.
 
+If you want to use the `clang` compiler instead of `gcc` you need to manually edit the `./nml.sh` file, changing the variable name `CC` from `gcc` to `clang`. Nothing else should be changed.
+
+```bash
+# COMPILING RELATED
+CC=clang #<----------------- here
+CCFLAGS="-Wall -c"
+CCFLAGS_EXAMPLES="-Wall"
+```
+
 ## Building the examples
 
 Examples can be found in the [`./examples` folder](https://github.com/nomemory/neat-matrix-library/tree/main/examples).
@@ -43,6 +52,13 @@ To build the code examples:
 1. This will create an `examples/lib` folder where the `libnml.a` and the header files will be copied;
 2. The `examples/*.c` will be compiled with the latest version of `libnml`;
 3. For each `examples/*.c` an executable (`*.ex`) will be created.
+
+To run an example easily you can run the following:
+
+```bash
+# ./nml.sh clean examples && ./examples/<example name>.ex
+./nml.sh clean examples && ./examples/playground.ex
+```
 
 ## Running the tests 
 
@@ -69,7 +85,7 @@ This will clean everything (`*.o`,`*.ex`,`*.a`) and will leave the library folde
 
 # How to use the library
 
-A few examples can be found in the `./examples/*.c` folder.
+A few examples can be found in the [`./examples` folder](https://github.com/nomemory/neat-matrix-library/tree/main/examples) folder.
 
 ## Creating a Matrix
 
