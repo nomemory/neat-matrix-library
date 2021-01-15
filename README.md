@@ -104,7 +104,7 @@ The two methods that can be used to create a matrix from a file on disk are:
 * `nml_mat *nml_mat_fromfilef(FILE *f)` 
   * Creates a matrix from am already opened stream `f`. Does not automatically close the stream (`FILE`). 
 
-The matrix data should come in the following format:
+In the file, the matrix has the following format:
 
 ```
 4 5
