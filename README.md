@@ -53,7 +53,7 @@ To build the code examples:
 2. The `examples/*.c` will be compiled with the latest version of `libnml`;
 3. For each `examples/*.c` an executable (`*.ex`) will be created.
 
-To run an example easily you can run the following:
+To run an example:
 
 ```bash
 # ./nml.sh clean examples && ./examples/<example name>.ex
