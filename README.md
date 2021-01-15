@@ -330,7 +330,7 @@ int main(int argc, char *argv[]) {
     if (nml_mat_eq(m1, m2, 0.001)) {
         printf("Wow, what were the oddss..\n");
     } else {
-        printf("It's ok, nobody it's that lucky!\n");
+        printf("It's ok, nobody is that lucky!\n");
     }
     if (nml_mat_eqdim(m1, m2)) {
         printf("At least we know they both have the same number of rows and columns.\n");
