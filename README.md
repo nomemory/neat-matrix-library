@@ -100,9 +100,47 @@ A few examples can be found in the [`./examples` folder](https://github.com/nome
 
 The two methods that can be used to create a matrix from a file on disk are:
 * `nml_mat *nml_mat_fromfile(const char *file)` 
-  * Create a matrix from `file`. If the file cannot be opened a `NULL` matrix will be returned. 
+  * Create a matrix from the `file` path. If the file cannot be opened a `NULL` matrix will be returned. 
 * `nml_mat *nml_mat_fromfilef(FILE *f)` 
   * Creates a matrix from am already opened stream `f`. Does not automatically close the stream (`FILE`). 
 
+The matrix data should come in the following format:
+
+```
+4 5
+0.0     1.0     2.0     5.0     3.0
+3.0     8.0     9.0     1.0     4.0
+2.0     3.0     7.0     1.0     1.0
+0.0     0.0     4.0     3.0     8.0
+```
+
+On the first line `4` represents the number of rows and `5` represents the number of columns of the Matrix
+Then next lines contain the matrix elements: `4 * 5 = 20` numbers.
+
+Example code:
+
+```
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "lib/nml.h"
+
+int main(int argc, char *argv[]) {
+    const char *f = "examples/data/matrix1.data";
+    nml_mat *from_file = nml_mat_fromfile(f);
+    nml_mat_print(from_file);
+    nml_mat_free(from_file);
+
+    // Or if the file is already opened
+
+    FILE *m_file = fopen("examples/data/matrix2.data", "r");
+    nml_mat *from_file2 = nml_mat_fromfilef(m_file);
+    nml_mat_print(from_file2);
+    nml_mat_free(from_file2);
+    fclose(m_file);
+
+    return 0;
+}
+```
 
 ### Creating a square Matrix
