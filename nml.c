@@ -874,7 +874,7 @@ nml_mat_lup *nml_mat_lup_solve(nml_mat *m) {
 // by multiplying the main diagonal of matrix U with the sign.
 // the sign is -1 if the number of permutations is odd
 // the sign is +1 if the number of permutations is even
-double nml_mat_determinant(nml_mat_lup* lup) {
+double nml_mat_det(nml_mat_lup* lup) {
   int k;
   int sign = (lup->num_permutations%2==0) ? 1 : -1;
   nml_mat *U = lup->U;

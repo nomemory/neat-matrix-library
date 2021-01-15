@@ -136,7 +136,7 @@ nml_mat_lup *nml_mat_lup_solve(nml_mat *m);
 void nml_mat_lup_free(nml_mat_lup* lu);
 void nml_mat_lup_print(nml_mat_lup *lu);
 void nml_mat_lup_printf(nml_mat_lup *lu, const char *fmt);
-double nml_mat_determinant(nml_mat_lup* lup);
+double nml_mat_det(nml_mat_lup* lup);
 nml_mat *nml_mat_getlu(nml_mat_lup* lup);
 nml_mat *nml_mat_inverse(nml_mat_lup *m);
 

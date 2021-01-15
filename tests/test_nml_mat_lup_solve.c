@@ -5,6 +5,8 @@
 #include "lib/nml.h"
 #include "nml_test.h"
 
+#define TEST_TOLERANCE 0.0001
+
 int main(int argc, char *argv[]) {
      FILE *t_file = fopen(argv[1], "r");
 
@@ -26,7 +28,7 @@ int main(int argc, char *argv[]) {
         nml_mat *pdotinput = nml_mat_dot(input_lup->P, input);
         nml_mat *ldotu = nml_mat_dot(input_lup->L, input_lup->U);
 
-        if (nml_mat_eq(pdotinput, ldotu, 0.001)) {
+        if (nml_mat_eq(pdotinput, ldotu, TEST_TOLERANCE)) {
             printf(GREEN "%d " RESET, k);    
         } else {
             printf(RED "%d" RESET, k);

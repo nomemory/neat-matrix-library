@@ -5,6 +5,8 @@
 #include "lib/nml.h"
 #include "nml_test.h"
 
+#define TEST_TOLERANCE 0.0001
+
 int main(int argc, char *argv[]) {
 
     FILE *t_file = fopen(argv[1], "r");
@@ -28,10 +30,10 @@ int main(int argc, char *argv[]) {
         expected = nml_mat_fromfilef(t_file);
         computed = nml_mat_rref(input);
 
-        if (nml_mat_eq(computed, expected, 0.001)) {
+        if (nml_mat_eq(computed, expected, TEST_TOLERANCE)) {
             printf(GREEN "%d " RESET, k);
         } else {
-            printf("Test %d from " YELLOW "'%s'" RESET " with input " YELLOW "'%s'" RESET "-> "RED "FAIL"  RESET "\n", k, argv[0], argv[1]);
+            printf(RED "%d" RESET, k);
             printf("\ninput =\n");
             nml_mat_print(input);
             printf("\nexpected =\n");
