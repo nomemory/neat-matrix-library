@@ -1,24 +1,26 @@
-**nml** is simple [matrix](https://en.wikipedia.org/wiki/Matrix_(mathematics)) and [linear algebra](https://en.wikipedia.org/wiki/Linear_algebra) library written in pure C.
+**nml** is a simple [matrix](https://en.wikipedia.org/wiki/Matrix_(mathematics)) and [linear algebra](https://en.wikipedia.org/wiki/Linear_algebra) library written in standard C. Code should be portable and there are no dependencies.
 
 It currently supports:
 * Basic Matrix Operations (row swaps, colum swaps, multiplication, addition, etc.)
 * [LU Decomposition](https://en.wikipedia.org/wiki/LU_decomposition);
 * Inverse(A);
 * Determinant(A) 
-* Solving [linear systems of equations](https://en.wikipedia.org/wiki/System_of_linear_equations) using LU decomposition;
+* Solving [linear systems of equations](https://en.wikipedia.org/wiki/System_of_linear_equations);
 * [Row Echelon Form](https://en.wikipedia.org/wiki/Gaussian_elimination);
-* Reduced Row Echelon Form [Gauss-Jordan](https://brilliant.org/wiki/gaussian-elimination/);
+* Reduced Row Echelon Form ([Gauss-Jordan](https://brilliant.org/wiki/gaussian-elimination/));
 
-The library is still under heavy development. The plan for the near future:
+The library is still under development, but a few thousands test cases are already implemented.
+
+Next feature:
 
 * Implement [QR decomposition](https://en.wikipedia.org/wiki/QR_decomposition)
-* Tests 
 
-Documentation is under heavy editing.
+Documentation is under construction.
 
 # Compile / Run Examples
 
-The build file for the library it's called `nml.sh`. It's actually a `bash` script (not a `makefile`!).
+The build file for the library it's called `nml.sh`. 
+It's actually a `bash` script (not a `makefile`!).
 
 ## Building the library
 
@@ -30,7 +32,8 @@ This will compile the library, create a `dist` folder where you will find `*.a` 
 
 `gcc` and `ar` should be available in `$PATH`.
 
-If you want to use the `clang` compiler instead of `gcc` you need to manually edit the `./nml.sh` file, changing the variable name `CC` from `gcc` to `clang`. Nothing else should be changed.
+If you want to use the `clang` compiler instead of `gcc` you need to manually edit the `./nml.sh` file, changing the variable `CC` from `gcc` to `clang`. 
+Nothing else should be changed.
 
 ```bash
 # COMPILING RELATED
