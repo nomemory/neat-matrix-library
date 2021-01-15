@@ -7,11 +7,17 @@ int main(int argc, char *argv[]) {
   nml_mat *I = nml_mat_eye(3);
   nml_mat *Ix2 = nml_mat_scalarmult(I, 2.0);
   nml_mat *rndm = nml_mat_new_rnd(3, 4, 1.0, 5.0);
-  // Concatenate using a pointer
+
   nml_mat **ms = malloc(sizeof(*ms) * 2);
   ms[0] = I;
   ms[1] = Ix2;
+  
   nml_mat *concats1 = nml_mat_concath(2, ms);
+
+  ms[0] = concats1;
+  ms[1] = rndm;
+
+  nml_mat *concats2 = nml_mat_concath(2, ms);
 
   printf("\nConcatenate horizontally\n");
   printf("I=\n");
@@ -23,11 +29,13 @@ int main(int argc, char *argv[]) {
   printf("concats1=\n");
   nml_mat_print(concats1);
   printf("concats2=\n");
+  nml_mat_print(concats2);
 
   free(ms);
   nml_mat_free(I);
   nml_mat_free(Ix2);
   nml_mat_free(concats1);
+  nml_mat_free(concats2);
   nml_mat_free(rndm);
 
   // -------------------------------------

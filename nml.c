@@ -250,7 +250,6 @@ int nml_mat_eq(nml_mat *m1, nml_mat *m2, double tolerance) {
   for(i = 0; i < m1->num_rows; i++) {
     for(j = 0; j < m1->num_cols; j++) {
       if (fabs(fabs(m1->data[i][j]) - fabs(m2->data[i][j])) > tolerance) {
-        printf("[%d][%d]: m1[%lf]-m2[%lf]=%lf\n",i,j,fabs(m1->data[i][j]), fabs(m2->data[i][j]), fabs(fabs(m1->data[i][j]) - fabs(m2->data[i][j])));
         return 0;
       }
     }
@@ -874,7 +873,7 @@ nml_mat_lup *nml_mat_lup_solve(nml_mat *m) {
 // by multiplying the main diagonal of matrix U with the sign.
 // the sign is -1 if the number of permutations is odd
 // the sign is +1 if the number of permutations is even
-double nml_mat_det(nml_mat_lup* lup) {
+double nml_mat_determinant(nml_mat_lup* lup) {
   int k;
   int sign = (lup->num_permutations%2==0) ? 1 : -1;
   nml_mat *U = lup->U;

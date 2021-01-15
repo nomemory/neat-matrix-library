@@ -142,7 +142,9 @@ function tests {
 
 ### MAIN ###
 
-echo "${@}"
+echo -e " "
+echo -e "${GREEN}N${NC}eat ${GREEN}M${NC}atrix ${GREEN}L${NC}ibrary (libnml)"
+echo -e " "
 
 for token in "${@}" ;
 do
