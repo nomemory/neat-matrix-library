@@ -119,7 +119,7 @@ Then next lines contain the matrix elements: `4 * 5 = 20` numbers.
 
 Example code:
 
-```
+```c
 #include <stdlib.h>
 #include <stdio.h>
 
