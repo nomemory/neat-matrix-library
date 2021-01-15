@@ -92,7 +92,7 @@ A few examples can be found in the [`./examples` folder](https://github.com/nome
 
 ## Creating a Matrix
 
-### Creating a Matrix
+### Creating a new Matrix
 
 The methods for a creating a new matrix are:
 * `nml_mat *nml_mat_new(unsigned int num_rows, unsigned int num_cols)`
