@@ -649,6 +649,53 @@ To run the example:
 
 ### Remove rows and columns
 
+To remove columns:
+* `nml_mat *nml_mat_remcol(nml_mat *m, unsigned int column)`
+  - A new matrix is being created, `m` remains the same.
+
+To remove rows:
+* `nml_mat *nml_mat_remrow(nml_mat *m, unsigned int row)`
+  - A new matrix is being created, `m` remains the same.
+  
+ Example:
+
+```c
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "lib/nml.h"
+
+int main(int argc, char *argv[]) {
+
+    nml_mat *m = nml_mat_sqr_rnd(4, 1.0, 2.0);
+    nml_mat_print(m);
+
+    // Remove column[1] from m
+    // m remains the same
+    // less_columns is another matrix 
+    nml_mat *less_columns = nml_mat_remcol(m, 1);
+    nml_mat_print(less_columns);
+
+    // Remove row[0] from less_columns
+    // less_columns remains the same
+    // less_rows is another matrix
+    nml_mat *less_rows = nml_mat_remrow(less_columns, 0);
+    nml_mat_print(less_rows);
+
+    nml_mat_free(m);
+    nml_mat_free(less_columns);
+    nml_mat_free(less_rows);
+
+    return 0;
+}
+```
+
+To run the example:
+
+```sh
+./nml.sh examples && ./examples/remove_columns_rows.ex
+```
+
 ### Swap rows and columns
 
 Use:
