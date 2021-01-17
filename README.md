@@ -1164,6 +1164,83 @@ To run the example:
 
 ## LU(P) Decomposition
 
+To decompose a matrix using LU you can use: `nml_mat_lup *nml_mat_lup_solve(nml_mat *m)`.
+
+The result is a pointer `nml_mat_lup*`:
+
+```c
+typedef struct nml_mat_lup_s {
+  nml_mat *L;
+  nml_mat *U;
+  nml_mat *P;
+  unsigned int num_permutations;
+} nml_mat_lup;
+```
+
+To free the `nml_mat_lup*`. Please use `void nml_mat_lup_free(nml_mat_lup* lu)`. This will also deallocate the memory for the three internal `nml_mat*` pointers.
+
+LU decomposition is used for solving linear systems of equations, computing the determinant and the inverse of a matrix.
+
+Example:
+
+```c
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "lib/nml.h"
+
+int main(int argc, char *argv[]) {
+    nml_mat *m1 = nml_mat_sqr_rnd(4, 0.0, 10.0);
+    printf("m1=\n");
+    nml_mat_print(m1);
+
+    nml_mat_lup *m1_lup = nml_mat_lup_solve(m1);
+    printf("L, U, P:\n");
+    nml_mat_lup_print(m1_lup);
+
+    nml_mat_free(m1);
+    nml_mat_lup_free(m1_lup);
+
+    return 0;
+}
+```
+
+Output:
+
+```
+m1=
+
+0.000078		1.315378		7.556053		4.586501
+5.327672		2.189592		0.470446		6.788647
+6.792964		9.346929		3.835021		5.194164
+8.309653		0.345721		0.534616		5.297002
+
+L, U, P:
+
+1.000000		0.000000		0.000000		0.000000
+0.817479		1.000000		0.000000		0.000000
+0.000009		0.145116		1.000000		0.000000
+0.641143		0.217108		-0.086373		1.000000
+
+
+8.309653		0.345721		0.534616		5.297002
+0.000000		9.064309		3.397983		0.863978
+0.000000		0.000000		7.062947		4.461075
+0.000000		0.000000		0.000000		3.590254
+
+
+0.000000		0.000000		0.000000		1.000000
+0.000000		0.000000		1.000000		0.000000
+1.000000		0.000000		0.000000		0.000000
+0.000000		1.000000		0.000000		0.000000
+```
+
+Running the example:
+
+```sh
+./nml.sh clean examples && examples/lup.ex
+```
+
 ## Matrix inverse
 
 Calculating the inverse requires to decompose the matrix LU(P) decomposition first.
