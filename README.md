@@ -146,6 +146,24 @@ A few examples can be found in the [`./examples` folder](https://github.com/nome
 
 ## Creating matrices
 
+All the methods are interacting with the `nml_mat` struct:
+
+```c
+typedef struct nml_mat_s {
+  unsigned int num_rows;
+  unsigned int num_cols;
+  double **data;
+  int is_square;
+} nml_mat;
+```
+
+To interact the elements of the matrix:
+
+```c
+nml_mat *m = ...
+m->data[i][j] = ...
+```
+
 ### Creating a new Matrix
 
 The methods for a creating a new matrix are:
@@ -891,11 +909,143 @@ To run the example:
 
 ### Add and subtract matrices
 
+To add or subtract two matrices, the following methods can be used:
+
+* `nml_mat *nml_mat_add(nml_mat *m1, nml_mat *m2)`
+  - Adds two matrices, the results are kept in a new `nml_mat*`. `m1` and `m2` remain unchanged.
+* `int nml_mat_add_r(nml_mat *m1, nml_mat *m2)`
+  - Add two matrices, the results are kept in `m1`. `m2` remains unchanged.
+* `nml_mat *nml_mat_sub(nml_mat *m1, nml_mat *m2)`
+  - Subtracts two matrices, the results are kept in a new `nml_mat*`. `m1` and `m2` remain unchanged.
+* `int nml_mat_sub_r(nml_mat *m1, nml_mat *m2)`
+  - Subtracts two matrices, the results are kept in `m1`. `m2` remains unchanged.
+  
+Example:  
+
+```c
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "lib/nml.h"
+
+int main(int argc, char *argv[]) {
+    nml_mat *m1 = nml_mat_sqr_rnd(4, 0.0, 10.0);
+    nml_mat *m2 = nml_mat_sqr_rnd(4, 0.0, 10.0);
+    printf("m1=\n");
+    nml_mat_print(m1);
+    
+    printf("m2=\n");
+    nml_mat_print(m2);
+
+
+    // Add the matrices to, result is kept in m3
+    // m1 and m2 remain unchanged
+    nml_mat *m3 = nml_mat_add(m1, m2);
+    printf("m3=\n");
+    nml_mat_print(m3);
+
+    // Add the matrices, the result is kept in m1
+    // m1 is modified, m2 remains unchanged
+    nml_mat_add_r(m1, m2);
+    printf("m1=\n");
+    nml_mat_print(m1);
+    
+    nml_mat_free(m1);
+    nml_mat_free(m2);
+    nml_mat_free(m3);
+
+    return 0;
+}
+```
+
+To run the example:
+
+```sh
+./nml.sh examples && examples/add_matrices.ex
+```
+
 ### Multiply matrices (dot)
+
+To multiply two matrices, the following method can be used:
+
+* `nml_mat *nml_mat_dot(nml_mat *m1, nml_mat *m2)`
+  - Multiplies two matrices, the result is kept in a new `nml_mat*`. `m1` and `m2` remain unchanged.
+  
+Example:
+
+```c
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "lib/nml.h"
+
+int main(int argc, char *argv[]) {
+    nml_mat *m1 = nml_mat_sqr_rnd(4, 0.0, 10.0);
+    nml_mat *m2 = nml_mat_sqr_rnd(4, 0.0, 10.0);
+
+    printf("m1=\n");
+    nml_mat_print(m1);
+    
+    printf("m2=\n");
+    nml_mat_print(m2);
+
+    // Multiply matrices
+    nml_mat *m3 = nml_mat_dot(m1, m2);
+    printf("m3=\n");
+    nml_mat_print(m3);
+
+    nml_mat_free(m1);
+    nml_mat_free(m2);
+    nml_mat_free(m3);
+
+    return 0;
+}
+```
+
+To run the example:
+
+```sh
+./nml.sh examples && examples/dot_matrices.ex
+```
 
 ## Transpose matrices
 
+To transpose a matrix, the following method can be used:
+
+* `nml_mat *nml_mat_transp(nml_mat *m)`
+  - A new `nml_mat*` will be created, representing the transpose matrix of `m`. `m` remains unchanged.
+ 
+Example: 
+  
+```c
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "lib/nml.h"
+
+int main(int argc, char *argv[]) {
+    nml_mat *m1 = nml_mat_new_rnd(1, 5, 1.0, 10.0);
+    nml_mat_print(m1);
+
+    nml_mat *m2 = nml_mat_transp(m1);
+    nml_mat_print(m2);
+
+    nml_mat_free(m1);
+    nml_mat_free(m2);
+
+    return 0;
+}
+```
+
+To run the example:
+
+```sh
+./nml.sh clean examples && examples/transpose.ex
+```
+
 ## Calculate trace
+
+To calculate the trace of the matrix the following method can be used: `double nml_mat_trace(nml_mat* m)`.
 
 ## Row Echelon 
 
@@ -956,6 +1106,61 @@ To run the example:
 ```
 
 ### Calculate Reduced Row Echelon Form using Gauss-Jordan
+
+To bring the matrix in Reduced Row Echelon Form the following method can be used: `nml_mat *nml_mat_rref(nml_mat *m)`.
+
+Example:
+
+```c
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "lib/nml.h"
+
+int main(int argc, char *argv[]) {
+
+  double v1[9] = {
+    0.0, 1.0, 2.0,
+    1.0, 2.0, 1.0,
+    2.0, 7.0, 8.0
+  };
+
+  nml_mat *m1 = nml_mat_from(3, 3, 9, v1);
+  printf("\nm1=\n");
+  nml_mat_print(m1);
+  nml_mat *rrefm1 = nml_mat_rref(m1);
+  printf("\nrrefm1=\n");
+  nml_mat_print(rrefm1);
+
+  nml_mat_free(m1);
+  nml_mat_free(rrefm1);
+  return 0;
+}
+```
+
+Output:
+
+```
+m1=
+
+0.000000		1.000000		2.000000
+1.000000		2.000000		1.000000
+2.000000		7.000000		8.000000
+
+
+rrefm1=
+
+1.000000		0.000000		-3.000000
+-0.000000		1.000000		2.000000
+0.000000		0.000000		0.000000
+```
+
+To run the example:
+
+```sh
+./nml.sh clean examples && examples/reduced_row_echelon.ex
+```
+
 
 ## LU(P) Decomposition
 
