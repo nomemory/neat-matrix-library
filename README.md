@@ -1320,4 +1320,44 @@ To run the example:
 
 ## Matrix determinant
 
+```c
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "lib/nml.h"
+
+int main(int argc, char *argv[]) {
+    nml_mat *m1 = nml_mat_sqr_rnd(4, 0.0, 10.0);
+    nml_mat_lup *m1_lup = nml_mat_lup_solve(m1);
+    
+    printf("m1=\n");
+    nml_mat_print(m1);
+    printf("determinant=%lf\n", nml_mat_det(m1_lup));
+
+    nml_mat_free(m1);
+    nml_mat_lup_free(m1_lup);
+
+    return 0;
+}
+```
+
+Output:
+
+```
+m1=
+
+0.000078		1.315378		7.556053		4.586501
+5.327672		2.189592		0.470446		6.788647
+6.792964		9.346929		3.835021		5.194164
+8.309653		0.345721		0.534616		5.297002
+
+determinant=-1909.979877
+```
+
+Runnning the example:
+
+```sh
+./nml.sh clean examples && examples/determinant.ex
+```
+
 ## Solve linear systems of equations
