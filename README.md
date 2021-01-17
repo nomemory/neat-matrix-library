@@ -1320,6 +1320,11 @@ To run the example:
 
 ## Matrix determinant
 
+
+Calculating the determinant requires to decompose the matrix LU(P) decomposition first.
+
+Afterwards obtaining the determinant is straightforward: `double nml_mat_det(nml_mat_lup* lup)`.
+
 ```c
 #include <stdlib.h>
 #include <stdio.h>
