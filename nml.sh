@@ -119,7 +119,7 @@ function examples {
   ls ${EXAMPLES}/*.c | while read file ;
     do
       echo -e "\t $file -> ${GREEN}${file%%.*}.ex${NC}"
-      ${CC} ${CCFLAGS_EXAMPLES} -mlinker-version=305 ${file} -L ./${EXAMPLES}/lib -l${LIB_NAME_SIMPLE} -o ${file%%.*}.ex
+      ${CC} ${CCFLAGS_EXAMPLES} ${file} -L ./${EXAMPLES}/lib -l${LIB_NAME_SIMPLE} -o ${file%%.*}.ex
     done
 }
 
