@@ -1366,3 +1366,114 @@ Runnning the example:
 ```
 
 ## Solve linear systems of equations
+
+### Solving `A * x = B` where A is lower triangular (Forward Substitution)
+
+Use: `nml_mat *nml_ls_solvefwd(nml_mat *low_triang, nml_mat *b)`.
+
+_Note: no validation will be performed to check is `low_triang` is a lower triangular matrix_
+
+```c
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "lib/nml.h"
+
+int main(int argc, char *argv[]) {
+    
+    FILE *input = fopen("./examples/data/matrix9_lower_triangular.data", "r");
+
+    nml_mat *A = nml_mat_fromfilef(input);
+    nml_mat *B = nml_mat_fromfilef(input);
+    nml_mat *x = nml_ls_solvefwd(A, B);
+
+    nml_mat_print(A);
+    nml_mat_print(B);
+    nml_mat_print(x);
+
+    nml_mat_free(A);
+    nml_mat_free(B);
+    nml_mat_free(x);
+
+    fclose(input);
+
+    return 0;
+}
+```
+
+To run the example:
+
+```sh
+./nml.sh clean examples && examples/forward_substition.ex
+```
+
+### Solving `A * x = B` where A is upper traingular (Backward Substition)
+
+Use: `nml_mat *nml_ls_solvebck(nml_mat *upper_triang, nml_mat *b)`.
+
+_Note: no validation will be performed to check is `upper_triang` is an upper triangular matrix_
+
+```c
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "lib/nml.h"
+
+int main(int argc, char *argv[]) {
+    
+    FILE *input = fopen("./examples/data/matrix10_upper_triangular.data", "r");
+
+    nml_mat *A = nml_mat_fromfilef(input);
+    nml_mat *B = nml_mat_fromfilef(input);
+    nml_mat *x = nml_ls_solvebck(A, B);
+
+    nml_mat_print(A);
+    nml_mat_print(B);
+    nml_mat_print(x);
+
+    nml_mat_free(A);
+    nml_mat_free(B);
+    nml_mat_free(x);
+
+    fclose(input);
+
+    return 0;
+}
+```
+
+To run the example:
+
+```sh
+./nml.sh clean examples && examples/backward_substitution.ex
+```
+
+### Solving `A * x = B` using LU(P) decomposition
+
+Use: `nml_mat *nml_ls_solve(nml_mat_lup *lup, nml_mat* b)`.
+
+```c
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "lib/nml.h"
+
+int main(int argc, char *argv[]) {
+    nml_mat *A = nml_mat_sqr_rnd(4, 1.0, 10.0);
+    nml_mat *B = nml_mat_new_rnd(4, 1, 1.0, 10.0);
+    nml_mat_lup *LUP = nml_mat_lup_solve(A);
+
+    nml_mat *x = nml_ls_solve(LUP, B);
+    nml_mat_print(x);
+
+    nml_mat_free(A);
+    nml_mat_free(B);
+    nml_mat_free(x);
+    nml_mat_lup_free(LUP);
+}
+```
+
+To run the example:
+
+```sh
+./nml.sh clean examples && ./examples/ls_solve.ex
+```
