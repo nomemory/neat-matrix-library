@@ -16,6 +16,7 @@
 
 It currently supports:
 * Basic Matrix Operations (row swaps, colum swaps, multiplication, addition, etc.)
+* Normalization;
 * [LU Decomposition](https://en.wikipedia.org/wiki/LU_decomposition);
 * Inverse(A);
 * Determinant(A) 
