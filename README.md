@@ -16,7 +16,6 @@
 
 It currently supports:
 * Basic Matrix Operations (row swaps, colum swaps, multiplication, addition, etc.)
-* Normalization;
 * [LU Decomposition](https://en.wikipedia.org/wiki/LU_decomposition);
 * Inverse(A);
 * Determinant(A) 
@@ -343,7 +342,7 @@ To run the example:
 ### Creating randomized matrices
 
 Creating a randomized matrix can be done with the following two methods:
-* `nml_mat *nml_mat_new_rnd(unsigned int num_rows, unsigned int num_cols, double min, double max)`
+* `nml_mat *nm_mat_rnd(unsigned int num_rows, unsigned int num_cols, double min, double max)`
   - Creates a randomized matrix of size `num_rows * num_cols`;
   - The random values are between `min` and `max`;
 * `nml_mat *nml_mat_sqr_rnd(unsigned int size, double min, double max)`
@@ -359,7 +358,7 @@ Creating a randomized matrix can be done with the following two methods:
 
 int main(int argc, char *argv[]) {
   srand(time(NULL)); // Should be called once per program
-  nml_mat *m = nml_mat_new_rnd(5, 5, -10.0, 10.0);
+  nml_mat *m = nm_mat_rnd(5, 5, -10.0, 10.0);
   nml_mat_print(m);
   nml_mat_free(m);
   return 0;
@@ -397,8 +396,8 @@ There are two "equality" methods for matrices:
 int main(int argc, char *argv[]) {
 
     srand(time(NULL));
-    nml_mat *m1 = nml_mat_new_rnd(2, 3, 1.0, 10.0);
-    nml_mat *m2 = nml_mat_new_rnd(2, 3, 1.0, 10.0);
+    nml_mat *m1 = nm_mat_rnd(2, 3, 1.0, 10.0);
+    nml_mat *m2 = nm_mat_rnd(2, 3, 1.0, 10.0);
 
     if (nml_mat_eq(m1, m2, 0.001)) {
         printf("Wow, what were the oddss..\n");
@@ -427,8 +426,8 @@ To run the example:
 
 Two methods can be used to select rows and columns from a source matrix (`nm_mat*`):
 
-* `nml_mat *nml_mat_getcol(nml_mat *m, unsigned int col)`
-* `nml_mat *nml_mat_getrow(nml_mat *m, unsigned int row)`
+* `nml_mat *nm_mat_col_get(nml_mat *m, unsigned int col)`
+* `nml_mat *nm_mat_row_get(nml_mat *m, unsigned int row)`
 
 The following code extracts every column of a given random matrix into a temporary column matrix (`nml_mat*`):
 
@@ -442,12 +441,12 @@ The following code extracts every column of a given random matrix into a tempora
 int main(int argc, char *argv[]) {
   printf("\nExtract all matrix columns from a Matrix as matrices\n");
   srand(time(NULL));
-  nml_mat *m = nml_mat_new_rnd(5, 5, -10.0, 10.0);
+  nml_mat *m = nm_mat_rnd(5, 5, -10.0, 10.0);
   nml_mat *col;
   nml_mat_print(m);
   int i = 0;
   for(i = 0; i < m->num_cols; i++) {
-    col = nml_mat_getcol(m, i);
+    col = nm_mat_col_get(m, i);
     nml_mat_print(col);
     nml_mat_free(col);
   }
@@ -464,7 +463,7 @@ To run the example:
 
 ### Set all elements to a value
 
-Use: `void nml_mat_setall(nml_mat *matrix, double value)`
+Use: `void nml_mat_all_set(nml_mat *matrix, double value)`
 
 ```c
 #include <stdlib.h>
@@ -478,7 +477,7 @@ int main(int argc, char *argv[]) {
     nml_mat *pi_mat = nml_mat_sqr(5);
 
     // Sets all elements to PI
-    nml_mat_setall(pi_mat, M_PI);
+    nml_mat_all_set(pi_mat, M_PI);
 
     nml_mat_print(pi_mat);
     nml_mat_free(pi_mat);
@@ -494,7 +493,7 @@ To run the example:
 
 ### Set the first diagonal to a value
 
-Use: `int nml_mat_setdiag(nml_mat *matrix, double value)`
+Use: `int nml_mat_diag_set(nml_mat *matrix, double value)`
 
 ```c
 #include <stdlib.h>
@@ -508,7 +507,7 @@ int main(int argc, char *argv[]) {
     nml_mat *pi_mat = nml_mat_sqr(5);
 
     // Sets the first diagonal to PI
-    nml_mat_setdiag(pi_mat, M_PI);
+    nml_mat_diag_set(pi_mat, M_PI);
 
     nml_mat_print(pi_mat);
     nml_mat_free(pi_mat);
@@ -525,9 +524,9 @@ To run the example:
 ### Scalar multiply the matrix
 
 Use:
-* `nml_mat *nml_mat_scalarmult(nml_mat *m, double num)`
+* `nml_mat *nml_mat_smult(nml_mat *m, double num)`
    - Multiplies all elements of matrix `m` with `num`. A new matrix is returned.
-* `int nml_mat_scalarmult_r(nml_mat *m, double num)`
+* `int nml_mat_smult_r(nml_mat *m, double num)`
    - Multiplies all elements of matrix `m` with `num`. All changes are done on matrix `m`.
 
 ```c
@@ -542,7 +541,7 @@ int main(int argc, char *argv[]) {
     // Multiply all elements of m with 2.0
     // and return a new matrix
 
-    nml_mat *new_m = nml_mat_scalarmult(m, 2.0);
+    nml_mat *new_m = nml_mat_smult(m, 2.0);
 
     if (!(nml_mat_eq(m, new_m, 0.0))) {
         printf("It's normal to see this message.\n");
@@ -550,7 +549,7 @@ int main(int argc, char *argv[]) {
 
     // Multiply all elements of m with 2.0
     // m is modified, no new matrix is created
-    nml_mat_scalarmult_r(m, 2.0);
+    nml_mat_smult_r(m, 2.0);
 
     if (nml_mat_eq(m, new_m, 0.0)) {
         printf("It's even more normal to see this message.\n");
@@ -573,9 +572,9 @@ To run the example:
 
 Use:
 
-* `nml_mat *nml_mat_multrow(nml_mat *m, unsigned int row, double num)`
+* `nml_mat *nml_mat_row_mult(nml_mat *m, unsigned int row, double num)`
    - Multiplies all elements from row `row` in matrix `m` with scalar `num`. A new matrix is returned. `m` remains un-altered.
-* `int nml_mat_multrow_r(nml_mat *m, unsigned int row, double num)`
+* `int nml_mat_row_mult_r(nml_mat *m, unsigned int row, double num)`
    - Multiplies all elements from row `row` in matrix `m` with scalar `num`. The changes are done directly on matrix `m`.
    
 Example:  
@@ -588,19 +587,19 @@ Example:
 
 int main(int argc, char *argv[]) {
     nml_mat *a = nml_mat_new(4,5);
-    nml_mat_setall(a, 1.0);
+    nml_mat_all_set(a, 1.0);
     int i = 0;
     for(; i < a->num_rows; ++i) {
         // Changes are doing on matrix a
         // row[i] is multiplied with (double) i
-        nml_mat_multrow_r(a, i, (double)i);
+        nml_mat_row_mult_r(a, i, (double)i);
     }
     nml_mat_print(a);
 
     // Create a new matrix b by multiplying row[1] 
     // in matrix a with 5.0.
     // Matrix a remains unchanged
-    nml_mat *b = nml_mat_multrow(a, 1, 5.0);
+    nml_mat *b = nml_mat_row_mult(a, 1, 5.0);
     nml_mat_print(b);
     nml_mat_free(a);
     nml_mat_free(b);
@@ -627,9 +626,9 @@ The following methods are used to add a row to another row (with a multiplicator
 
 Use:
 
-* `nml_mat *nml_mat_rowplusrow(nml_mat *m, unsigned int where, unsigned int row, double multiplier)`
+* `nml_mat *nml_mat_row_addrow(nml_mat *m, unsigned int where, unsigned int row, double multiplier)`
    - This will do the following: `m->data[where][...] *= m->data[row][...] * multiplier`. The results will be kept in a new matrix. Matrix `m` remains unchanged.
-* `int nml_mat_rowplusrow_r(nml_mat *m, unsigned int where, unsigned int row, double multiplier)`
+* `int nml_mat_row_addrow_r(nml_mat *m, unsigned int where, unsigned int row, double multiplier)`
    - This will do the following: `m->data[where][...] *= m->data[row][...] * multiplier`. The changes are done directly on `m`.
 
 ```c
@@ -640,16 +639,16 @@ Use:
 
 int main(int argc, char *argv[]) {
 
-    nml_mat *m = nml_mat_new_rnd(5, 4, 1.0, 2.0);
+    nml_mat *m = nm_mat_rnd(5, 4, 1.0, 2.0);
     nml_mat_print(m);
 
     // Add row[1] elements to row[2] elements
 
-    nml_mat_rowplusrow_r(m, 2, 1, 1.0);
+    nml_mat_row_addrow_r(m, 2, 1, 1.0);
 
     // Add row[1] to row[0] with a multiplier of 2.0
 
-    nml_mat_rowplusrow_r(m, 0, 1, 2.0);
+    nml_mat_row_addrow_r(m, 0, 1, 2.0);
 
     nml_mat_print(m);
     nml_mat_free(m);
@@ -669,11 +668,11 @@ To run the example:
 ### Remove rows and columns
 
 To remove columns:
-* `nml_mat *nml_mat_remcol(nml_mat *m, unsigned int column)`
+* `nml_mat *nml_mat_col_rem(nml_mat *m, unsigned int column)`
   - A new matrix is being created, `m` remains the same.
 
 To remove rows:
-* `nml_mat *nml_mat_remrow(nml_mat *m, unsigned int row)`
+* `nml_mat *nml_mat_row_rem(nml_mat *m, unsigned int row)`
   - A new matrix is being created, `m` remains the same.
   
  Example:
@@ -692,13 +691,13 @@ int main(int argc, char *argv[]) {
     // Remove column[1] from m
     // m remains the same
     // less_columns is another matrix 
-    nml_mat *less_columns = nml_mat_remcol(m, 1);
+    nml_mat *less_columns = nml_mat_col_rem(m, 1);
     nml_mat_print(less_columns);
 
     // Remove row[0] from less_columns
     // less_columns remains the same
     // less_rows is another matrix
-    nml_mat *less_rows = nml_mat_remrow(less_columns, 0);
+    nml_mat *less_rows = nml_mat_row_rem(less_columns, 0);
     nml_mat_print(less_rows);
 
     nml_mat_free(m);
@@ -719,10 +718,10 @@ To run the example:
 
 Use:
 
-* `nml_mat *nml_mat_swaprows(nml_mat *m, unsigned int row1, unsigned int row2)`
-* `int nml_mat_swaprows_r(nml_mat *m, unsigned int row1, unsigned int row2)`
-* `nml_mat *nml_mat_swapcols(nml_mat *m, unsigned int col1, unsigned int col2)`
-* `int nml_mat_swapcols_r(nml_mat *m, unsigned int col1, unsigned int col2)`
+* `nml_mat *nml_mat_row_swap(nml_mat *m, unsigned int row1, unsigned int row2)`
+* `int nml_mat_row_swap_r(nml_mat *m, unsigned int row1, unsigned int row2)`
+* `nml_mat *nml_mat_col_swap(nml_mat *m, unsigned int col1, unsigned int col2)`
+* `int nml_mat_col_swap_r(nml_mat *m, unsigned int col1, unsigned int col2)`
 
 ```c
 #include <stdlib.h>
@@ -740,15 +739,15 @@ int main(int argc, char *argv[]) {
   nml_mat_print(m);
 
   printf("m= (...after swapping col1=%d with col2=%d):\n", 1, 2);
-  nml_mat_swapcols_r(m, 1, 2);
+  nml_mat_col_swap_r(m, 1, 2);
   nml_mat_print(m);
 
   printf("newm= (...after swapping col1=%d with col2=%d and creating a new matrix):\n", 0, 1);
-  nml_mat *newm = nml_mat_swapcols(m, 0, 1);
+  nml_mat *newm = nml_mat_col_swap(m, 0, 1);
   nml_mat_print(newm);
 
   printf("m= (...after swapping row1=%d with row2=%d)\n", 0, 2);
-  nml_mat_swaprows_r(m, 0, 2);
+  nml_mat_row_swap_r(m, 0, 2);
   nml_mat_print(m);
 
   nml_mat_free(m);
@@ -817,11 +816,11 @@ Two or more matrices can be concatenated (horizontally) or (vertically) into one
 
 To achieve this, please use:
 
-* `nml_mat *nml_mat_concath(unsigned int mnun, nml_mat **matrices)`
+* `nml_mat *nml_mat_cath(unsigned int mnun, nml_mat **matrices)`
    - For horizontal concatenation. A new matrix is returned.
    - `num` represents the number of matrices to concatenate.
    - `matrices` the matrices to be concatenated.
-* `nml_mat *nml_mat_concatv(unsigned int mnum, nml_mat **matrices)`
+* `nml_mat *nml_mat_catv(unsigned int mnum, nml_mat **matrices)`
    - For vertical concatenation. A new matrix is returned.
    - `num` represents the number of matrices to concatenate.
    - `matrices` the matrices to be concatenated.  
@@ -836,19 +835,19 @@ Example:
 
 int main(int argc, char *argv[]) {
   nml_mat *I = nml_mat_eye(3);
-  nml_mat *Ix2 = nml_mat_scalarmult(I, 2.0);
-  nml_mat *rndm = nml_mat_new_rnd(3, 4, 1.0, 5.0);
+  nml_mat *Ix2 = nml_mat_smult(I, 2.0);
+  nml_mat *rndm = nm_mat_rnd(3, 4, 1.0, 5.0);
 
   nml_mat **ms = malloc(sizeof(*ms) * 2);
   ms[0] = I;
   ms[1] = Ix2;
   
-  nml_mat *concats1 = nml_mat_concath(2, ms);
+  nml_mat *concats1 = nml_mat_cath(2, ms);
 
   ms[0] = concats1;
   ms[1] = rndm;
 
-  nml_mat *concats2 = nml_mat_concath(2, ms);
+  nml_mat *concats2 = nml_mat_cath(2, ms);
 
   printf("\nConcatenate horizontally\n");
   printf("I=\n");
@@ -873,14 +872,14 @@ int main(int argc, char *argv[]) {
   // Vertical concatenation
   // -------------------------------------
 
-  nml_mat *A = nml_mat_new_rnd(3, 4, 1.0, 4.0);
-  nml_mat *B = nml_mat_new_rnd(5, 4, 10.0, 20.0);
+  nml_mat *A = nm_mat_rnd(3, 4, 1.0, 4.0);
+  nml_mat *B = nm_mat_rnd(5, 4, 10.0, 20.0);
   nml_mat *C = nml_mat_eye(4);
 
   nml_mat **ABarr = malloc(sizeof(*ABarr) * 2);
   ABarr[0] = A;
   ABarr[1] = B;
-  nml_mat *ABCat = nml_mat_concatv(2, ABarr);
+  nml_mat *ABCat = nml_mat_catv(2, ABarr);
 
   printf("\nA=\n");
   nml_mat_print(A);
@@ -1025,7 +1024,7 @@ Example:
 #include "lib/nml.h"
 
 int main(int argc, char *argv[]) {
-    nml_mat *m1 = nml_mat_new_rnd(1, 5, 1.0, 10.0);
+    nml_mat *m1 = nm_mat_rnd(1, 5, 1.0, 10.0);
     nml_mat_print(m1);
 
     nml_mat *m2 = nml_mat_transp(m1);
@@ -1246,7 +1245,7 @@ Running the example:
 
 Calculating the inverse requires to decompose the matrix LU(P) decomposition first.
 
-Afterwards obtaining the inverse is straightforward: `nml_mat *nml_mat_inverse(nml_mat_lup *m)`.
+Afterwards obtaining the inverse is straightforward: `nml_mat *nml_mat_inv(nml_mat_lup *m)`.
 
 Example:
 
@@ -1266,7 +1265,7 @@ int main(int argc, char *argv[]) {
   };
   nml_mat *m = nml_mat_from(4,4,16, m_v);
   nml_mat_lup *lup = nml_mat_lup_solve(m);
-  nml_mat* minv = nml_mat_inverse(lup);
+  nml_mat* minv = nml_mat_inv(lup);
   nml_mat *mdotminv = nml_mat_dot(m, minv);
 
   printf("m=");
@@ -1460,7 +1459,7 @@ Use: `nml_mat *nml_ls_solve(nml_mat_lup *lup, nml_mat* b)`.
 
 int main(int argc, char *argv[]) {
     nml_mat *A = nml_mat_sqr_rnd(4, 1.0, 10.0);
-    nml_mat *B = nml_mat_new_rnd(4, 1, 1.0, 10.0);
+    nml_mat *B = nm_mat_rnd(4, 1, 1.0, 10.0);
     nml_mat_lup *LUP = nml_mat_lup_solve(A);
 
     nml_mat *x = nml_ls_solve(LUP, B);

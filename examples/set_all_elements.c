@@ -9,7 +9,7 @@ int main(int argc, char *argv[]) {
     nml_mat *pi_mat = nml_mat_sqr(5);
 
     // Sets all elements to PI
-    nml_mat_setall(pi_mat, M_PI);
+    nml_mat_all_set(pi_mat, M_PI);
 
     nml_mat_print(pi_mat);
     nml_mat_free(pi_mat);

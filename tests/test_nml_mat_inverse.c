@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
     for(k = 0; k < num_cases; k++) {
         nml_mat *m = nml_mat_fromfilef(t_file);
         nml_mat_lup *m_lup = nml_mat_lup_solve(m);
-        nml_mat *m_inv_computed = nml_mat_inverse(m_lup);
+        nml_mat *m_inv_computed = nml_mat_inv(m_lup);
         nml_mat *m_inv_expected = nml_mat_fromfilef(t_file);
         nml_mat *m_dot_m_inv_computed = nml_mat_dot(m, m_inv_computed);
         nml_mat *eye = nml_mat_eye(m->num_rows);

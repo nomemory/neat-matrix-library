@@ -13,15 +13,15 @@ int main(int argc, char *argv[]) {
   nml_mat_print(m);
 
   printf("m= (...after swapping col1=%d with col2=%d):\n", 1, 2);
-  nml_mat_swapcols_r(m, 1, 2);
+  nml_mat_col_swap_r(m, 1, 2);
   nml_mat_print(m);
 
   printf("newm= (...after swapping col1=%d with col2=%d and creating a new matrix):\n", 0, 1);
-  nml_mat *newm = nml_mat_swapcols(m, 0, 1);
+  nml_mat *newm = nml_mat_col_swap(m, 0, 1);
   nml_mat_print(newm);
 
   printf("m= (...after swapping row1=%d with row2=%d)\n", 0, 2);
-  nml_mat_swaprows_r(m, 0, 2);
+  nml_mat_row_swap_r(m, 0, 2);
   nml_mat_print(m);
 
   nml_mat_free(m);

@@ -9,7 +9,7 @@ int main(int argc, char *argv[]) {
     nml_mat *pi_mat = nml_mat_sqr(5);
 
     // Sets the first diagonal to PI
-    nml_mat_setdiag(pi_mat, M_PI);
+    nml_mat_diag_set(pi_mat, M_PI);
 
     nml_mat_print(pi_mat);
     nml_mat_free(pi_mat);

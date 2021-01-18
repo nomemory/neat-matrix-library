@@ -1,6 +1,10 @@
 #ifndef nml_TEST_H
 #define nml_TEST_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "lib/nml_util.h"
 
 #define NML_TEST_HEADER(num_cases, input, testfile) \
@@ -10,4 +14,8 @@
 
 #define TEST
 
+#endif
+
+#ifdef __cplusplus
+}
 #endif

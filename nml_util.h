@@ -14,6 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifndef nml_UTIL_H
 #define nml_UTIL_H
 
@@ -72,4 +76,8 @@ void nml_vlog(FILE* stream, const char *file_name,
         nml_log(stderr, __FILE__, __LINE__, RED fmt RESET); \
       } \
 
+#endif
+
+#ifdef __cplusplus
+}
 #endif

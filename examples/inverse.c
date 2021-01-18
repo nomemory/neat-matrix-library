@@ -13,7 +13,7 @@ int main(int argc, char *argv[]) {
   };
   nml_mat *m = nml_mat_from(4,4,16, m_v);
   nml_mat_lup *lup = nml_mat_lup_solve(m);
-  nml_mat* minv = nml_mat_inverse(lup);
+  nml_mat* minv = nml_mat_inv(lup);
   nml_mat *mdotminv = nml_mat_dot(m, minv);
 
   printf("m=");
