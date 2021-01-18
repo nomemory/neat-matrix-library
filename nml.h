@@ -171,7 +171,6 @@ nml_mat *nml_mat_l2norm(nml_mat *m);
 double nml_mat_col_l2norm(nml_mat *m1, unsigned int j);
 nml_mat *nml_mat_normalize(nml_mat *m);
 int *nml_mat_normalize_r(nml_mat *m);
-
 nml_mat_qr *nml_mat_qr_new();
 void nml_mat_qr_free(nml_mat_qr *qr);
 nml_mat_qr * nml_mat_qr_solve(nml_mat *m);

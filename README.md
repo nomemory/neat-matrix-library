@@ -342,7 +342,7 @@ To run the example:
 ### Creating randomized matrices
 
 Creating a randomized matrix can be done with the following two methods:
-* `nml_mat *nm_mat_rnd(unsigned int num_rows, unsigned int num_cols, double min, double max)`
+* `nml_mat *nml_mat_rnd(unsigned int num_rows, unsigned int num_cols, double min, double max)`
   - Creates a randomized matrix of size `num_rows * num_cols`;
   - The random values are between `min` and `max`;
 * `nml_mat *nml_mat_sqr_rnd(unsigned int size, double min, double max)`
@@ -358,7 +358,7 @@ Creating a randomized matrix can be done with the following two methods:
 
 int main(int argc, char *argv[]) {
   srand(time(NULL)); // Should be called once per program
-  nml_mat *m = nm_mat_rnd(5, 5, -10.0, 10.0);
+  nml_mat *m = nml_mat_rnd(5, 5, -10.0, 10.0);
   nml_mat_print(m);
   nml_mat_free(m);
   return 0;
@@ -396,8 +396,8 @@ There are two "equality" methods for matrices:
 int main(int argc, char *argv[]) {
 
     srand(time(NULL));
-    nml_mat *m1 = nm_mat_rnd(2, 3, 1.0, 10.0);
-    nml_mat *m2 = nm_mat_rnd(2, 3, 1.0, 10.0);
+    nml_mat *m1 = nml_mat_rnd(2, 3, 1.0, 10.0);
+    nml_mat *m2 = nml_mat_rnd(2, 3, 1.0, 10.0);
 
     if (nml_mat_eq(m1, m2, 0.001)) {
         printf("Wow, what were the oddss..\n");
@@ -424,10 +424,10 @@ To run the example:
 
 ### Select rows and columns
 
-Two methods can be used to select rows and columns from a source matrix (`nm_mat*`):
+Two methods can be used to select rows and columns from a source matrix (`nml_mat*`):
 
-* `nml_mat *nm_mat_col_get(nml_mat *m, unsigned int col)`
-* `nml_mat *nm_mat_row_get(nml_mat *m, unsigned int row)`
+* `nml_mat *nml_mat_col_get(nml_mat *m, unsigned int col)`
+* `nml_mat *nml_mat_row_get(nml_mat *m, unsigned int row)`
 
 The following code extracts every column of a given random matrix into a temporary column matrix (`nml_mat*`):
 
@@ -441,12 +441,12 @@ The following code extracts every column of a given random matrix into a tempora
 int main(int argc, char *argv[]) {
   printf("\nExtract all matrix columns from a Matrix as matrices\n");
   srand(time(NULL));
-  nml_mat *m = nm_mat_rnd(5, 5, -10.0, 10.0);
+  nml_mat *m = nml_mat_rnd(5, 5, -10.0, 10.0);
   nml_mat *col;
   nml_mat_print(m);
   int i = 0;
   for(i = 0; i < m->num_cols; i++) {
-    col = nm_mat_col_get(m, i);
+    col = nml_mat_col_get(m, i);
     nml_mat_print(col);
     nml_mat_free(col);
   }
@@ -639,7 +639,7 @@ Use:
 
 int main(int argc, char *argv[]) {
 
-    nml_mat *m = nm_mat_rnd(5, 4, 1.0, 2.0);
+    nml_mat *m = nml_mat_rnd(5, 4, 1.0, 2.0);
     nml_mat_print(m);
 
     // Add row[1] elements to row[2] elements
@@ -836,7 +836,7 @@ Example:
 int main(int argc, char *argv[]) {
   nml_mat *I = nml_mat_eye(3);
   nml_mat *Ix2 = nml_mat_smult(I, 2.0);
-  nml_mat *rndm = nm_mat_rnd(3, 4, 1.0, 5.0);
+  nml_mat *rndm = nml_mat_rnd(3, 4, 1.0, 5.0);
 
   nml_mat **ms = malloc(sizeof(*ms) * 2);
   ms[0] = I;
@@ -872,8 +872,8 @@ int main(int argc, char *argv[]) {
   // Vertical concatenation
   // -------------------------------------
 
-  nml_mat *A = nm_mat_rnd(3, 4, 1.0, 4.0);
-  nml_mat *B = nm_mat_rnd(5, 4, 10.0, 20.0);
+  nml_mat *A = nml_mat_rnd(3, 4, 1.0, 4.0);
+  nml_mat *B = nml_mat_rnd(5, 4, 10.0, 20.0);
   nml_mat *C = nml_mat_eye(4);
 
   nml_mat **ABarr = malloc(sizeof(*ABarr) * 2);
@@ -1024,7 +1024,7 @@ Example:
 #include "lib/nml.h"
 
 int main(int argc, char *argv[]) {
-    nml_mat *m1 = nm_mat_rnd(1, 5, 1.0, 10.0);
+    nml_mat *m1 = nml_mat_rnd(1, 5, 1.0, 10.0);
     nml_mat_print(m1);
 
     nml_mat *m2 = nml_mat_transp(m1);
@@ -1459,7 +1459,7 @@ Use: `nml_mat *nml_ls_solve(nml_mat_lup *lup, nml_mat* b)`.
 
 int main(int argc, char *argv[]) {
     nml_mat *A = nml_mat_sqr_rnd(4, 1.0, 10.0);
-    nml_mat *B = nm_mat_rnd(4, 1, 1.0, 10.0);
+    nml_mat *B = nml_mat_rnd(4, 1, 1.0, 10.0);
     nml_mat_lup *LUP = nml_mat_lup_solve(A);
 
     nml_mat *x = nml_ls_solve(LUP, B);
