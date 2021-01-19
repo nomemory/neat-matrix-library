@@ -22,14 +22,9 @@ It currently supports:
 * Solving [linear systems of equations](https://en.wikipedia.org/wiki/System_of_linear_equations);
 * [Row Echelon Form](https://en.wikipedia.org/wiki/Gaussian_elimination);
 * Reduced Row Echelon Form ([Gauss-Jordan](https://brilliant.org/wiki/gaussian-elimination/));
+* [QR decomposition](https://en.wikipedia.org/wiki/QR_decomposition)
 
-The library is still under development, but a few thousands test cases are already implemented.
-
-Next feature:
-
-* Implement [QR decomposition](https://en.wikipedia.org/wiki/QR_decomposition)
-
-Documentation is under construction.
+The library is still under development, but a few thousands test cases are already implemented, covering the most complex algorithms (REF, RREF, LUP, QR, DET, INV, BACKWARD SUBSTITION, FORWARD SUBSTITION, etc.)
 
 Table of Contents
 =================
