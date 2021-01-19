@@ -90,7 +90,7 @@ double nml_mat_get(nml_mat *matrix, unsigned int i, unsigned int j);
 void nml_mat_set(nml_mat *matrix, unsigned int i, unsigned int j, double value);
 nml_mat *nml_mat_col_get(nml_mat *m, unsigned int col);
 nml_mat *nml_mat_col_mult(nml_mat *m, unsigned int col, double num);
-int *nml_mat_col_mult_r(nml_mat *m, unsigned int col, double num);
+int nml_mat_col_mult_r(nml_mat *m, unsigned int col, double num);
 nml_mat *nml_mat_row_get(nml_mat *m, unsigned int row);
 nml_mat *nml_mat_row_mult(nml_mat *m, unsigned int row, double num);
 int nml_mat_row_mult_r(nml_mat *m, unsigned int row, double num);
@@ -167,10 +167,11 @@ nml_mat *nml_ls_solve(nml_mat_lup *lup, nml_mat* b);
 //
 // *****************************************************************************
 
+double nml_vect_dot(nml_mat *m1, unsigned int m1col, nml_mat *m2, unsigned m2col);
 nml_mat *nml_mat_l2norm(nml_mat *m);
 double nml_mat_col_l2norm(nml_mat *m1, unsigned int j);
 nml_mat *nml_mat_normalize(nml_mat *m);
-int *nml_mat_normalize_r(nml_mat *m);
+int nml_mat_normalize_r(nml_mat *m);
 nml_mat_qr *nml_mat_qr_new();
 void nml_mat_qr_free(nml_mat_qr *qr);
 nml_mat_qr * nml_mat_qr_solve(nml_mat *m);

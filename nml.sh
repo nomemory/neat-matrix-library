@@ -116,6 +116,7 @@ function examples {
   echo -e "\tMoving ${DIST_DIR}/* to ${EXAMPLES_LIB}/*"
   cp -r ${DIST_DIR} ${EXAMPLES_LIB}
   echo -e "${YELLOW}Compiling Examples:${NC}"
+  # ${CC} ${CCFLAGS_EXAMPLES} ./examples/playground.c -L ./${EXAMPLES}/lib -l${LIB_NAME_SIMPLE} -o playground.ex
   ls ${EXAMPLES}/*.c | while read file ;
     do
       echo -e "\t $file -> ${GREEN}${file%%.*}.ex${NC}"

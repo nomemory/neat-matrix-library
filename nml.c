@@ -59,9 +59,8 @@ limitations under the License.
 #define CANNOT_ROW_MULTIPLY \
       "Cannot multiply row (%d), maximum number of rows is %d.\n" \
 
-#define CANNOT_COL_MULTIPLY \
-      "Cannot multiply col (%d), maximum number of columns is %d.\n" \            
-
+#define CANNOT_COL_MULTIPLY "Cannot multiply col (%d), maximum number of columns is %d.\n" 
+  
 #define CANNOT_ADD_TO_ROW \
       "Cannot add %2.2f x (row=%d) to row=%d. Total number of rows is: %d.\n" \
 
@@ -110,7 +109,11 @@ limitations under the License.
       "We cannot QA non-square matrix[%d, %d].\n" \
 
 #define CANNOT_COLUMN_L2NORM \
-      "Cannot get column (%d). The matrix has %d numbers of columns.\n" \      
+      "Cannot get column (%d). The matrix has %d numbers of columns.\n" \
+
+#define CANNOT_VECT_DOT_DIMENSIONS \
+      "The two vectors have different dimensions: %d and %d.\n" \
+       
 
 // *****************************************************************************
 //
@@ -382,13 +385,13 @@ nml_mat *nml_mat_col_mult(nml_mat *m, unsigned int col, double num) {
   return r;
 }
 
-int *nml_mat_col_mult_r(nml_mat *m, unsigned int col, double num) {
+int nml_mat_col_mult_r(nml_mat *m, unsigned int col, double num) {
   if (col>=m->num_cols) {
     NML_FERROR(CANNOT_COL_MULTIPLY, col, m->num_cols);
     return 0;
   }
   int i;
-  for(i = 0; i < m->num_cols; i++) {
+  for(i = 0; i < m->num_rows; i++) {
     m->data[i][col] *= num;
   }
   return 1;
@@ -656,7 +659,7 @@ int nml_mat_sub_r(nml_mat *m1, nml_mat *m2) {
   }
   int i, j;
   for(i = 0; i < m1->num_rows; i++) {
-    for(j = 0; j < m2->num_rows; j++) {
+    for(j = 0; j < m2->num_cols; j++) {
       m1->data[i][j] -= m2->data[i][j];
     }
   }
@@ -1052,6 +1055,28 @@ nml_mat *nml_mat_inv(nml_mat_lup *lup) {
 //
 // *****************************************************************************
 
+// Useful for QR decomposition
+// Represents the (dot) product of two vectors:
+// vector1 = m1col column from m1
+// vector2 = m2col column from m2
+double nml_vect_dot(nml_mat *m1, unsigned int m1col, nml_mat *m2, unsigned m2col) {
+  if (m1->num_rows!=m2->num_rows) {
+    NML_FERROR(CANNOT_VECT_DOT_DIMENSIONS, m1->num_rows, m2->num_rows);
+  }
+  if (m1col >= m1->num_cols) {
+    NML_FERROR(CANNOT_GET_COLUMN, m1col, m1->num_cols);
+  }
+  if (m2col >= m2->num_cols) {
+    NML_FERROR(CANNOT_GET_COLUMN, m2col, m2->num_cols);
+  }
+  int i;
+  double dot = 0.0;
+  for(i = 0; i < m1->num_rows; i++) {
+    dot += m1->data[i][m1col] * m2->data[i][m2col];
+  }
+  return dot;
+}
+
 // Calculates the l2 norm for a colum in the matrix
 double nml_mat_col_l2norm(nml_mat *m, unsigned int col) {
   if (col >= m->num_cols) {
@@ -1090,7 +1115,7 @@ nml_mat *nml_mat_normalize(nml_mat *m) {
   return r;
 }
 
-int *nml_mat_normalize_r(nml_mat *m) {
+int nml_mat_normalize_r(nml_mat *m) {
   nml_mat *l2norms = nml_mat_l2norm(m);
   int j;
   for(j = 0; j < m->num_cols; j++) {
@@ -1119,29 +1144,35 @@ void nml_mat_qr_free(nml_mat_qr *qr) {
 
 // M = QR
 nml_mat_qr *nml_mat_qr_solve(nml_mat *m) {
-  if (!m->is_square) {
-    NML_FERROR(CANNOT_QR_NON_SQUARE, m->num_cols, m->num_rows);
-    return NULL;
-  }
+
   nml_mat_qr *qr = nml_mat_qr_new();
   nml_mat *Q = nml_mat_cp(m);
-  nml_mat *R = nml_mat_sqr(m->num_cols);
+  nml_mat *R = nml_mat_new(m->num_rows, m->num_cols);
 
   int j, k;
-  nml_mat *colm;
   double l2norm;
+  double rkj;
+  nml_mat *aj;
+  nml_mat *qk;
   for(j=0; j < m->num_cols; j++) {    
-    // m[.][j]t = m[.][k] - <m[.][k], q[.][k-1]> * q[.][k-1] (k = 0...j-1)
-    // q[.][j] = m[.][j]t / l2norm (m[.][j]t)
-    for(k = 1; k < j; k++) {
-      //q[j] -= <q[j], q[k]>*q[j]
-    } 
-    double l2norm = nml_mat_col_l2norm(Q, j);
+    rkj = 0.0;
+    aj = nml_mat_col_get(m, j);
+    for(k = 0; k < j; k++) {
+       rkj = nml_vect_dot(m, j, Q, k);
+       R->data[k][j] = rkj;
+       qk = nml_mat_col_get(Q, k);
+       nml_mat_col_mult_r(qk, 0, rkj);
+       nml_mat_sub_r(aj, qk);
+       nml_mat_free(qk);
+    }
+    for(k = 0; k < Q->num_rows; k++) {
+      Q->data[k][j] = aj->data[k][0];
+    }
+    l2norm = nml_mat_col_l2norm(Q, j);
     nml_mat_col_mult_r(Q, j, 1/l2norm);
     R->data[j][j] = l2norm;
-    nml_mat_free(colm);
+    nml_mat_free(aj);
   }
-
   qr->Q = Q;
   qr->R = R;
   return qr;
