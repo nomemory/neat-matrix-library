@@ -12,7 +12,9 @@
  '----------------'  '----------------'  '----------------'       
 ```
 
-**nml** is a simple [matrix](https://en.wikipedia.org/wiki/Matrix_(mathematics)) and [linear algebra](https://en.wikipedia.org/wiki/Linear_algebra) library written in standard C. Code should be portable and there are no dependencies.
+**nml** is a simple [matrix](https://en.wikipedia.org/wiki/Matrix_(mathematics)) and [linear algebra](https://en.wikipedia.org/wiki/Linear_algebra) library written in standard C. 
+
+Code should be portable and there are no dependencies. 
 
 It currently supports:
 * Basic Matrix Operations (row swaps, colum swaps, multiplication, addition, etc.)
