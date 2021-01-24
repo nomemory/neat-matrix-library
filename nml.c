@@ -263,7 +263,7 @@ int nml_mat_eq(nml_mat *m1, nml_mat *m2, double tolerance) {
   int i, j;
   for(i = 0; i < m1->num_rows; i++) {
     for(j = 0; j < m1->num_cols; j++) {
-      if (fabs(fabs(m1->data[i][j]) - fabs(m2->data[i][j])) > tolerance) {
+      if (fabs(m1->data[i][j] - m2->data[i][j]) > tolerance) {
         return 0;
       }
     }
