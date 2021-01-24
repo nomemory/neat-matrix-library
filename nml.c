@@ -125,11 +125,11 @@ limitations under the License.
 nml_mat *nml_mat_new(unsigned int num_rows, unsigned int num_cols) {
   if (num_rows == 0) {
     NML_ERROR(INVALID_ROWS);
-    abort();
+    return NULL;
   }
   if (num_cols == 0) {
     NML_ERROR(INVALID_COLS);
-    abort();
+    return NULL;
   }
   nml_mat *m = calloc(1, sizeof(*m));
   NP_CHECK(m);
@@ -239,6 +239,7 @@ void nml_mat_free(nml_mat *matrix) {
     free(matrix->data[i]);
   }
   free(matrix->data);
+  free(matrix);
 }
 
 // *****************************************************************************
@@ -553,9 +554,9 @@ nml_mat *nml_mat_cath(unsigned int mnum, nml_mat **marr) {
     offset = 0;
     for(j = 0; j < r->num_cols; j++) {
       // If the column index of marr[k] overflows
-      // We jump to the next matrix in the array
       if (j-offset == marr[k]->num_cols) {
         offset += marr[k]->num_cols;
+        // We jump to the next matrix in the array
         k++;
       }
       r->data[i][j] = marr[k]->data[i][j - offset];
@@ -726,7 +727,7 @@ int _nml_mat_pivotidx(nml_mat *m, unsigned int col, unsigned int row) {
   return -1;
 }
 
-// Find the maximul element from the column "col" under the row "row"
+// Find the max element from the column "col" under the row "row"
 // This is needed to pivot in Gauss-Jordan elimination
 // If pivot is not found, return -1
 int _nml_mat_pivotmaxidx(nml_mat *m, unsigned int col, unsigned int row) {
