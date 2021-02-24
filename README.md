@@ -16,6 +16,8 @@
 
 Code should be portable and there are no dependencies. 
 
+For a detailed explanation of code please check this [blog post](https://www.andreinc.net/2021/01/20/writing-your-own-linear-algebra-matrix-library-in-c).
+
 It currently supports:
 * Basic Matrix Operations (row swaps, colum swaps, multiplication, addition, etc.)
 * [LU Decomposition](https://en.wikipedia.org/wiki/LU_decomposition);
