@@ -1,0 +1,2894 @@
+\include{preamble}
+
+\usepackage{titling}
+\usepackage{alltt}
+\usepackage{multirow}
+\usepackage{graphicx}
+\usepackage[table]{xcolor}
+
+\def\pt{\textstyle{.}}
+\def\ttindent{\ \ \ \ }
+
+\setlength{\parindent}{0mm}
+
+\title{Writing your own linear algebra matrix library in C}
+\author{Andrei Ciobanu \\ (\textit{transcribed by Yoel Monsalve})}
+\date{May 20, 2021}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+
+\thispagestyle{empty} \pagestyle{myheadings}
+\markboth{}{\color[rgb]{.4,.4,.4}\underline{\hspace{\textwidth}}
+\hspace{-\textwidth}\textit{Writing your own linear algebra matrix library in C} --- Andrei Ciobanu.}
+
+\def\theequation{\arabic{section}.\arabic{equation}}    %custom equation numbering
+
+\section{The library}
+
+Now, let’s say you are one of the few Engineering/Computer Science students that are passionate about \href{https://en.wikipedia.org/wiki/Linear_algebra}{\it linear algebra}, \href{https://en.wikipedia.org/wiki/Numerical_analysis}{\it numerical analysis} and writing code in a low-level language. Or you are just curious about what’s behind the \href{https://www.mathworks.com/help/matlab/ref/lu.html}{\tt lu(A)} method in Matlab. Or you are passionate about A.I., and you know you cannot learn A.I. algorithms without a good foundation in linear algebra.
+\\
+
+I believe the best exercise you can do is to try to write your (own) Matrix library in a low-level programming language (like C, C++ or even D).
+\\
+
+This tutorial is precisely this, a step-by-step explanation of writing a C Matrix library that implements the “basic” and “not-so-basic” numerical analysis algorithms that will allow us in the end to solve linear systems of equations.
+\\
+
+All code in this tutorial is available on GitHub in the repository called \href{https://github.com/nomemory/neat-matrix-library}{\tt neat-matrix-library}.
+\\
+
+To clone it (using GitHub CLI):
+\begin{verbatim}
+  ~$ gh repo clone nomemory/neat-matrix-library
+\end{verbatim}
+
+The code is not meant to be “efficient”, but relatively easy to follow and understand.
+\\
+
+The tutorial assumes that the reader can write C code, understand pointers and dynamic memory allocation, and is familiar with the C standard library.
+\\
+
+\section{The data: {\tt nml\_matrix}}
+
+The first step is to model the data our library will work with: “matrices”. So we are going to define our first struct, called {\tt nml\_mat} which models a matrix:
+
+\begin{verbatim}
+typedef struct nml_mat_s {
+  unsigned int num_rows;
+  unsigned int num_cols;
+  double **data;
+  int is_square;
+} nml_mat;
+\end{verbatim}
+\hsep
+
+The properties of this {\tt struct} have self-explanatory names:
+\begin{itemize}
+\item {\tt unsigned int num\_rows} -- represents the number of rows of the matrix. 0 is not an acceptable value
+
+\item {\tt unsigned int num\_cols} -- represents the number of columns of the matrix. 0 is not an acceptable value
+
+\item {\tt double **data} -- is “multi-dimensional array” that stores data in rows and columns
+
+\item {\tt int is\_square} -- is a "boolean" value that determines if the matrix is square (has the same number of rows and columns) or not.
+\end{itemize}
+
+From a performance perspective, it’s better to keep the matrix elements in a {\tt double*} using the conversion:
+
+\begin{verbatim}
+    data[i][j] <=> array[i * m + j]
+\end{verbatim}
+
+To better understand how to store multi-dimensional arrays in linear storage please refer to \href{https://stackoverflow.com/questions/14015556/how-to-map-the-indexes-of-a-matrix-to-a-1-dimensional-array-c}{\underline{\it this StackOverflow question}}, or \href{https://en.wikipedia.org/wiki/Row-_and_column-major_order}{\underline{\it read the wikipedia article}} on the topic.
+\\
+
+Even if it might sound like a “controversial” decision, for the sake of simplicity, we will use the double ** multi-dimensional storage.
+
+\section{Allocating/deallocating memory for the {\tt nml\_mat} matrix}
+
+Unlike "higher-level" programming languages (Java, Python, etc), that manage memory allocation for you, in C, you need to explicitly ask for memory and explicitly free the memory once you no longer need it.
+\\
+
+In this regard, the next step is to create ``constructor-like'' and “destructor-like” functions for the {\tt nml\_mat struct} defined above. There’s an unwritten rule that says: ``Every {\tt malloc()} has its personal {\tt free()}''.
+
+\begin{verbatim}
+// Constructor-like 
+// Allocates memory for a new matrix
+// All elements in the matrix are 0.0
+nml_mat *nml_mat_new(unsigned int num_rows, unsigned int num_cols);
+
+// Destructor-like
+// De-allocates the memory for the matrix
+void nml_mat_free(nml_mat *matrix);
+\end{verbatim}
+
+Implementing the {\tt nml\_mat\_new()} is quite straightforward:
+
+\begin{verbatim}
+nml_mat *nml_mat_new(unsigned int num_rows, unsigned int num_cols) {
+  if (num_rows == 0) {
+    NML_ERROR(INVALID_ROWS);
+    return NULL;
+  }
+  if (num_cols == 0) {
+    NML_ERROR(INVALID_COLS);
+    return NULL;
+  }
+  nml_mat *m = calloc(1, sizeof(*m));
+  NP_CHECK(m);
+  m->num_rows = num_rows;
+  m->num_cols = num_cols;
+  m->is_square = (num_rows == num_cols) ? 1 : 0;
+  m->data = calloc(m->num_rows, sizeof(*m->data));
+  NP_CHECK(m->data);
+  int i;
+  for(i = 0; i < m->num_rows; ++i) {
+    m->data[i] = calloc(m->num_cols, sizeof(**m->data));
+    NP_CHECK(m->data[i]);
+  }
+  return m;
+}
+\end{verbatim}
+
+Notes:
+
+\begin{itemize}
+\item {\tt NML\_ERROR}, {\tt NP\_CHECK} are macros defined in {\tt nml\_util.h}.
+\item {\tt NML\_ERROR()} or {\tt NML\_FERROR()} are logging utils, that helps us print error message on stderr;
+\item {\tt NP\_CHECK} checks if the newly allocated memory chunk is not {\tt NULL}. In case it’s {\tt NULL} it aborts the program.
+\end{itemize}
+
+Explanation:
+
+\begin{itemize}
+\item[1.] First step is to check if {\tt num\_rows == 0} or {\tt num\_cols == 0}. If they are, we consider the input as invalid, and we print on stderr an error. Afterwards {\tt NULL} is returned;
+
+\item[2.] This line: {\tt nml\_mat *m = calloc(1, sizeof(*m))} allocates memory for 1 (one) {\tt nml\_mat structure};
+\item[3.] For a multi-dimensional array ({\tt double**}), we allocate memory in two steps:
+
+\begin{itemize}
+\item[$\circ$] {\tt m->data = calloc(m->num\_rows, sizeof(*m->data))} - this allocates memory for the column array;
+\item[$\circ$] Then, we allocate memory for each row. By using {\tt calloc()} the data is initialized with 0.0.
+\end{itemize}
+\end{itemize}
+
+Freeing the matrix is even more straightforward. The implementation for {\tt nml\_mat\_free()}:
+
+\begin{verbatim}
+void nml_mat_free(nml_mat *matrix) {
+  int i;
+  for(i = 0; i < matrix->num_rows; ++i) {
+    free(matrix->data[i]);
+  }
+  free(matrix->data);
+  free(matrix);
+}
+\end{verbatim}
+It’s important to note, that given the multidimensional nature of {\tt double**} data, we need to:
+
+\begin{itemize}
+\item[$\bullet$] de-allocate each row individually:\quad {\tt free(matrix->data[i])};
+\item then the column vector:\quad {\tt free(matrix->data)};
+\item and lastly the actual struct:\quad {\tt free(matrix)}.
+\end{itemize}
+
+At this point, it’s a good idea to add more methods to help the potential use of the library to create various {\tt nml\_mat structs}, with various properties.
+\\
+
+\begin{tabular}{l@{\quad}l}
+Method & 	Description 
+\\
+\hline 
+{\tt nml\_mat\_rnd()} & A method to create a random matrix.
+\\
+{\tt nml\_mat\_sqr()} & A method to create a square matrix with elements 0.0.
+\\
+{\tt nml\_mat\_eye()} & A method to create an identity matrix.
+\\
+{\tt nml\_mat\_cp()} & A method to copy the content of a matrix into another matrix.
+\\
+{\tt nml\_mat\_fromfile()} & A method to read the matrix from a FILE.
+\end{tabular}
+
+\section{Creating a random matrix}
+
+Writing a method like {\tt nml\_mat\_rnd()} it’s easy, once we have {\tt nml\_mat\_new()} in place:
+
+\begin{verbatim}
+nml_mat *nml_mat_rnd(
+  unsigned int num_rows, 
+  unsigned int num_cols, 
+  double min, 
+  double max
+  ) 
+{
+  nml_mat *r = nml_mat_new(num_rows, num_cols);
+  int i, j;
+  for(i = 0; i < num_rows; i++) {
+    for(j = 0; j < num_cols; j++) {
+      r->data[i][j] = nml_rand_interval(min, max);
+    }
+  }
+  return r;
+}
+\end{verbatim}
+The input params min and max represent the interval boundaries in which the random numbers are being generated.
+
+The {\tt nml\_rand\_interval(min, max)}, the method responsible for generating random values, looks like this:
+\\
+
+
+\begin{verbatim}
+#define	RAND_MAX	0x7fffffff
+
+double nml_rand_interval(double min, double max) {
+  double d;
+  d = (double) rand() / ((double) RAND_MAX + 1);
+  return (min + d * (max - min));
+}
+\end{verbatim}
+
+\section{Creating a square matrix}
+
+A square matrix has the same number of columns and rows.
+\\
+
+For example, A is square 3x3 matrix:
+
+$$
+A = \left( \begin{array}{rrr}
+1.0 & 2.0 & 3.0 \\
+0.0 & 2.0 & 3.0 \\
+2.0 & 1.0 & 9.0
+\end{array} \right)
+$$
+
+but, B is not a square matrix:
+
+$$
+B
+= \left( \begin{array}{rrr}
+1.0 & 2.0 & 3.0 \\
+0.0 & 2.0 & 3.0
+\end{array} \right)
+$$
+
+Implementing this is as simple as calling the existing {\tt nml\_mat\_new()} function with {\tt rows=cols}:
+
+\begin{verbatim}
+nml_mat *nml_mat_sqr(unsigned int size) {
+  return nml_mat_new(size, size);
+}
+\end{verbatim}
+
+Similarly, you can write a method to produce a random square matrix:
+\begin{verbatim}
+nml_mat *nml_mat_sqr_rnd(unsigned int size, double min, double max) {
+  return nml_mat_rnd(size, size, min, max);
+} 
+\end{verbatim}
+
+\rule{\textwidth}{0.5pt}\\
+\example \textsf{Create a matrix {\tt A} of $3\times 3$, and a random matrix {\tt B} of $4\times 4$}.
+
+\begin{verbatim}
+#include "nml.h"
+
+nml_mat *A = nml_mat_sqr(3);
+nml_mat *B = nml_mat_sqr_rnd(4);
+\end{verbatim}
+\rule{\textwidth}{0.5pt}\\
+
+\section{Creating an identity matrix}
+
+An identity matrix is a square $(N\times N)$ matrix that has 1.0 on the first diagonal, and 0.0 elsewhere:
+
+$$
+\begin{array}{rcl}
+I_n & = &
+\left. \left( \begin{array}{rrrcr}
+1 & 0 & 0 & \ldots & 0 \\
+0 & 1 & 0 & \ldots & 0 \\
+0 & 0 & 1 & \ldots & 0 \\
+\vdots & & & \ddots & \vdots \\
+0 & 0 & 0 & \ldots & 1
+\end{array} \right) \right\} {n \textrm{ rows}}
+\\
+& & \hspace{2mm}\underbrace{\hspace*{34mm}}_{\normalsize n \text{ columns}}
+\end{array}
+$$
+
+A matrix multiplied with its inverse is equal to the identity matrix:\quad  $A^{-1} \times A = A \times A^{-1} = I$.
+\\
+
+From a programming perspective, the first diagonal represents the series of matrix elements for which the indexes {\tt i} and {\tt j} are equal ({\tt i==j}).
+\\
+
+{\tt i} represents the row index, while {\tt j} represents the column index.
+\\
+
+Having said this, our method looks like this:
+
+\begin{verbatim}
+nml_mat *nml_mat_eye(unsigned int size) {
+  nml_mat *r = nml_mat_new(size, size);
+  int i;
+  for(i = 0; i < r->num_rows; i++) {
+    r->data[i][i] = 1.0;
+  }
+  return r;
+}
+\end{verbatim}
+
+To find out the reasons why the identity method is named {\tt eye()} please read \href{https://math.stackexchange.com/questions/3028394/what-is-the-motivation-behind-naming-identity-matrix-as-eye/3028999}{\underline{\itshape this math exchange post}}
+
+\section{Creating a matrix from a FILE}
+
+Instead of having to write something like the code bellow to set the elements of the matrix:
+
+\begin{verbatim}
+nml_mat *m = ...
+m->data[0][0] = 1.0;
+m->data[1][0] = 2.0;
+m->data[2][0] = 4.0;
+// etc. 
+\end{verbatim}
+
+It’s more convenient to allow the user of our library to be able to read the matrix elements from an input text file.
+\\
+The input file should be formatted in a certain way, e.g.:
+
+\begin{verbatim}
+matrix01.data
+----------------
+4 5
+0.0     1.0     2.0     5.0     3.0
+3.0     8.0     9.0     1.0     4.0
+2.0     3.0     7.0     1.0     1.0
+0.0     0.0     4.0     3.0     8.0
+\end{verbatim}
+
+\begin{itemize}
+\item The first row of the file 4 5 represents the numbers of rows (=4) and columns (=5);
+\item The rest of the rows are the elements (20) of the matrix.
+\end{itemize}
+
+The C code that is able to read this file is:
+
+\begin{verbatim}
+nml_mat *nml_mat_fromfilef(FILE *f) {
+  int i, j;
+  unsigned int num_rows = 0, num_cols = 0;
+  fscanf(f, "%d", &num_rows);
+  fscanf(f, "%d", &num_cols);
+  nml_mat *r = nml_mat_new(num_rows, num_cols);
+  for(i = 0; i < r->num_rows; i++) {
+    for(j = 0; j < num_cols; j++) {
+      fscanf(f, "%lf\t", &r->data[i][j]);
+    }
+  }
+  return r;
+} 
+\end{verbatim}
+
+Where:
+
+\begin{itemize}
+\item {\tt fscanf(f, "\%d", \&num\_rows)} 
+and {\tt fscanf(f, "\%d", \&num\_cols)} read the first line;
+\item The {\tt fscanf(f, "\%lf\textbackslash t", \&r->data[i][j])} line inside the for loops read the remaining elements of the matrix.
+\end{itemize}
+
+This method can also be used to read user input from the keyboard, by calling the method like this:
+
+\begin{verbatim}
+nml_mat_fromfilef(stdin);
+\end{verbatim}
+
+\section{Matrix methods}
+
+\subsection{Checking for equality}
+
+It will be nice for the users of our library to be able to compare two matrices and see if they are equal, meaning they have the same number of rows and columns and identical elements.
+
+In practice, it’s good to be able to check if two matrices are ``almost equal'', meaning that their elements are ``almost equal'' within an accpetable tolerance.
+
+Writing a method like this is trivial. We basically have to iterate over all the elements and check for their equality:
+
+\begin{verbatim}
+// Checks if two matrices have the same dimensions
+int nml_mat_eqdim(nml_mat *m1, nml_mat *m2) {
+  return (m1->num_cols == m2->num_cols) &&
+          (m1->num_rows == m2->num_rows);
+}
+
+// Checks if two matrices have the same dimensions, and the elements
+// are all equal to each other with a given tolerance;
+// For exact equality use tolerance = 0.0
+int nml_mat_eq(nml_mat *m1, nml_mat *m2, double tolerance) {
+  if (!nml_mat_eqdim(m1, m2)) {
+    return 0;
+  }
+  int i, j;
+  for(i = 0; i < m1->num_rows; i++) {
+    for(j = 0; j < m1->num_cols; j++) {
+      if (fabs(m1->data[i][j] - m2->data[i][j]) > tolerance) {
+        return 0;
+      }
+    }
+  }
+  return 1;
+}
+\end{verbatim}
+{\tt fabs(x)} returns the absolute value of {\tt x} $\rightarrow$ {\tt |x|}.
+
+\subsection{Printing the matrix}
+
+Printing the matrix is trivial. We just need to iterate through all the elements and use {\tt fprintf()} to show the matrix in {\tt stdout}:
+
+\begin{verbatim}
+void nml_mat_print(nml_mat *matrix) {
+  nml_mat_printf(matrix, "%lf\t\t");
+}
+
+// Prints the matrix on the stdout (with a custom formatting for elements)
+void nml_mat_printf(nml_mat *matrix, const char *d_fmt) {
+  int i, j;
+  fprintf(stdout, "\n");
+  for(i = 0; i < matrix->num_rows; ++i) {
+    for(j = 0; j < matrix->num_cols; ++j) {
+      fprintf(stdout, d_fmt, matrix->data[i][j]);
+    }
+    fprintf(stdout, "\n");
+  }
+  fprintf(stdout, "\n");
+} 
+\end{verbatim}
+
+\subsection{Retrieving / Selecting a column}
+
+Some advanced numerical analysis algorithms (e.g.: QR decomposition) are working extensively on columns, so it’s a good idea to be pro-active about it and create a method that selects/retrieves a column from a given matrix.
+\\
+
+We will define this method as:
+
+\begin{verbatim}
+    nml_mat *nml_mat_col_get(nml_mat *m, unsigned int col)
+\end{verbatim}
+
+From a mathematical perspective calling our method on given matrix retrieves another column matrix:
+
+$$
+\texttt{nml\_mat\_col\_get(}
+\left[ \begin{tabular}{rrr}
+\tt 1.0 & \tt 2.0 & \tt 3.0 \\
+\tt 0.0 & \tt 2.0 & \tt 3.0 \\
+\tt 2.0 & \tt 1.0 & \tt 9.0
+\end{tabular} \right]
+,1) =
+\left[ \begin{array}{rrr}
+\tt 2.0 \\
+\tt 2.0 \\
+\tt 1.0
+\end{array} \right]
+$$
+\\
+The C code for {\tt nml\_mat\_col\_get} looks like this:
+
+\begin{verbatim}
+nml_mat *nml_mat_col_get(nml_mat *m, unsigned int col) {
+  if (col >= m->num_cols) {
+    NML_FERROR(CANNOT_GET_COLUMN, col, m->num_cols);
+    return NULL;
+  }
+  nml_mat *r = nml_mat_new(m->num_rows, 1);
+  int j;
+  for(j = 0; j < r->num_rows; j++) {
+    r->data[j][0] = m->data[j][col];
+  }
+  return r;
+} 
+\end{verbatim}
+
+Observations:
+\\
+
+\begin{itemize}
+\item The resulting matrix has only one column: {\tt nml\_mat *r = nml\_mat\_new(m->num\_rows, 1)};
+\item We copy all elements from column {\tt [col]} to the only column of the resulting matrix {\tt [0]: r->data[j][0] = m->data[j][col]}.
+\end{itemize}
+
+\subsection{Retrieving / Selecting a row}
+
+To keep the API “consistent” we can write a similar method for retrieving a row:
+\\
+
+\texttt{ \ nml\_mat *nml\_mat\_row\_get(nml\_mat *m, unsigned int row)}
+\\
+
+This will work similar to the {\tt nml\_mat\_col\_get(...)}, but instead of retrieving a column we will retrieve a row:
+
+$$
+\texttt{nml\_mat\_row\_get(}
+\left[ \begin{tabular}{rrr}
+\tt 1.0 & \tt 2.0 & \tt 3.0 \\
+\tt 0.0 & \tt 2.0 & \tt 3.0 \\
+\tt 2.0 & \tt 1.0 & \tt 9.0
+\end{tabular} \right]
+\texttt{,1) = }
+\left[ \begin{array}{rrr}
+\tt 0.0 & \tt 2.0 & 3.0
+\end{array} \right]
+$$
+\\
+The C implementation for this method looks like this:
+
+\begin{verbatim}
+nml_mat *nml_mat_row_get(nml_mat *m, unsigned int row) {
+  if (row >= m->num_rows) {
+    NML_FERROR(CANNOT_GET_ROW, row, m->num_rows);
+    return NULL;
+  }
+  nml_mat *r = nml_mat_new(1, m->num_cols);
+  memcpy(r->data[0], m->data[row], m->num_cols * sizeof(*r->data[0]));
+  return r;
+}
+\end{verbatim}
+
+This time we write the code differently. Given the fact the memory per row is contiguous we can make use of {\tt memcpy()}.
+\\
+
+No loops are needed this time. This line of code is enough to achieve what we want:
+\\
+
+\texttt{
+ \ memcpy(r->data[0], m->data[row], m->num\_cols * sizeof(*r->data[0]))
+}
+\\
+
+At this point we’ve created a new row matrix from the initial one {\tt (m)}.
+
+\subsection{Setting values}
+
+To set the element of the matrix to a given value, we can simply access the data field of the {\tt nml\_mat*} struct:
+
+\begin{verbatim}
+nml_mat *m = ...
+m->data[i][j] = 2.0; 
+\end{verbatim}
+
+In addition, we can write helper methods to:
+
+\begin{itemize}
+\item Set all the elements to a given value: {\tt void nml\_mat\_all\_set(nml\_mat *matrix, double value)}
+\item Set all the elements of the first diagonal to a given value: {\tt int nml\_mat\_diag\_set(nml\_mat *m, double value)}
+\end{itemize}
+
+The C code for those two is somewhat trivial:
+
+\begin{verbatim}
+// Sets all elements of a matrix to a given value
+void nml_mat_all_set(nml_mat *matrix, double value) {
+  int i, j;
+  for(i = 0; i < matrix->num_rows; i++) {
+    for(j = 0; j < matrix->num_cols; j++) {
+      matrix->data[i][j] = value;
+    }
+  }
+}
+
+// Sets all elements of the matrix to given value
+int nml_mat_diag_set(nml_mat *m, double value) {
+  if (!m->is_square) {
+    NML_FERROR(CANNOT_SET_DIAG, value);
+    return 0;
+  }
+  int i;
+  for(i = 0; i < m->num_rows; i++) {
+    m->data[i][i] = value;
+  }
+  return 1;
+} 
+\end{verbatim}
+
+\subsection{Multiplying a row with a scalar}
+
+Multiplying a row in the matrix ({\tt nml\_mat}) can be useful when implementing more numerical analysis advanced algorithms.
+\\
+
+The idea is simple, we will define a method with the following signature:
+\\
+
+\texttt{
+ \ int nml\_mat\_row\_mult\_r(nml\_mat *m, unsigned int row, double num);
+ }
+\\
+
+This method will work directly through reference on the matrix m. That’s where the {\_r} stands for.
+\\
+
+From a mathematical perspective this method will do the following:
+
+$$
+\texttt{nml\_mat\_row\_mult\_r(}
+\left[ \begin{tabular}{rrr}
+\tt 1.0 & \tt 2.0 & \tt 3.0 \\
+\tt 0.0 & \tt 2.0 & \tt 3.0 \\
+\tt 2.0 & \tt 1.0 & \tt 9.0
+\end{tabular} \right]
+\texttt{,1, 2.0) = }
+\left[ \begin{tabular}{rrr}
+\tt 1.0 & \tt 2.0 & \tt 3.0 \\
+\tt\bf 0.0 & \tt\bf 4.0 & \tt\bf 6.0 \\
+\tt 2.0 & \tt 1.0 & \tt 9.0
+\end{tabular} \right]
+$$
+\\
+The code implementation looks like this:
+
+\begin{verbatim}
+int nml_mat_row_mult_r(nml_mat *m, unsigned int row, double num) {
+  if (row>= m->num_rows) {
+    NML_FERROR(CANNOT_ROW_MULTIPLY, row, m->num_rows);
+    return 0;
+  }
+  int i;
+  for(i=0; i < m->num_cols; i++) {
+    m->data[row][i] *= num;
+  }
+  return 1;
+}
+\end{verbatim}
+Notice how we select the row: {\tt m->data[row][i] *= num}, where {\tt i = 0 .. m->num\_cols}.
+\\
+
+An alternative method, that instead of referencing m will retrieve a new nml\_mat *r, can be written like this:
+
+\begin{verbatim}
+nml_mat *nml_mat_row_mult(nml_mat *m, unsigned int row, double num) {
+  nml_mat *r = nml_mat_cp(m);
+  if (!nml_mat_row_mult_r(r, row, num)) {
+    nml_mat_free(r);
+    return NULL;
+  }
+  return r;
+} 
+\end{verbatim}
+
+Notice how the {\tt \_r} ending has dropped. This is a common pattern in C.
+
+\subsection{Multiplying a column with a scalar}
+
+Multiplying a column is also quite similar with what we described above.
+
+We are going to end-up with two methods:
+
+\begin{itemize}
+\item {\tt int nml\_mat\_col\_mult\_r(nml\_mat *m, unsigned int col, double num)}
+	\begin{itemize}
+	\item[$\circ$] This will modify the matrix m through reference;
+	\end{itemize}
+\item {\tt nml\_mat *nml\_mat\_col\_mult(nml\_mat *m, unsigned int col, double num)}
+	\begin{itemize}
+	\item[$\circ$] This will return a {\tt new nml\_mat *r matrix}
+	\end{itemize}
+\end{itemize}
+From a math perspective:
+
+$$
+\texttt{nml\_mat\_col\_mult\_r(}
+\left[ \begin{tabular}{rrr}
+\tt 1.0 & \tt 2.0 & \tt 3.0 \\
+\tt 0.0 & \tt 2.0 & \tt 3.0 \\
+\tt 2.0 & \tt 1.0 & \tt 9.0
+\end{tabular} \right]
+\texttt{,0, 2.0) = }
+\left[ \begin{tabular}{rrr}
+\tt\bf 1.0 & \tt 2.0 & \tt 3.0 \\
+\tt\bf 0.0 & \tt 2.0 & \tt 3.0 \\
+\tt\bf 4.0 & \tt 1.0 & \tt 9.0
+\end{tabular} \right]
+$$
+\\
+The C code for both of the methods looks like this:
+
+\begin{verbatim}
+nml_mat *nml_mat_col_mult(nml_mat *m, unsigned int col, double num) {
+  nml_mat *r = nml_mat_cp(m);
+  if (!nml_mat_col_mult_r(r, col, num)) {
+    nml_mat_free(r);
+    return NULL;
+  }
+  return r;
+}
+
+int nml_mat_col_mult_r(nml_mat *m, unsigned int col, double num) {
+  if (col>=m->num_cols) {
+    NML_FERROR(CANNOT_COL_MULTIPLY, col, m->num_cols);
+    return 0;
+  }
+  int i;
+  for(i = 0; i < m->num_rows; i++) {
+    m->data[i][col] *= num;
+  }
+  return 1;
+}
+\end{verbatim}
+
+Notice how we select the column: {\tt m->data[i][col] *= num} , where {\tt i = 0 .. m->num\_rows}.
+
+\subsection{Adding two rows}
+
+The ability to add one row to another, is an important method used later for the implementation of more advanced algorithms: LUP Decomposition, Row Echelon Form, Reduced Row Echelon Form, etc.
+\\
+
+In addition, before adding one row to another we should also offer the possibility to multiply the row with a given scalar.
+\\
+
+We define the following method(s):
+
+\begin{verbatim}
+// We add all elements from row 'row' to row 'where'. 
+// The elements from row 'row' are muliplied using the 'multiplier'
+//
+// This one works through reference, modifying the `m` matrix; 
+int nml_mat_row_addrow_r(nml_mat *m, unsigned int where, 
+unsigned int row, double multiplier);
+
+// We add all elements from row 'row' to row 'where'. 
+// The elements from row 'row' are muliplied using the 'multiplier'
+//
+// This one returns a new matrix, `nml_mat *r`, after the row addition is performed    
+* nml_mat *nml_mat_row_addrow(nml_mat *m, unsigned int where, unsigned int row, 
+double multiplier);
+\end{verbatim}
+
+To better visualise:
+
+$$
+\texttt{nml\_mat\_row\_addrow\_r(}
+\left[ \begin{tabular}{rrr}
+\tt 1.0 & \tt 2.0 & \tt 3.0 \\
+\tt 0.0 & \tt 2.0 & \tt 3.0 \\
+\tt 2.0 & \tt 1.0 & \tt 9.0
+\end{tabular} \right]
+\texttt{,0, 1, 0.5) = }
+$$
+$$
+\left[ \begin{array}{ccc}
+\tt 1.0 + 0 \times \textcolor{blue}{0.5} & 
+\tt 2.0 + 2 \times \textcolor{blue}{0.5} &
+\tt 3.0 + 4.0 \times \textcolor{blue}{0.5}\\
+\tt 0.0 & \tt 2.0 & \tt 3.0 \\
+\tt 4.0 & \tt 1.0 & \tt 9.0
+\end{array} \right] 
+=
+\left[ \begin{tabular}{rrr}
+\tt 1.0 & \tt 2.0 & \tt 5.0 \\
+\tt 0.0 & \tt 2.0 & \tt 3.0 \\
+\tt 2.0 & \tt 1.0 & \tt 9.0
+\end{tabular} \right]
+$$
+\\
+The corresponding C code for the two methods is:
+
+\begin{verbatim}
+nml_mat *nml_mat_row_addrow(nml_mat *m, unsigned int where, 
+unsigned int row, double multiplier) {
+  nml_mat *r = nml_mat_cp(m);
+  if (!nml_mat_row_addrow_r(m, where, row, multiplier)) {
+    nml_mat_free(r);
+    return NULL;
+  }
+  return r;
+}
+\end{verbatim}
+
+\begin{verbatim}
+int nml_mat_row_addrow_r(nml_mat *m, unsigned int where, 
+unsigned int row, double multiplier) {
+
+  if (where >= m->num_rows || row >= m->num_rows) {
+    NML_FERROR(CANNOT_ADD_TO_ROW, multiplier, row, where, m->num_rows);
+    return 0;
+  }
+  int i = 0;
+  for(i = 0; i < m->num_cols; i++) {
+    m->data[where][i] += multiplier * m->data[row][i];
+  }
+  return 1;
+} 
+\end{verbatim}
+
+Notice how we are selecting the rows: {\tt m->data[where][i] += multiplier * m->data[row][i]}, where {\tt i = 0 .. i < m->num\_cols}.
+\\
+
+In case it’s not obvious, if the user simply wants to add two rows, without any multiplication, the multiplier should be kept as 1.0.
+
+\subsection{Multiplying the matrix by a scalar}
+
+The mathematical formula for multiplying the matrix with a scalar is simple:
+
+$$
+s * \left[
+\begin{array}{cccc}
+a_{01} & a_{02} & \ldots & a_{0n} \\
+a_{11} & a_{12} & \ldots & a_{1n} \\
+\vdots & & & \vdots \\
+a_{m1} & a_{m2} & \ldots & a_{mn} 
+\end{array}
+\right]
+=
+\left[
+\begin{array}{cccc}
+s * a_{01} & s * a_{02} & \ldots & s * a_{0n} \\
+s * a_{11} & s * a_{12} & \ldots & s * a_{1n} \\
+\vdots & & & \vdots \\
+s * a_{m1} & s * a_{m2} & \ldots & s * a_{mn} 
+\end{array}
+\right]
+$$
+\\
+So, just like the formula, the code equivalent is simple:
+
+\begin{verbatim}
+nml_mat *nml_mat_smult(nml_mat *m, double num) {
+  nml_mat *r = nml_mat_cp(m);
+  nml_mat_smult_r(r, num);
+  return r;
+}
+
+int nml_mat_smult_r(nml_mat *m, double num) {
+  int i, j;
+  for(i = 0; i < m->num_rows; i++) {
+    for(j = 0; j < m->num_cols; j++) {
+      m->data[i][j] *= num;
+    }
+  }
+  return 1;
+} 
+\end{verbatim}
+
+For each element {\tt m->data[i][j]} we perform the multiplication with the scalar num: {\tt m->data[i][j] *= num} where {\tt i = 0 .. num\_rows} and {\tt j = 0 .. num\_cols}.
+
+\section{Modifying the {\tt nml\_mat} internal structure}
+
+The next set of functionalities we can write to help our potential library users to modify the {\tt nml\_mat} matrix structure are:
+
+\begin{itemize}
+\item Remove a columns and rows and return a new matrix;
+\item Swap rows inside a given matrix;
+\item Swap columns inside a given matrix;
+\item Concatenate vertically and horizontally two matrices;
+\end{itemize}
+
+\subsection{Removing a column}
+
+Removing a column from a $M[n\times m]$ matrix, involves the creation of a new {\tt [n x (m-1)]} matrix.
+\\
+
+The method signature looks like this:
+\\
+
+\texttt{
+ \ nml\_mat *nml\_mat\_col\_rem(nml\_mat *m, unsigned int column);
+ }
+\\ 
+
+For this particular use-case it would be overkill to try to create a ``by-reference'' {\tt (\_r)} version of the method.
+\\
+
+Calling the {\tt nml\_mat\_col\_rem} on a matrix yields the following results:
+
+$$
+\texttt{nml\_mat\_col\_rem(}
+\left[ \begin{tabular}{rrr}
+\tt 1.0 & \tt 2.0 & \tt 3.0 \\
+\tt 0.0 & \tt 2.0 & \tt 4.0 \\
+\tt 2.0 & \tt 1.0 & \tt 9.0
+\end{tabular} \right]
+\texttt{,1) = }
+\left[ \begin{tabular}{rr}
+\tt 1.0 & \tt 3.0 \\
+\tt 0.0 & \tt 4.0 \\
+\tt 2.0 & \tt 9.0
+\end{tabular} \right]
+$$
+
+The code implementation:
+
+\begin{verbatim}
+nml_mat *nml_mat_col_rem(nml_mat *m, unsigned int column) {
+  if(column >= m->num_cols) {
+    NML_FERROR(CANNOT_REMOVE_COLUMN, column, m->num_cols);
+    return NULL;
+  }
+  nml_mat *r = nml_mat_new(m->num_rows, m->num_cols-1);
+  int i, j, k;
+  for(i = 0; i < m->num_rows; i++) {
+    for(j = 0, k=0; j < m->num_cols; j++) {
+      if (column!=j) {
+        r->data[i][k++] = m->data[i][j];
+      }
+    }
+  }
+  return r;
+}
+\end{verbatim}
+
+Observations:
+
+\begin{itemize}
+\item The resulting r matrix has the number of columns {\tt m->num\_cols-1};
+\item We keep a separate column index for the {\tt r} matrix that we name {\tt k};
+\item When copying the elements from {\tt m} to {\tt r} we skip the column column by adding this condition {\tt (column!=j)}:
+	\begin{itemize} 
+	\item[$\circ$] Then we increment {\tt k}, using {\tt k++} inside the {\tt r->data[i][k++]} statement;
+	\item[$\circ$] From this moment onwards {\tt k-j == 1}, meaning {\tt k} and {\tt j} are no longer in sync, because we’ve skipped the column.
+	\end{itemize}
+\end{itemize}
+
+\subsection{Removing a row}
+
+Removing a row from a {\tt M[n x m]} matrix, involves the creation of a new {\tt [(n-1) x m]} matrix.
+\\
+
+The method signature looks like this:
+\\
+
+\texttt{
+ \ nml\_mat *nml\_mat\_row\_rem(nml\_mat *m, unsigned int row);
+ }
+\\
+
+Calling the {\tt nml\_mat\_row\_rem} on a matrix yields the following results:
+
+$$
+\texttt{nml\_mat\_row\_rem(}
+\left[ \begin{tabular}{rrr}
+\tt 1.0 & \tt 2.0 & \tt 3.0 \\
+\tt 0.0 & \tt 2.0 & \tt 4.0 \\
+\tt 2.0 & \tt 1.0 & \tt 9.0
+\end{tabular} \right]
+\texttt{,1) = }
+\left[ \begin{tabular}{rrr}
+\tt 1.0 & \tt 2.0 & \tt 3.0 \\
+\tt 2.0 & \tt 1.0 & \tt 9.0
+\end{tabular} \right]
+$$
+
+The code implementation:
+
+\begin{verbatim}
+nml_mat *nml_mat_row_rem(nml_mat *m, unsigned int row) {
+  if (row >= m->num_rows) {
+    NML_FERROR(CANNOT_REMOVE_ROW, row, m->num_rows);
+    return NULL;
+  }
+  nml_mat *r = nml_mat_new(m->num_rows-1, m->num_cols);
+  int i, j, k;
+  for(i = 0, k = 0; i < m->num_rows; i++) {
+    if (row!=i) {
+      for(j = 0; j < m->num_cols; j++) {
+        r->data[k][j] = m->data[i][j];
+      }
+      k++;
+    }
+  }
+  return r;
+}
+\end{verbatim}
+
+Observations:
+
+\begin{itemize}
+\item The resulting matrix {\tt r} has the same number of columns as {\tt m} (i.e., {\tt m->num\_cols}), but a smaller number of rows ({\tt r->num\_rows});
+\item We keep a separate row index {\tt k} for the resulting matrix {\tt ‘r’};
+\item Initially {\tt k} is in sync with {\tt i}, as long as ({\tt row!=i});
+\item When {\tt row == i}, {\tt k} is no longer incremented, so the sync is lost and {\tt i - k == 1}. This is how the row gets skipped.
+\end{itemize}
+
+\subsection{Swapping Rows}
+
+This functionality will prove useful later when we re going to implement the Row Echelon Form and LU Decomposition algorithms.
+\\
+
+In this case we can define two methods:
+
+\begin{verbatim}
+// Returns a new matrix with row1 and row2 swapped
+nml_mat *nml_mat_row_swap(nml_mat *m, unsigned int row1, unsigned int row2);
+
+// Modifies the existing matrix m, by swapping the two rows row1 and row2
+int nml_mat_row_swap_r(nml_mat *m, unsigned int row1, unsigned int row2);
+\end{verbatim}
+
+Visually, the method works like this:
+
+$$
+\texttt{nml\_mat\_row\_swap\_r(}
+\left[ \begin{tabular}{rrr}
+\tt 1.0 & \tt 2.0 & \tt 3.0 \\
+\tt 0.0 & \tt 2.0 & \tt 4.0 \\
+\tt 2.0 & \tt 1.0 & \tt 9.0
+\end{tabular} \right]
+\texttt{0,1) = }
+\left[ \begin{tabular}{rrr}
+\tt 0.0 & \tt 2.0 & \tt 4.0 \\
+\tt 1.0 & \tt 2.0 & \tt 3.0 \\
+\tt 2.0 & \tt 1.0 & \tt 9.0
+\end{tabular} \right]
+$$
+
+The C implementation makes use of the fact that rows are contiguous memory blocks can be swapped without having to access each element of the rows in particular:
+
+\begin{verbatim}
+int nml_mat_row_swap_r(nml_mat *m, unsigned int row1, unsigned int row2) {
+  if (row1 >= m->num_rows || row2 >= m->num_rows) {
+    NML_FERROR(CANNOT_SWAP_ROWS, row1, row2, m->num_rows);
+    return 0;
+  }
+  double *tmp = m->data[row2];
+  m->data[row2] = m->data[row1];
+  m->data[row1] = tmp;
+  return 1;
+} 
+\end{verbatim}
+
+As for the {\tt nml\_mat\_row\_swap(..)} this can be written by re-using {\tt nml\_mat\_row\_swap\_r(...)}:
+
+\begin{verbatim}
+nml_mat *nml_mat_row_swap(nml_mat *m, unsigned int row1, unsigned int row2) {
+  nml_mat *r = nml_mat_cp(m);
+  if (!nml_mat_row_swap_r(r, row1, row2)) {
+    nml_mat_free(r);
+    return NULL;
+  }
+  return r;
+} 
+\end{verbatim}
+
+\subsection{Swapping columns}
+
+This functionality might not be as useful as the previous one {\tt nml\_mat\_row\_swap(...)}, but for sake of having a robust API for our ~potential~ users, we will implement it.
+\\
+
+We define again two methods, one that is returning a new {\tt nml\_mat} matrix, and one that operates on the given on:
+\\
+
+\begin{verbatim}
+nml_mat *nml_mat_col_swap(nml_mat *m, unsigned int col1, unsigned int col2);
+int nml_mat_col_swap_r(nml_mat *m, unsigned int col1, unsigned int col2); 
+\end{verbatim}
+
+Visually the two methods are working like this:
+
+$$
+\texttt{nml\_mat\_row\_swap\_r(}
+\left[ \begin{tabular}{rrr}
+\tt 1.0 & \tt 2.0 & \tt 3.0 \\
+\tt 0.0 & \tt 2.0 & \tt 4.0 \\
+\tt 2.0 & \tt 1.0 & \tt 9.0
+\end{tabular} \right]
+\texttt{0,1) = }
+\left[ \begin{tabular}{rrr}
+\tt 2.0 & \tt 1.0 & \tt 4.0 \\
+\tt 2.0 & \tt 0.0 & \tt 3.0 \\
+\tt 1.0 & \tt 2.0 & \tt 9.0
+\end{tabular} \right]
+$$
+
+Compared to the previous two functions (for swapping rows) the code is slightly different. Columns are not contiguous blocks of memory, so we will need to swap each element one by one:
+
+\begin{verbatim}
+int nml_mat_col_swap_r(nml_mat *m, unsigned int col1, unsigned int col2) {
+  if (col1 >= m->num_cols || col2 >= m->num_rows) {
+    NML_FERROR(CANNOT_SWAP_ROWS, col1, col2, m->num_cols);
+    return 0;
+  }
+  double tmp;
+  int j;
+  for(j = 0; j < m->num_rows; j++) {
+    tmp = m->data[j][col1];
+    m->data[j][col1] = m->data[j][col2];
+    m->data[j][col2] = tmp;
+  }
+  return 1;
+}
+\end{verbatim}
+
+Writing the {\tt nml\_mat\_col\_swap(...)} version of the method will simply re-use the previous ``{\tt \_r}'' one:
+
+\begin{verbatim}
+nml_mat *nml_mat_col_swap(nml_mat *m, unsigned int col1, unsigned int col2) {
+  nml_mat *r = nml_mat_cp(m);
+  if (!nml_mat_col_swap_r(r, col1, col2)) {
+    nml_mat_free(r);
+    return NULL;
+  }
+  return r;
+} 
+\end{verbatim}
+
+\subsection{Horizontal Concatenation of two matrices}
+
+This functionality is probably not very useful from a ``scientific'' point of view, but it’s a nice exercise we can solve, and a neat ``utility'' we can add to the library.
+\\
+
+We would like to write a function, that takes a variable number of matrices ({\tt nml\_mat**}) and returns a new matrix that represents the horizontal concatenation of those matrices.
+\\
+
+It’s important that all the input matrices have the same number of columns, otherwise the horizontal concatenation won’t work.
+\\
+
+Our C function will have the following signature:
+\\
+
+\texttt{ \ nml\_mat *nml\_mat\_cath(unsigned int mnum, nml\_mat **marr);
+}
+\\
+
+Where:
+
+\begin{itemize}
+\item {\tt unsigned int mnum} -- represents the total number of matrices we want to (horizontally) concatenate;
+\item {\tt nml\_mat **marr} -- are the matrices we want to (horizontally) concatenate;
+\end{itemize}
+
+Visually, the function works on the following way. If:
+
+$$
+A = \left[
+\begin{array}{rrr}
+\tt 1.0 & \tt 2.0 & \tt 3.0 \\
+\tt 0.0 & \tt 2.0 & \tt 4.0 \\
+\tt 2.0 & \tt 1.0 & \tt 9.0
+\end{array}
+\right]
+$$
+
+$$
+B = \left[
+\begin{array}{rrr}
+\tt 4.0 & \tt 0.0 & \tt 9.0
+\end{array}
+\right]
+$$
+
+$$
+C = \left[
+\begin{array}{rrr}
+\tt 3.0 & \tt -1.0 & \tt 1.0 \\
+\tt 2.0 & \tt 0.0 & \tt -5.0
+\end{array}
+\right]
+$$
+
+Calling the method {\tt nml\_mat\_cath(3, **[A, B, C])} will yield the following result:
+
+$$
+C = \left[
+\begin{array}{rrr}
+\tt 1.0 & \tt 2.0 & \tt 3.0 \\
+\tt 0.0 & \tt 2.0 & \tt 4.0 \\
+\tt 2.0 & \tt 1.0 & \tt 9.0 \\
+\tt 4.0 & \tt 0.0 & \tt 9.0 \\
+\tt 3.0 & \tt -1.0 & \tt 1.0 \\
+\tt 2.0 & \tt 0.0 & \tt -5.0
+\end{array}
+\right]
+$$
+
+The corresponding C code for this implementation looks like this:
+
+\begin{verbatim}
+nml_mat *nml_mat_cath(unsigned int mnum, nml_mat **marr) {
+  if (0==mnum) {
+    // No matrices, nothing to return
+    return NULL;
+  }
+  if (1==mnum) {
+    // We just return the one matrix supplied as the first param
+    // no need for additional logic
+    return nml_mat_cp(marr[0]);
+  }
+  // We calculate the total number of columns to know how to allocate memory
+  // for the resulting matrix
+  int i,j,k,offset;
+  unsigned int lrow, ncols;
+  lrow = marr[0]->num_rows;
+  ncols = marr[0]->num_cols;
+  for(k = 1; k < mnum; k++) {
+    if (NULL == marr[k]) {
+      NML_FERROR(INCONSITENT_ARRAY, k, mnum);
+      return NULL;
+    }
+    if (lrow != marr[k]->num_rows) {
+      NML_FERROR(CANNOT_CONCATENATE_H, lrow, marr[k]->num_rows);
+      return NULL;
+    }
+    ncols+=marr[k]->num_cols;
+  }
+  // At this point we know how the resulting matrix looks like,
+  // we allocate memory for it accordingly
+  nml_mat *r = nml_mat_new(lrow, ncols);
+  for(i = 0; i < r->num_rows; i++) {
+    k = 0;
+    offset = 0;
+    for(j = 0; j < r->num_cols; j++) {
+      // If the column index of marr[k] overflows
+      if (j-offset == marr[k]->num_cols) {
+        offset += marr[k]->num_cols;
+        // We jump to the next matrix in the array
+        k++;
+      }
+      r->data[i][j] = marr[k]->data[i][j - offset];
+    }
+  }
+  return r;
+}
+\end{verbatim}
+
+Observations:
+
+\begin{itemize}
+\item {\tt i}, {\tt j} are used to iterate over the resulting matrix ({tt r});
+\item {\tt k} is the index of the current we are concatenating;
+\item {\tt offset} is useful to determine we need to jump to next matrix that needs concatenation.
+\end{itemize}
+
+\subsection{Vertical concatenation}
+
+Just like the horizontal concatenation, this functionality is not very useful for the more complex algorithms we are going to implement later in this tutorial. But, for the sake of our ~potential~ library users, and because it’s a nice exercise we will implement it.
+\\
+
+The main idea is to write a function, that takes a variable number of matrices (nml\_mat**) and returns a new matrix that represents the vertical concatenation of those matrices.
+\\
+
+It’s important that all the input matrices have the same number of rows, otherwise the vertical concatenation won’t work.
+\\
+
+The method signature looks like:
+\\
+
+\texttt{ \ nml\_mat *nml\_mat\_catv(unsigned int mnum, nml\_mat **marr);
+}
+\\
+
+Where:
+
+\begin{itemize}
+\item {\tt unsigned int mnum} \ -- \ represents the total number of matrices we want to (horizontally) concatenate;
+\item {\tt nml\_mat **marr} \  -- \ are the matrices we want to (horizontally) concatenate;
+\end{itemize}
+
+Visually the method works like this:
+
+$$
+A = \left[
+\begin{array}{rrr}
+\tt 1.0 & \tt 2.0 & \tt 3.0 \\
+\tt 0.0 & \tt 2.0 & \tt 4.0
+\end{array}
+\right]
+$$
+
+$$
+B = \left[
+\begin{array}{rrr}
+\tt 4.0 & \tt 0.0 & \tt 9.0 \\
+\tt 2.0 & \tt 1.0 & \tt 9.0
+\end{array}
+\right]
+$$
+
+Calling {\tt nml\_mat\_catv(2, **[A, B])} will return the following result:
+
+$$
+\left[
+\begin{array}{rrrrrr}
+\tt 1.0 & \tt 2.0 & \tt 3.0 & \tt 4.0 & \tt 0.0 & \tt 9.0 \\
+\tt 0.0 & \tt 2.0 & \tt 4.0 & \tt 2.0 & \tt 1.0 & \tt 9.0
+\end{array}
+\right]
+$$
+
+The code implementation looks like this:
+
+\begin{verbatim}
+// Concatenates a variable number of matrices into one.
+// The concentation is done vertically this means the matrices need to have
+// the same number of columns, while the number of rows is allowed to
+// be variable
+nml_mat *nml_mat_catv(unsigned int mnum, nml_mat **marr) {
+  if (0 == mnum) {
+    return NULL;
+  }
+  if (1 == mnum) {
+    return nml_mat_cp(marr[0]);
+  }
+  // We check to see if the matrices have the same number of columns
+  int lcol, i, j, k, offset;
+  unsigned int numrows;
+  nml_mat *r;
+  lcol = marr[0]->num_cols;
+  numrows = 0;
+  for(i = 0; i < mnum; i++) {
+    if (NULL==marr[i]) {
+      NML_FERROR(INCONSITENT_ARRAY, i, mnum);
+      return NULL;
+    }
+    if (lcol != marr[i]->num_cols) {
+      NML_FERROR(CANNOT_CONCATENATE_V,lcol,marr[i]->num_cols);
+      return NULL;
+    }
+    // In the same time we calculate the resulting matrix number of rows
+    numrows+=marr[i]->num_rows;
+  }
+  // At this point we know the dimensions of the resulting Matrix
+  r = nml_mat_new(numrows, lcol);
+  // We start copying the values one by one
+  for(j = 0; j < r->num_cols; j++) {
+    offset = 0;
+    k = 0;
+    for(i = 0; i < r->num_rows; i++) {
+      if (i - offset == marr[k]->num_rows) {
+        offset += marr[k]->num_rows;
+        k++;
+      }
+      r->data[i][j] = marr[k]->data[i-offset][j];
+    }
+  }
+  nml_mat_print(r);
+  return r;
+}
+\end{verbatim}
+
+Observations:
+
+\begin{itemize}
+\item {\tt i}, {\tt j} are used to iterate over the resulting matrix ({\tt r});
+\item Compared to our previous method ({\tt nml\_mat\_cath(..)}) this time we start by iterating though the columns;
+\item k is the index of the current matrix we are concatenating;
+\item {\tt offset} is useful to determine we need to jump to next matrix that needs concatenation
+\end{itemize}
+
+\section{Basic Matrix Operations}
+
+\subsection{Add two matrices}
+
+From a mathematical perspective the formula for adding two matrices A and B is quit simple:
+
+$$
+\left[ \begin{array}{cccc}
+a_{01} & a_{02} & \ldots & a_{0n} \\
+a_{11} & a_{12} & \ldots & a_{1n} \\
+\vdots &&& \vdots \\
+a_{m1} & a_{m2} & \ldots & a_{mn}
+\end{array} \right]
++
+\left[ \begin{array}{cccc}
+b_{01} & b_{02} & \ldots & b_{0n} \\
+b_{11} & b_{12} & \ldots & b_{1n} \\
+\vdots &&& \vdots \\
+b_{m1} & b_{m2} & \ldots & b_{mn}
+\end{array} \right]
+$$
+
+$$
+\left[ \begin{array}{cccc}
+a_{01}+b_{01} & a_{02}+b_{02} & \ldots & a_{0n}+b_{0n} \\
+a_{11}+b_{11} & a_{12}+b_{12} & \ldots & a_{1n}+b_{1n} \\
+\vdots &&& \vdots \\
+a_{m1}+b_{m1} & a_{m2}+b_{m2} & \ldots & a_{mn}+b_{mn}
+\end{array} \right]
+$$
+
+Basically each element from the first matrix gets added with the corresponding element from the second matrix.
+\\
+
+The corresponding C code is straightforward:
+
+\begin{verbatim}
+nml_mat *nml_mat_add(nml_mat *m1, nml_mat *m2) {
+  nml_mat *r = nml_mat_cp(m1);
+  if (!nml_mat_add_r(r, m2)) {
+    nml_mat_free(r);
+    return NULL;
+  }
+  return r;
+}
+
+int nml_mat_add_r(nml_mat *m1, nml_mat *m2) {
+  if (!nml_mat_eqdim(m1, m2)) {
+    NML_ERROR(CANNOT_ADD);
+    return 0;
+  }
+  int i, j;
+  for(i = 0; i < m1->num_rows; i++) {
+    for(j = 0; j < m2->num_rows; j++) {
+      m1->data[i][j] += m2->data[i][j];
+    }
+  }
+  return 1;
+}
+\end{verbatim}
+
+\subsection{Substracting two matrices}
+
+This is very similar with to the addition, except this time each element from m2 is subtracted from the corresponding element from m1:
+
+$$
+\left[ \begin{array}{cccc}
+a_{01} & a_{02} & \ldots & a_{0n} \\
+a_{11} & a_{12} & \ldots & a_{1n} \\
+\vdots &&& \vdots \\
+a_{m1} & a_{m2} & \ldots & a_{mn}
+\end{array} \right]
+-
+\left[ \begin{array}{cccc}
+b_{01} & b_{02} & \ldots & b_{0n} \\
+b_{11} & b_{12} & \ldots & b_{1n} \\
+\vdots &&& \vdots \\
+b_{m1} & b_{m2} & \ldots & b_{mn}
+\end{array} \right]
+$$
+
+$$
+\left[ \begin{array}{cccc}
+a_{01}-b_{01} & a_{02}-b_{02} & \ldots & a_{0n}-b_{0n} \\
+a_{11}-b_{11} & a_{12}-b_{12} & \ldots & a_{1n}-b_{1n} \\
+\vdots &&& \vdots \\
+a_{m1}-b_{m1} & a_{m2}-b_{m2} & \ldots & a_{mn}-b_{mn}
+\end{array} \right]
+$$
+
+The corresponding C code to perform this operation is:
+
+\begin{verbatim}
+nml_mat *nml_mat_sub(nml_mat *m1, nml_mat *m2) {
+  nml_mat *r = nml_mat_cp(m2);
+  if (!nml_mat_sub_r(r, m2)) {
+    nml_mat_free(r);
+    return NULL;
+  }
+  return r;
+}
+
+int nml_mat_sub_r(nml_mat *m1, nml_mat *m2) {
+  if (!nml_mat_eqdim(m1, m2)) {
+    NML_ERROR(CANNOT_SUBTRACT);
+    return 0;
+  }
+  int i, j;
+  for(i = 0; i < m1->num_rows; i++) {
+    for(j = 0; j < m2->num_cols; j++) {
+      m1->data[i][j] -= m2->data[i][j];
+    }
+  }
+  return 1;
+} 
+\end{verbatim}
+
+\subsection{Multiplying two matrices}
+
+Having a matrix $A[m\times x]$, and a matrix $B[n\times p]$:
+
+$$
+A = \left[ \begin{array}{cccc}
+a_{11} & a_{12} & \ldots & a_{1n} \\
+a_{21} & a_{22} & \ldots & a_{2n} \\
+\vdots &&& \vdots \\
+a_{m1} & a_{m2} & \ldots & a_{mn}
+\end{array} \right]
+,\hspace{10mm}
+B = \left[ \begin{array}{cccc}
+b_{11} & b_{12} & \ldots & b_{1n} \\
+b_{21} & b_{22} & \ldots & b_{2n} \\
+\vdots &&& \vdots \\
+b_{m1} & b_{m2} & \ldots & b_{mn}
+\end{array} \right]
+$$
+
+We define the product $A\times B$, as the matrix $A[m\times p]$:
+
+$$
+C = \left[ \begin{array}{cccc}
+c_{11} & c_{12} & \ldots & c_{1n} \\
+c_{21} & c_{22} & \ldots & c_{2n} \\
+\vdots &&& \vdots \\
+c_{m1} & c_{m2} & \ldots & c_{mn}
+\end{array} \right]
+$$
+
+Where:
+$$
+c_{ij} = a_{i1}\cdot b_{1j} + a_{i2}\cdot b_{2j} + \ldots + a_{in}\cdot b_{nj} = \sum_{k=1}^{n} a_{ik}\cdot b_{kj},
+$$
+
+for $i=1\,..\,m$, $j=1\,..\,p$. The product $A\times B$ is defined if and only if the number of columns of $A$ equals the number of rows in $B$, which is $n$.
+\\
+
+The resulting product matrix will then ``inherit'' the number of rows from $A$, and the number of columns from $B$.
+\\
+
+The formula will be easier to digest if we go through an example:
+$$
+A = \left[ \begin{array}{ccc}
+1 & 2 & 3 \\
+0 & 0 & 4
+\end{array} \right]
+, \hspace{10mm}
+B = \left[ \begin{array}{cc}
+2 & 3 \\
+2 & 1 \\
+1 & 5
+\end{array} \right]
+$$
+
+$A\times B$ exists because $A[2\times 3]$ and $B[3\times 2]$. The resulting matrix $C$ will be $2\times 2$.
+
+$$
+C = \left[ \begin{array}{cc}
+1\cdot 2 + 2\cdot 2 + 3\cdot 1 & 1\cdot 3 + 2\cdot 1 + 3\cdot 5 \\
+0\cdot 2 + 0\cdot 2 + 4\cdot 1 & 0\cdot 3 + 0\cdot 1 + 4\cdot 5
+\end{array} \right]
+= 
+\left[ \begin{array}{cc}
+9 & 20 \\
+4 & 20
+\end{array} \right]
+$$
+\\
+The naive implementation for this algorithm looks like:
+
+\begin{verbatim}
+ml_mat *nml_mat_dot(nml_mat *m1, nml_mat *m2) {
+  if (!(m1->num_cols == m2->num_rows)) {
+    NML_ERROR(CANNOT_MULITPLY);
+    return NULL;
+  }
+  int i, j, k;
+  nml_mat *r = nml_mat_new(m1->num_rows, m2->num_cols);
+  for(i = 0; i < r->num_rows; i++) {
+    for(j = 0; j < r->num_cols; j++) {
+      for(k = 0; k < m1->num_cols; k++) {
+        r->data[i][j] += m1->data[i][k] * m2->data[k][j];
+      }
+    }
+  }
+  return r;
+}
+\end{verbatim}
+
+Better algorithms exists for matrix multiplications, if you want to find out more please check this wikipedia \href{https://en.wikipedia.org/wiki/Matrix_multiplication_algorithm}{\underline{\it article}}.
+
+\section{Row Echelon Form}
+
+A matrix $A$ is in \textit{Row Echelon Form} if it has the shape resulting from a Gaussian Elimination.
+\\
+
+Additionally, the matrix A is in Row Echelon form if:
+
+\begin{itemize}
+\item The first non-zero element for each row is exactly 1.0;
+\item Rows with all 0.0 elements are bellow rows that have at least one non-zero element.
+\item Each leading entry (pivot) is in a column to the right of the leading entry in the previous row.
+\end{itemize}
+
+All the bellow matrices are examples of matrices that have been ``morphed'' into Row Echelon Form:
+
+$$
+A=
+\begin{bmatrix}
+1 & 2 & 3 & 4 \\
+0 & 0 & 1 & 3 \\
+0 & 0 & 0 & 1 
+\end{bmatrix}
+\\
+B=
+\begin{bmatrix}
+1 & 2 & 3 & 4 \\
+0 & 0 & 1 & 3 \\
+0 & 0 & 0 & 1 \\
+0 & 0 & 0 & 0
+\end{bmatrix}
+\\
+C=
+\begin{bmatrix}
+1 & 2 \\
+0 & 1 \\
+0 & 0 \\
+0 & 0
+\end{bmatrix}
+\\
+$$
+
+Every matrix can be transformed into a Row Echelon, by using elementary row operations:
+
+\begin{itemize}
+\item Interchanging (swapping) two rows. See {\tt nml\_mat\_row\_swap\_r(...)} implemented before;
+\item Multiply each element in a row by a non-zero number (scalar multiplication of rows). See {\tt nml\_mat\_row\_mult\_r(...)} implemented before;
+\item Multiply a row by a non-zero number and add the result to another row (row addition). See {\tt nml\_mat\_row\_addrow\_r(...)} implemented before;
+\end{itemize}
+
+The algorithm to transform the matrix in a Row Echelon Form is as follows:
+
+\begin{enumerate}
+\item Find the “pivot”, the first non-zero entry from the first column of the matrix;
+	\begin{itemize}
+	\item[$\circ$] If the column has only zero elements, jump to the next column;
+	\end{itemize}
+\item Interchange rows, moving the pivot row to become the first row;
+\item Multiply each element in the pivot by the inverse of the pivot $1/{pivot}$
+so that the pivot equals 1.0;
+\item Add multiplies of the pivot row to each of the pivot rows, so every element in the pivot column will equal 0.0.
+\item Continue the process until there are no more pivots to process.
+\end{enumerate}
+
+Note: A matrix can have multiple Row Echelon Forms, but you will see in the next chapter, there’s only one Reduced Row Echelon Form.
+
+\subsection{Example}
+
+Let’s take for example the following matrix, $A[3\times 3]$. $\texttt{REF}(A)$ is also a $3x3$ matrix. The transitions are:
+
+$$
+A=
+\begin{bmatrix}
+0 & 1 & 2 \\
+1 & 2 & 1 \\
+2 & 7 & 8
+\end{bmatrix}
+\rightarrow
+A_{1}=
+\begin{bmatrix}
+1 & 2 & 1 \\
+0 & 1 & 2 \\
+2 & 7 & 8
+\end{bmatrix}
+\rightarrow
+A_{2} =
+\begin{bmatrix}
+1 & 2 & 1 \\
+0 & 1 & 2 \\
+0 & 3 & 6
+\end{bmatrix}
+\rightarrow
+\\
+A_{ref}  =
+\begin{bmatrix}
+1 & 2 & 1 \\
+0 & 1 & 2 \\
+0 & 0 & 0
+\end{bmatrix}
+$$
+
+$A \rightarrow A_1$:\quad We found out that the first non-zero element of the first {\tt column[0]} is 1 on {\tt row[1]} so we’ve swapped {\tt row[0]} with {\tt row[1]}. Using our code this means:
+
+$$
+\texttt{nml\_mat\_row\_swap\_r(}
+\begin{bmatrix}
+0 & 1 & 2 \\
+1 & 2 & 1 \\
+2 & 7 & 8
+\end{bmatrix}
+\texttt{, 0, 1)=}
+\begin{bmatrix}
+1 & 2 & 1 \\
+0 & 1 & 2 \\
+2 & 7 & 8
+\end{bmatrix}
+$$
+
+$A_1 \rightarrow A_2$:\quad For $A_1$ we’ve multiplied each element of {\tt row[0]} with -2 and added the result to {\tt row[2]}. Using our code this means:
+
+$$
+\texttt{nml\_mat\_row\_addrow\_r(}
+\begin{bmatrix}
+1 & 2 & 1 \\
+0 & 1 & 2 \\
+2 & 7 & 8
+\end{bmatrix}
+\texttt{, 2, 0, -2.0)=}
+\begin{bmatrix}
+1 & 2 & 1 \\
+0 & 1 & 2 \\
+0 & 3 & 6
+\end{bmatrix}
+$$
+
+$A_2 \rightarrow A_{ref}$:\quad For $A_2$ we’ve multiplied {\tt row[1]} with -3 and added the result to {\tt row[2]}. Using the code this means:
+
+$$
+\texttt{nml\_mat\_row\_addrow\_r(}
+\begin{bmatrix}
+1 & 2 & 1 \\
+0 & 1 & 2 \\
+0 & 3 & 6
+\end{bmatrix}
+\texttt{, 2, 1, -3.0)=}
+\begin{bmatrix}
+1 & 2 & 1 \\
+0 & 1 & 2 \\
+0 & 0 & 0
+\end{bmatrix}
+$$
+
+\subsection{Code implementation}
+
+Most of the bits and pieces for assembling the algorithm, were already implemented before: {\tt nml\_mat\_row\_swap\_r(...)}, {\tt nml\_mat\_row\_mult\_r(...)}, {\tt nml\_mat\_row\_addrow\_r(...)}.
+\\
+
+What we are missing at this moment to assemble the algorithm is to write the ``pivot function''. We are going to call this: {\tt \_nml\_mat\_pivotidx(...)}:
+
+\begin{verbatim}
+// Finds the first non-zero element on the col column, under the row row.
+// This is used to determine the pivot in gauss Elimination
+// If not pivot is found, returns -1
+int _nml_mat_pivotidx(nml_mat *m, unsigned int col, unsigned int row) {
+  // No validations are made, this is an API Method
+  int i;
+  for(i = row; i < m->num_rows; i++) {
+    if (fabs(m->data[i][col]) > NML_MIN_COEF) {
+      return i;
+    }
+  }
+  return -1;
+}
+\end{verbatim}
+
+At this point the algorithm is straight-forward to implement:
+
+\begin{verbatim}
+// Retrieves the matrix in Row Echelon form using Gauss Elimination
+nml_mat *nml_mat_ref(nml_mat *m) {
+  nml_mat *r = nml_mat_cp(m);
+  int i, j, k, pivot;
+  j = 0, i = 0;
+  // We iterate until we exhaust the columns and the rows
+  while(j < r->num_cols && i < r->num_cols) {
+    // Find the pivot - the first non-zero entry in the first column of the matrix
+    pivot = _nml_mat_pivotidx(r, j, i);
+    if (pivot<0) {
+      // All elements on the column are zeros
+      // We move to the next column without doing anything
+      j++;
+      continue;
+    }
+    // We interchange rows moving the pivot to the first row that doesn't have
+    // already a pivot in place
+    if (pivot!=i) {
+      nml_mat_row_swap_r(r, i, pivot);
+    }
+    // Multiply each element in the pivot row by the inverse of the pivot
+    nml_mat_row_mult_r(r, i, 1/r->data[i][j]);
+    // We add multiplies of the pivot so every element on the column equals 0
+    for(k = i+1; k < r->num_rows; k++) {
+      if (fabs(r->data[k][j]) > NML_MIN_COEF) {
+        nml_mat_row_addrow_r(r, k, i, -(r->data[k][j]));
+      } 
+    }
+    i++;
+    j++;
+  }
+  return r;
+} 
+\end{verbatim}
+
+{\tt 1/r->data[i][j]} might pose a risk. If {\tt r->data[i][j]} becomes very small, (like, $0.0000\ldots 01$), we might overflow when multiplying wihg {\tt 1/r->data[i][j]}. In this regard I’ve introduced a ``guard'' value called {\tt NML\_MIN\_COEF}.
+\\
+
+We consider every number smaller than {\tt NML\_MIN\_COEF} to be 0.0. That’s why we perform this additional check: \ {\tt if (fabs(r->data[k][j]) > NML\_MIN\_COEF)} in our algorithm.
+
+\section{Reduces Row Echelon Form}
+
+A matrix $A$ is in {\it R}educed {\it R}ow {\it E}chelon {\it F}orm, $A_{rref}$ if all the conditions of being in Row Echelon Form are satisfied, and the leading entry in each row is the only non-zero entry in this column.
+\\
+
+For example the following matrices are in Reduced Row Echelon Form (RREF):
+
+$$
+A=
+\begin{bmatrix}
+1 & 2 & 0 & 0 \\
+0 & 0 & 1 & 0 \\
+0 & 0 & 0 & 1
+\end{bmatrix}
+, \qquad
+B=
+\begin{bmatrix}
+1 & 2 & 0 & 0 \\
+0 & 0 & 1 & 0 \\
+0 & 0 & 0 & 1 \\
+0 & 0 & 0 & 0
+\end{bmatrix}
+, \qquad
+C=
+\begin{bmatrix}
+1 & 0 \\
+0 & 1 \\
+0 & 0 \\
+0 & 0
+\end{bmatrix}
+$$
+
+Compared to the previous algorithm, an additional step is performed:
+
+\begin{enumerate} 
+\item We identify the last row having a pivot equal to 1;
+\item We mark this as the pivot row;
+\item We add multiplies of the pivot row to each of it’s upper rows, until every element above it remains 0.0;
+\item We repeat the process from bottom-up.
+\end{enumerate}
+
+Note: A matrix has only RREF form, but can have many REF forms.
+
+\subsection{Code Implementation}
+
+To make the algorithm more stable from a ``computational'' perspective we will change the ``pivoting method'' used above. We introduce a new one:
+
+\begin{verbatim}
+// Find the max element from the column "col" under the row "row"
+// This is needed to pivot in Gauss-Jordan elimination
+// If pivot is not found, return -1
+int _nml_mat_pivotmaxidx(nml_mat *m, unsigned int col, unsigned int row) {
+  int i, maxi;
+  double micol;
+  double max = fabs(m->data[row][col]);
+  maxi = row;
+  for(i = row; i < m->num_rows; i++) {
+    micol = fabs(m->data[i][col]);
+    if (micol>max) {
+      max = micol;
+      maxi = i;
+    }
+  }
+  return (max < NML_MIN_COEF) ? -1 : maxi;
+} 
+\end{verbatim}
+
+Compared to the previous one, this one will return the biggest element on the column under row row. This will be picked as pivot.
+\\
+
+The C code:
+
+\begin{verbatim}
+// Retrieves the matrix in Row Echelon form using Gauss Elimination
+nml_mat *nml_mat_ref(nml_mat *m) {
+  nml_mat *r = nml_mat_cp(m);
+  int i, j, k, pivot;
+  j = 0, i = 0;
+  while(j < r->num_cols && i < r->num_cols) {
+    // Find the pivot - the first non-zero entry in the first column of the matrix
+    pivot = _nml_mat_pivotidx(r, j, i);
+    if (pivot<0) {
+      // All elements on the column are zeros
+      // We move to the next column without doing anything
+      j++;
+      continue;
+    }
+    // We interchange rows moving the pivot to the first row that doesn't have
+    // already a pivot in place
+    if (pivot!=i) {
+      nml_mat_row_swap_r(r, i, pivot);
+    }
+    // Multiply each element in the pivot row by the inverse of the pivot
+    nml_mat_row_mult_r(r, i, 1/r->data[i][j]);
+    // We add multiplies of the pivot so every element on the column equals 0
+    for(k = i+1; k < r->num_rows; k++) {
+      if (fabs(r->data[k][j]) > NML_MIN_COEF) {
+        nml_mat_row_addrow_r(r, k, i, -(r->data[k][j]));
+      } 
+    }
+    i++;
+    j++;
+  }
+  return r;
+} 
+\end{verbatim}
+
+\section{LU(P) Decomposition}
+
+LU decomposition, also named LU factorisation refers to the factorisation of a matrix $A$, into two factors $L$ and $U$.
+\\
+
+Normally the factorisation looks like this:
+
+$$
+\begin{bmatrix}
+a_{11} & a_{12} & a_{13} \\
+a_{21} & a_{22} & a_{23} \\
+a_{31} & a_{32} & a_{33} 
+\end{bmatrix}
+=
+\begin{bmatrix}
+1 & 0 & 0 \\
+l_{21} & 1 & 0 \\
+l_{31} & l_{32} & 1
+\end{bmatrix} 
+* 
+\begin{bmatrix}
+u_{11} & u_{12} & u_{13} \\
+0 & u_{22} & u_{23} \\
+0 & 0 & u_{33}
+\end{bmatrix}
+$$
+
+In practice, however, this type of factorisation might fail to materialise without swapping various rows of $A$ during the computation. In this case, we need to introduce into the equation a new matrix $P$ where we keep track of all the row changes that are happening during the LU process.
+\\
+
+Thus, the decomposition is called LU factorisation with partial pivoting, and the new equation becomes:
+
+$$
+PA = LU
+$$
+
+Where:
+\\
+
+\begin{itemize}
+\item $P$ represents any valid (row) permutation of the identity $I$ matrix, and it’s computed during the process;
+\item $L$ is a lower diagonal matrix, with all the elements of the first diagonal {\tt ==1};
+\item $U$ is an upper diagonal matrix.
+\end{itemize}
+
+There’s another factorisation where not only the rows are pivoted, but also columns, this is called LU factorisation with full pivoting but we are not going to implement this.
+\\
+
+If the $A$ matrix is square ($nxn$), it can always be decomposed like $PA=LU$
+\\
+
+To compute the LU(P) decomposition we will need to basically implement a modified version of the Gauss Elimination algorithm (see Row Echelon Form). This is probably the most popular implementation, and it requires around $\frac{2}{3} n^3$ floating point operations.
+\\
+
+Other algorithms involve direct recursion or randomization. We are not going to implement those versions.
+\\
+
+Computing the $PA=LU$ decomposition of matrix $A$ is instrumental for computing the determinant of matrix $A$, the inverse of matrix A and solving linear systems of equations.
+
+\subsection{The LU(P) algorithm as an example}
+
+LU(P) factorisation (or decomposition) can be obtained by adjusting the idea of Gaussian Elimination (see Row Echelon Form and Reduced Row Echelon Form).
+\\
+
+The algorithm starts like this:
+\\
+
+\begin{itemize}
+\item We allocate memory for the $L$, $U$, $P$ matrices
+	\begin{itemize} 
+	\item[$\circ$] $L$ starts as zero matrix;
+	\item[$\circ$] $P$ is the identity matrix;
+	\item[$\circ$] $U$ is an exact copy of $A$;
+	\end{itemize}
+\item We start iterating the matrix $U$ by columns
+	\begin{itemize} 
+	\item[$\circ$] For each column we look for the pivot value (the biggest value of the column in absolute)
+		\begin{itemize}
+		\item[$\scriptstyle \blacksquare$] If needed we swap the corresponding rows in $U$, $L$ and $P$, so that the pivot is position on the first diagonal;
+		\item[$\scriptstyle \blacksquare$] If no swap is needed we start creating zeroes on the column by the means of row addition. $Row_x + multiplier * Row_y$.
+		\item[$\scriptstyle \blacksquare$] We record the multiplier in matrix $L$
+		\end{itemize}
+	\item[$\circ$] We repeat for every column until $U$ has only zero elements under the first diagonal.
+	\end{itemize}
+\end{itemize}
+
+Let’s look at the decomposition for a matrix $A[3\times 3]$:
+
+$$
+P=
+\begin{bmatrix}
+1 & 0 & 0 \\
+0 & 1 & 0 \\
+0 & 0 & 1  
+\end{bmatrix}
+,\quad A =
+\begin{bmatrix}
+2 & 1 & 5 \\
+4 & 4 & -4 \\
+1 & 3 & 1  
+\end{bmatrix}
+,\quad L =
+\begin{bmatrix}
+0 & 0 & 0 \\
+0 & 0 & 0 \\
+0 & 0 & 0  
+\end{bmatrix}
+,\quad U = 
+\begin{bmatrix}
+2 & 1 & 5 \\
+4 & 4 & -4 \\
+1 & 3 & 1  
+\end{bmatrix}
+$$
+\\
+
+$\bullet$ {\bf Step 1:}\quad Because $4>2$, we swap $Row_0$ with 
+$Row_1$. After this row operation we have:
+$$
+P=
+\begin{bmatrix}
+0 & 1 & 0 \\
+1 & 0 & 0 \\
+0 & 0 & 1  
+\end{bmatrix}
+, \quad 
+L =
+\begin{bmatrix}
+0 & 0 & 0 \\
+0 & 0 & 0 \\
+0 & 0 & 0  
+\end{bmatrix}
+, \quad
+U =
+\begin{bmatrix}
+4 & 4 & -4 \\
+2 & 1 & 5 \\
+1 & 3 & 1  
+\end{bmatrix}
+$$
+
+$\bullet$ {\bf Step 2:}\quad We want to start creating zeroes on the first column. So we apply the following operation, $Row_1 - (\frac{1}{2})Row_0$. We record the multiplier $1/2$ in {\tt L[1][0]}, and we compute the basic row operation on $U$:
+
+$$
+P=
+\begin{bmatrix}
+0 & 1 & 0 \\
+1 & 0 & 0 \\
+0 & 0 & 1  
+\end{bmatrix}
+, \quad
+L =
+\begin{bmatrix}
+0 & 0 & 0 \\
+\frac{1}{2} & 0 & 0 \\
+0 & 0 & 0  
+\end{bmatrix}
+, \quad
+U =
+\begin{bmatrix}
+4 & 4 & -4 \\
+0 & -1 & 7 \\
+1 & 3 & 1  
+\end{bmatrix}
+$$
+
+$\bullet$ {\bf Step 3:}\quad We continue to create zeroes on the first column , by applying: $Row_2 - \frac{1}{4} Row_0$. We record the multiplier $\frac{1}{4}$ in {\tt L[2][0]}, and we compute the row operation on $U$:
+
+$$
+P=
+\begin{bmatrix}
+0 & 1 & 0 \\
+1 & 0 & 0 \\
+0 & 0 & 1  
+\end{bmatrix}
+, \quad
+L =
+\begin{bmatrix}
+0 & 0 & 0 \\
+\frac{1}{2} & 0 & 0 \\
+\frac{1}{4} & 0 & 0  
+\end{bmatrix}
+, \quad
+U =
+\begin{bmatrix}
+4 & 4 & -4 \\
+0 & -1 & 7 \\
+0 & 2 & 2  
+\end{bmatrix}
+$$
+
+$\bullet$ {\bf Step 4:}\quad We'ew finished with the first column, we skip to the next onw. Because $-1 < 2$ we swap $Row_1$ with $Row_2$. The idea is to always have the biggest pivot. $P$, $L$ and $U$ are affected by this swap:
+
+$$
+P=
+\begin{bmatrix}
+0 & 1 & 0 \\
+0 & 0 & 1 \\
+1 & 0 & 0 
+\end{bmatrix}
+, \quad
+L =
+\begin{bmatrix}
+0 & 0 & 0 \\
+\frac{1}{4} & 0 & 0 \\
+\frac{1}{2} & 0 & 0 
+\end{bmatrix}
+, \quad 
+U =
+\begin{bmatrix}
+4 & 4 & -4 \\
+0 & 2 & 2  \\
+0 & -1 & 7 
+\end{bmatrix}
+$$
+
+$\bullet$ {\bf Step 5:}\quad We want to create the last {\tt 0.0} on the seconds column. In this regard we apply $Row_2 - \left(-\frac{1}{2}\right) Row_1$:
+
+$$
+P=
+\begin{bmatrix}
+0 & 1 & 0 \\
+0 & 0 & 1 \\
+1 & 0 & 0
+\end{bmatrix}
+, \quad 
+L =
+\begin{bmatrix}
+0 & 0 & 0 \\
+\frac{1}{4} & 0 & 0 \\
+\frac{1}{2} & -\frac{1}{2} & 0
+\end{bmatrix}
+, \quad 
+U =
+\begin{bmatrix}
+4 & 4 & -4 \\
+0 & 2 & 2  \\
+0 & 0 & 8
+\end{bmatrix}
+$$
+
+$\bullet$ {\bf Step 6:}\quad We modify $L$ by adding 1's on the first diagonal.
+\\
+
+In conclusion, the $PA=LU$ factorization of $A$ looks like:
+
+$$
+\begin{bmatrix}
+0 & 1 & 0 \\
+0 & 0 & 1 \\
+1 & 0 & 0
+\end{bmatrix}
+*
+\begin{bmatrix}
+2 & 1 & 5 \\
+4 & 4 & -4 \\
+1 & 3 & 1  
+\end{bmatrix}
+=
+\begin{bmatrix}
+1 & 0 & 0 \\
+\frac{1}{4} & 1 & 0 \\
+\frac{1}{2} & -\frac{1}{2} & 1
+\end{bmatrix}
+*
+\begin{bmatrix}
+4 & 4 & -4 \\
+0 & 2 & 2  \\
+0 & 0 & 8
+\end{bmatrix}
+$$
+
+There's also a video  with this example, link \href{https://www.youtube.com/watch?v=f6RT4BI4S7M}{\underline{\it here}}
+
+\subsection{Code implementation}
+
+The best way to model the results of the {\tt LU(P)} computation is to create a struct called {\tt nml\_mat\_lup} containing references to all three resulting matrices: {\tt L}, {\tt U}, {\tt P}.
+\\
+
+\begin{verbatim}
+typedef struct nml_mat_lup_s {
+  nml_mat *L;
+  nml_mat *U;
+  nml_mat *P;
+  unsigned int num_permutations;
+} nml_mat_lup;
+\end{verbatim}
+
+The property {\tt num\_permutations} records the number of row permutations we’ve done during the factorization process. This value it’s useful when computing the determinant of the matrix, so it’s better to track it now.
+\\
+
+To reduce memory consumption, the two matrices {\tt L} and {\tt U} can be kept in single matrix {\tt LU} that looks like this:
+
+$$
+\begin{bmatrix}
+u_{11} & u_{12} & u_{13} \\
+l_{21} & u_{22} & u_{23} \\
+l_{31} & l_{32} & u_{33}
+\end{bmatrix}
+$$
+
+In our implementation, for simplicity and readability, we will keep them separated.
+\\
+
+Following the same recipe as for {\tt nml\_mat} we are going to write ``constructor-like''/``destructor-like'' methods for managing the memory allocation for a {\tt nml\_mat\_lup} structure.
+
+\begin{verbatim}
+nml_mat_lup *nml_mat_lup_new(nml_mat *L, nml_mat *U, nml_mat *P, unsigned int num_permutations) {
+  nml_mat_lup *r = malloc(sizeof(*r));
+  NP_CHECK(r);
+  r->L = L;
+  r->U = U;
+  r->P = P;
+  r->num_permutations = num_permutations;
+  return r;
+}
+
+void nml_mat_lup_free(nml_mat_lup* lu) {
+  nml_mat_free(lu->P);
+  nml_mat_free(lu->L);
+  nml_mat_free(lu->U);
+  free(lu);
+} 
+\end{verbatim}
+
+The code that is performing the factorization:
+
+\begin{verbatim}
+nml_mat_lup *nml_mat_lup_solve(nml_mat *m) {
+  if (!m->is_square) {
+    NML_FERROR(CANNOT_LU_MATRIX_SQUARE, m->num_rows, m-> num_cols);
+    return NULL;
+  }
+  nml_mat *L = nml_mat_new(m->num_rows, m->num_rows);
+  nml_mat *U = nml_mat_cp(m);
+  nml_mat *P = nml_mat_eye(m->num_rows);
+
+  int j,i, pivot;
+  unsigned int num_permutations = 0;
+  double mult;
+
+  for(j = 0; j < U->num_cols; j++) {
+    // Retrieves the row with the biggest element for column (j)
+    pivot = _nml_mat_absmaxr(U, j);
+    if (fabs(U->data[pivot][j]) < NML_MIN_COEF) {
+      NML_ERROR(CANNOT_LU_MATRIX_DEGENERATE);
+      return NULL;
+    }
+    if (pivot!=j) {
+      // Pivots LU and P accordingly to the rule
+      nml_mat_row_swap_r(U, j, pivot);
+      nml_mat_row_swap_r(L, j, pivot);
+      nml_mat_row_swap_r(P, j, pivot);
+      // Keep the number of permutations to easily calculate the
+      // determinant sign afterwards
+      num_permutations++;
+    }
+    for(i = j+1; i < U->num_rows; i++) {
+      mult = U->data[i][j] / U->data[j][j];
+      // Building the U upper rows
+      nml_mat_row_addrow_r(U, i, j, -mult);
+      // Store the multiplier in L
+      L->data[i][j] = mult;
+    }
+  }
+  nml_mat_diag_set(L, 1.0);
+
+  return nml_mat_lup_new(L, U, P, num_permutations);
+} 
+\end{verbatim}
+
+\section{Solving linear systems of equations}
+
+\subsection{Forward substitution}
+
+Forward substitution is the process of solving linear systems of equations $Lx=B$, if $L$ is a lower diagonal coefficient matrix.
+
+$$
+\begin{bmatrix}
+l_{11} & 0 & \ldots && 0\\
+l_{21} & l_{22} & \ldots && 0\\
+\vdots & & & & \vdots \\
+l_{m1} & l_{m2} & \ldots && l_{mm}\\
+\end{bmatrix}
+\begin{bmatrix}
+x_{1} \\
+x_{2} \\
+\vdots   \\
+x_{m}
+\end{bmatrix}
+=
+\begin{bmatrix}
+b_{1} \\
+b_{2} \\
+\vdots \\
+b_{m}
+\end{bmatrix}
+$$
+
+In this case, the resulting formulas for $x_1, x_2, x_m$ are:
+$$
+\begin{array}{rcl}
+x_{1} & = & \displaystyle \frac{b_{1}}{l_{11}} \\[4mm]
+x_{2} & = & \displaystyle \frac{b_{2}-l_{21}\,x_{1}}{l_{22}} \\[2mm]
+& ...&  \\
+x_{m} & = & \displaystyle \frac{\displaystyle b_{m} - \sum_{i=1}^{m-1} l_{mi}\,x_{i}}{l_{mm}}
+\end{array}
+$$
+
+in general,
+
+$$
+x_i = \left( b_i - \sum_{j<i} l_{ij}x_j \right) / l_{ii}
+$$
+
+which allows us to easily write a computational C code
+
+\begin{verbatim}
+// Forward substitution algorithm
+// Solves the linear system L * x = b
+//
+// L is lower triangular matrix of size NxN
+// B is column matrix of size Nx1
+// x is the solution column matrix of size Nx1
+//
+// Note: In case L is not a lower triangular matrix, the algorithm will try to
+// select only the lower triangular part of the matrix L and solve the system
+// with it.
+//
+// Note: In case any of the diagonal elements (L[i][i]) are 0 the system cannot
+// be solved
+//
+// Note: This function is usually used with an L matrix from a LU decomposition
+nml_mat *nml_ls_solvefwd(nml_mat *L, nml_mat *b) {
+  nml_mat* x = nml_mat_new(L->num_cols, 1);
+  int i,j;
+  double tmp;
+  for(i = 0; i < L->num_cols; i++) {
+  
+    /**
+     * x[i][0] = ( b[i][0] -  sum { L[i][j] * x[j][0] } ) / L[i][i]
+     *                      (j < i)
+     */
+    tmp = b->data[i][0];
+    for(j = 0; j < i ; j++) {
+      tmp -= L->data[i][j] * x->data[j][0];
+    }
+    x->data[i][0] = tmp / L->data[i][i];
+  }
+  return x;
+}
+\end{verbatim}
+
+\subsection{Backward substitution}
+
+Backward substitution is the process of solving a linear system of equations $Ux = b$, is $U$ is an upper diagonal coefficient matrix
+
+$$
+\begin{bmatrix}
+u_{11} & u_{12} & \ldots && u_{1m} \\
+0 & u_{22} & \ldots && u_{2m} \\
+\vdots & & & & \vdots \\
+0 & 0 & \ldots && u_{mm} \\
+\end{bmatrix}
+\begin{bmatrix}
+x_{1} \\
+x_{2} \\
+\vdots   \\
+x_{m}
+\end{bmatrix}
+=
+\begin{bmatrix}
+b_{1} \\
+b_{2} \\
+\vdots \\
+b_{m}
+\end{bmatrix}
+$$
+
+Similar to the example above, the code implementation is straightforward, from the mathematical formula
+
+$$
+x_i = \left( b_i - \sum_{j>i} u_{ij}x_j \right) / u_{ii}
+$$
+
+\begin{verbatim}
+// Back substition algorithm
+// Solves the linear system U * x = b
+//
+// U is an upper triangular matrix of size NxN
+// b is a column matrix of size Nx1
+// x is the solution column matrix of size Nx1
+//
+// Note in case U is not an upper triangular matrix, the algorithm will try to
+// select only the upper triangular part of the matrix U and solve the system
+// with it
+//
+// Note: In case any of the diagonal elements (U[i][i]) are 0 the system cannot
+// be solved
+nml_mat *nml_ls_solvebck(nml_mat *U, nml_mat *b) {
+  nml_mat *x = nml_mat_new(U->num_cols, 1);
+  int i = U->num_cols, j;
+  double tmp;
+  while(i-->0) {
+    /**
+     * x[i][0] = ( b[i][0] -  sum { u[i][j] * x[j][0] } ) / u[i][i]
+     *                      (j > i)
+     */
+    tmp = b->data[i][0];
+    for(j = i; j < U->num_cols; j++) {
+      tmp -= U->data[i][j] * x->data[j][0];
+    }
+    x->data[i][0] = tmp / U->data[i][i];
+  }
+  return x;
+}
+\end{verbatim}
+
+\subsection{Solving linear systems using LU(P) decomposition}
+
+Knowing the $PA=LU$ factorisation of a matrix allows us to solve a linear system of equations in the form $Ax=b$, by using a combination of backward and forward substitution
+
+\begin{eqnarray}
+\nonumber Ax & = & b \\
+\nonumber PAx & = & Pb \\
+\nonumber L(Ux) & = & Pb
+\end{eqnarray}
+
+To make use of the previous two algorithms ({\tt nml\_ls\_solvebck(...)}, {\tt nml\_ls\_solvefwd(...)}) we can introduce an auxiliary system of equations $y=Ux$. This is, we can solve the system $Ax=b$ by solving the pair of systems
+
+$$
+Ly = Pb, \qquad Ux = y
+$$
+
+\begin{itemize}
+\item to solve $Ly = Pb$, we use forward-substitution, as $L$ is lower triangular.
+\item to solve $Ux = y$, we use backward-substitution, as $U$ is upper triangular.
+\end{itemize}
+
+Translating this into code is simple
+
+\begin{verbatim}
+nml_mat *nml_ls_solve(nml_mat_lup *lu, nml_mat* b) {
+  if (lu->U->num_rows != b->num_rows || b->num_cols != 1) {
+    NML_FERROR(CANNOT_SOLVE_LIN_SYS_INVALID_B,
+      b->num_rows,
+      b->num_cols,
+      lu->U->num_rows,
+      1);
+      return NULL;
+  }
+  nml_mat *Pb = nml_mat_dot(lu->P, b);
+
+  // We solve L*y = P*b using forward substition
+  nml_mat *y = nml_ls_solvefwd(lu->L, Pb);
+
+  // We solve U*x=y
+  nml_mat *x = nml_ls_solvebck(lu->U, y);
+
+  nml_mat_free(y);
+  nml_mat_free(Pb);
+  return x;
+} 
+\end{verbatim}
+
+\subsection{Calculating the inverse of the matrix using LU(P) decomposition}
+
+A square matrix $A$ is called invertible if there exists a matrix $A^{-1}$, so that $A\, A^{-1}=A^{-1}\, A = I$, being the identity matrix of the same size of $A$.
+\\
+
+We call $A^{-1}$ the inverse of the matrix $A$. The equality $A\, A^{-1} = I$, in matrix form, looks like:
+
+$$
+\begin{bmatrix}
+A_{11} & A_{12} & A_{13} \\
+A_{21} & A_{22} & A_{23} \\
+A_{31} & A_{32} & A_{33}
+\end{bmatrix}
+*
+\begin{bmatrix}
+A_{11}^{-1} & A_{12}^{-1} & A_{13}^{-1} \\
+A_{21}^{-1} & A_{22}^{-1} & A_{23}^{-1} \\
+A_{31}^{-1} & A_{32}^{-1} & A_{33}^{-1}
+\end{bmatrix}
+=
+\begin{bmatrix}
+1 & 0 & 0 \\
+0 & 1 & 0 \\
+0 & 0 & 1
+\end{bmatrix}
+$$
+
+To find $A_{ij}^{-1}$, we solve 3 sysyems of linear equations in the form
+
+$$
+\begin{bmatrix}
+A_{11} & A_{12} & A_{13} \\
+A_{21} & A_{22} & A_{23} \\
+A_{31} & A_{32} & A_{33}
+\end{bmatrix}
+*
+\begin{bmatrix}
+A_{11}^{-1}  \\
+A_{21}^{-1}  \\
+A_{31}^{-1}
+\end{bmatrix}
+=
+\begin{bmatrix}
+1 \\
+0 \\
+0 
+\end{bmatrix}
+$$
+
+$$
+\begin{bmatrix}
+A_{11} & A_{12} & A_{13} \\
+A_{21} & A_{22} & A_{23} \\
+A_{31} & A_{32} & A_{33}
+\end{bmatrix}
+*
+\begin{bmatrix}
+A_{12}^{-1}  \\
+A_{22}^{-1}  \\
+A_{32}^{-1}
+\end{bmatrix}
+=
+\begin{bmatrix}
+0 \\
+1 \\
+0
+\end{bmatrix}
+$$
+
+$$
+\begin{bmatrix}
+A_{11} & A_{12} & A_{13} \\
+A_{21} & A_{22} & A_{23} \\
+A_{31} & A_{32} & A_{33}
+\end{bmatrix}
+*
+\begin{bmatrix}
+A_{13}^{-1}  \\
+A_{23}^{-1}  \\
+A_{33}^{-1}
+\end{bmatrix}
+=
+\begin{bmatrix}
+0 \\
+0 \\
+1
+\end{bmatrix}
+$$
+
+in other words, we solve
+
+$$
+\begin{cases}
+A * A_{col1}^{-1} = I_{col1} \\
+A * A_{col2}^{-1} = I_{col2} \\
+A * A_{col3}^{-1} = I_{col3} \\
+\end{cases}
+$$
+
+This means that we actually need to solve three systems of type $A x_i = B_i$, where $x_i$ will be the $i$-th column of $A^{-1}$, and $B_i$ is the $i$-th column of $I$.
+\\
+
+Having said this, the C code implementing the algorithm is as follows:
+
+\begin{verbatim}
+// Calculates the inverse of a matrix
+nml_mat *nml_mat_inv(nml_mat_lup *lup) {
+  unsigned n = lup->L->num_cols;
+  nml_mat *r = nml_mat_sqr(n);
+  nml_mat *I = nml_mat_eye(lup->U->num_rows);
+  nml_mat *invx;
+  nml_mat *Ix;
+  int i,j;
+  for(j =0; j < n; j++) {
+    Ix = nml_mat_col_get(I, j);
+    invx = nml_ls_solve(lup, Ix);
+    for(i = 0; i < invx->num_rows; i++) {
+      r->data[i][j] = invx->data[i][0];
+    }
+    nml_mat_free(invx);
+    nml_mat_free(Ix);
+  }
+  nml_mat_free(I);
+  return r;
+} 
+\end{verbatim}
+
+\subsection{Calculating the determinant of the matrix using LU(P) decomposition}
+
+The determinant of the product of two matrices is the product of their determinants. After $LU(P)$ decomposition, we have $PA = LU \Rightarrow \det(P) \cdot \det(A) = \det(L) \cdot \det(U)$.
+\\
+
+Because $P$ is a permutation of $I$:
+
+$$
+\det(P) = (-1)^{n} = f(n) = 
+\left\{ \begin{array}{r@{\quad}l}
+1, & n \text{ is even} \\
+-1, & n \text{ is odd}
+\end{array} \right.
+$$
+
+$n$ represents the total number of permutations of $I$. This value has already been computed and stored in {\tt nml\_mat\_lup->num\_permutations}.
+\\
+
+$L$ is a lower triangular matrix. The determinant of a lower triangular matrix is the product of its diagonal elements $\Rightarrow \det(L) = 1$.
+\\
+
+$U$ is an upper trangular matrix. The determinant of an upper triangular matrix is the product of its diagonal elements $\Rightarrow \det(U) = \prod_{i=1}^{N} U_{ii}$.
+\\
+
+Using all this, we have
+
+$$
+\det(P) \cdot \det(A) = \det(L) \cdot \det(P) \quad \therefore \quad \det(A) = \frac{\prod_{i=1}^{N} U_{ii}}{\text{f(num\_permutations)}}
+$$
+
+This means that the determinant of matrix $A$ is actually the product of the diagonal elements of matrix $U$ multiplied by $\pm 1$, depending on whether the number of row permutations is even/odd respectively.
+\\
+
+Putting this into code is as simple as:
+
+\begin{verbatim}
+// After the LU(P) factorisation the determinant can be easily calculated
+// by multiplying the main diagonal of matrix U with the sign.
+// the sign is -1 if the number of permutations is odd
+// the sign is +1 if the number of permutations is even
+double nml_mat_det(nml_mat_lup* lup) {
+  int k;
+  int sign = (lup->num_permutations%2==0) ? 1 : -1;
+  nml_mat *U = lup->U;
+  double product = 1.0;
+  for(k = 0; k < U->num_rows; k++) {
+    product *= U->data[k][k];
+  }
+  return product * sign;
+}
+\end{verbatim}
+
+\section{QR Decomposition}
+
+Any square matrix $A$ can be decomposed as $A=QR$, where $Q$ is an orthogonal matrix, and $R$ is an upper triangular matrix.
+\\
+
+A (real) matrix is orthogonal if its columns are orthogonal unit vectors, meaning that $QQ^T = Q^TQ = I$, where $Q^T$ is the transpose of $Q$. This means that $Q$ is invertible and $Q^T = Q^{-1}$ for an orthogonal matrix.
+\\
+
+The process of computing $A=QR$ is called the $Gram-Schmidt$ algorithm.
+\\
+
+While $LU(P)$ factorization mainly works over basic matrix operations on rows, the $QR$ decomposition is more focused on columns.
+\\
+
+So, we consider:
+
+$$
+A = 
+\begin{bmatrix}
+| & | & | \\
+a_{1} & a_{2} & a_{3} \\
+| & | & |
+\end{bmatrix}
+\text{, \ where } a_{i} \text{ are the column vectors of A}
+$$
+$$
+Q = 
+\begin{bmatrix}
+| & | & | \\
+q_{1} & q_{2} & q_{3} \\
+| & | & |
+\end{bmatrix}
+\text{, \ where } q_{i} \text{ are the column vectors of Q}
+$$
+
+This gives the following formulas:
+
+$$
+\begin{cases}
+q_{1} = \frac{\displaystyle a_{1}}{\displaystyle \rule{0mm}{4mm} \lVert a_{1} \rVert} \\[3mm]
+q_{2} = \frac{\displaystyle a^{\bot}_{2}}{\displaystyle \rule{0mm}{4mm}\lVert a^{\bot}_{2} \rVert} \text{\quad where,\quad } a^{\bot}_{2} = a_{2} - \langle a_{2}, q_{1} \rangle * q_{1} \\[3mm]
+q_{3} = \frac{\displaystyle a^{\bot}_{3}}{\displaystyle \rule{0mm}{4mm}\lVert a^{\bot}_{3} \rVert} \text{\quad where,\quad } a^{\bot}_{3} = a_{3} - \langle a_{3}, q_{1} \rangle * q_{1} - \langle a_{3}, q_{2} \rangle * q_{2}
+\end{cases}
+$$
+
+Basically, our $QR$ decomposition looks like this:
+
+$$
+\begin{bmatrix}
+| & | & | \\
+a_{1} & a_{2} & a_{3} \\
+| & | & |
+\end{bmatrix}
+=
+\begin{bmatrix}
+| & | & | \\
+\frac{a_{1}}{\lVert a_{1} \rVert} & \frac{a^{\bot}_{2}}{\lVert a^{\bot}_{2} \rVert} & \frac{a^{\bot}_{3}}{\lVert a^{\bot}_{3} \rVert} \\
+| & | & |
+\end{bmatrix}
+\begin{bmatrix}
+\lVert a_{1} \rVert &  \langle a_{2}, q_{1} \rangle & \langle a_{3}, q_{1} \rangle \\
+0 & \lVert a^{\bot}_{2} \rVert &  \langle a_{3}, q_{2} \rangle \\
+0 & 0 & \lVert a^{\bot}_{3} \rVert
+\end{bmatrix}
+$$
+
+These formulas can be generalized for any $n\times n$ matrix.
+\\
+
+In case you are wondering what the notation $\langle a_i, q_j\rangle$ represents, this is called the dot product of two vectors, and it's calculated according to:
+
+\begin{eqnarray}
+\nonumber a & = & [a_1,\, a_2,\, \ldots,\, a_n] \\
+\nonumber b & = & [b_1,\, b_2,\, \ldots,\, b_n]
+\end{eqnarray}
+$$
+\langle a, b\rangle = a_1b_1 + a_2b_2 + \ldots + a_nb_n = \sum a_i b_i
+$$
+
+For a code perspective, this can be implemented as:
+
+\begin{verbatim}
+// Useful for QR decomposition
+// Represents the (dot) product of two vectors:
+// vector1 = m1col column from m1
+// vector2 = m2col column from m2
+double nml_vect_dot(nml_mat *m1, unsigned int m1col, nml_mat *m2, unsigned m2col) {
+  if (m1->num_rows!=m2->num_rows) {
+    NML_FERROR(CANNOT_VECT_DOT_DIMENSIONS, m1->num_rows, m2->num_rows);
+  }
+  if (m1col >= m1->num_cols) {
+    NML_FERROR(CANNOT_GET_COLUMN, m1col, m1->num_cols);
+  }
+  if (m2col >= m2->num_cols) {
+    NML_FERROR(CANNOT_GET_COLUMN, m2col, m2->num_cols);
+  }
+  int i;
+  double dot = 0.0;
+  for(i = 0; i < m1->num_rows; i++) {
+    dot += m1->data[i][m1col] * m2->data[i][m2col];
+  }
+  return dot;
+} 
+\end{verbatim}
+
+if you are wondering what the notation $\parallel a_i \parallel$ represents, this is called the $L2$ Euclidean norm, and it's computed by the formula:
+$$
+\lVert a \rVert = \sqrt{a^{2}_{1} + a^{2}_{2} + ... + a^{2}_{n}}
+$$
+
+From a code perspective, this can be implemented as:
+
+\begin{verbatim}
+// Calculates the l2 norm for a colum in the matrix
+double nml_mat_col_l2norm(nml_mat *m, unsigned int col) {
+  if (col >= m->num_cols) {
+    NML_FERROR(CANNOT_COLUMN_L2NORM, col, m->num_cols);
+  }
+  double doublesum = 0.0;
+  int i;
+  for(i = 0; i < m->num_rows; i++) {
+    doublesum += (m->data[i][col]*m->data[i][col]);
+  }
+  return sqrt(doublesum);
+}
+
+// Calculates the l2norm for each column
+// Keeps results into 1 row matrix
+nml_mat *nml_mat_l2norm(nml_mat *m) {
+  int i, j;
+  nml_mat *r = nml_mat_new(1, m->num_cols);
+  double square_sum;
+  for(j = 0; j < m->num_cols; j++) {
+    square_sum = 0.0;
+    for(i = 0; i < m->num_rows; i++) {
+      square_sum+=m->data[i][j]*m->data[i][j];
+    }
+    r->data[0][j] = sqrt(square_sum);
+  }
+  return r;
+} 
+\end{verbatim}
+
+The code for the process of normalization is:
+
+\begin{verbatim}
+int nml_mat_normalize_r(nml_mat *m) {
+  nml_mat *l2norms = nml_mat_l2norm(m);
+  int j;
+  for(j = 0; j < m->num_cols; j++) {
+    if (l2norms->data[0][j] < NML_MIN_COEF) {
+      NML_FERROR(VECTOR_J_DEGENERATE, j);
+      nml_mat_free(l2norms);
+      return 0;
+    }
+    nml_mat_col_mult_r(m, j, 1/l2norms->data[0][j]);
+  }
+  nml_mat_free(l2norms);
+  return 1;
+}
+
+nml_mat_qr *nml_mat_qr_new() {
+  nml_mat_qr *qr = malloc(sizeof(*qr));
+  NP_CHECK(qr);
+  return qr;
+}
+\end{verbatim}
+
+And the code for the QR algorithm described by:
+$$
+\begin{bmatrix}
+| & | & | \\
+a_{1} & a_{2} & a_{3} \\
+| & | & |
+\end{bmatrix}
+=
+\begin{bmatrix}
+| & | & | \\
+\frac{a_{1}}{\lVert a_{1} \rVert} & \frac{a^{\bot}_{2}}{\lVert a^{\bot}_{2} \rVert} & \frac{a^{\bot}_{3}}{\lVert a^{\bot}_{3} \rVert} \\
+| & | & |
+\end{bmatrix}
+*
+\begin{bmatrix}
+\lVert a_{1} \rVert &  \langle a_{2}, q_{1} \rangle & \langle a_{3}, q_{1} \rangle \\
+0 & \lVert a^{\bot}_{2} \rVert &  \langle a_{3}, q_{2} \rangle \\
+0 & 0 & \lVert a^{\bot}_{3} \rVert
+\end{bmatrix}
+$$
+
+is
+
+\rule{\textwidth}{0.5pt}
+\begin{verbatim}
+nml_mat_qr *nml_mat_qr_solve(nml_mat *m) {
+
+  nml_mat_qr *qr = nml_mat_qr_new();
+  nml_mat *Q = nml_mat_cp(m);
+  nml_mat *R = nml_mat_new(m->num_rows, m->num_cols);
+
+  int j, k;
+  double l2norm;
+  double rkj;
+  nml_mat *aj;
+  nml_mat *qk;
+  for(j=0; j < m->num_cols; j++) {    
+    rkj = 0.0;
+    aj = nml_mat_col_get(m, j);
+    for(k = 0; k < j; k++) {
+       rkj = nml_vect_dot(m, j, Q, k);
+       R->data[k][j] = rkj;
+       qk = nml_mat_col_get(Q, k);
+       nml_mat_col_mult_r(qk, 0, rkj);
+       nml_mat_sub_r(aj, qk);
+       nml_mat_free(qk);
+    }
+    for(k = 0; k < Q->num_rows; k++) {
+      Q->data[k][j] = aj->data[k][0];
+    }
+    l2norm = nml_mat_col_l2norm(Q, j);
+    nml_mat_col_mult_r(Q, j, 1/l2norm);
+    R->data[j][j] = l2norm;
+    nml_mat_free(aj);
+  }
+  qr->Q = Q;
+  qr->R = R;
+  return qr;
+} 
+\end{verbatim}
+
+% References
+\begin{thebibliography}{9}
+\bibitem{ref}
+How to change a matrix into its Reduced Echelon Form
+\\ 
+\url{https://stattrek.com/matrix-algebra/echelon-transform.aspx?tutorial=matrix}.
+
+\bibitem{lup}
+LU(P) decomposition
+\\ 
+\url{http://lampx.tugraz.at/~hadley/num/ch2/2.3a.php}
+
+\bibitem{qr}
+The QR decomposition
+\\ 
+\url{https://www.youtube.com/watch?v=FAnNBw7d0vg}
+
+\bibitem{vector-norm}
+Norm of vectors.
+\\ 
+\url{https://en.wikipedia.org/wiki/Norm_(mathematics)}
+
+\bibitem{dot-product}
+The dot product of vectors.
+\\ 
+\url{https://en.wikipedia.org/wiki/Dot_product}
+\end{thebibliography}
+\end{document}
