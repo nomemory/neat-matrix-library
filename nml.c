@@ -180,20 +180,6 @@ nml_mat *nml_mat_eye(unsigned int size) {
   return r;
 }
 
-// Dynamically allocates a new matrix struct
-// Initialise the matrix by reading values from a vector
-nml_mat *nml_mat_from(unsigned int num_rows, unsigned int num_cols, unsigned int n_vals, double *vals) {
-  nml_mat *m = nml_mat_new(num_rows, num_cols);
-  int i, j, v_idx;
-  for(i = 0; i < m->num_rows; i++) {
-    for(j = 0; j < m->num_cols; j++) {
-      v_idx = i * m->num_cols + j;
-      m->data[i][j] = (v_idx < n_vals) ? vals[v_idx] : 0.0;
-    }
-  }
-  return m;
-}
-
 // Dynamically allocates a new Matrix
 // Initialise the matrix by copying another one
 nml_mat *nml_mat_cp(nml_mat *m) {
@@ -230,6 +216,30 @@ nml_mat *nml_mat_fromfilef(FILE *f) {
     }
   }
   return r;
+}
+
+/**
+ * Dynamically allocates a new matrix struct, and initializes the matrix my reading
+ * values from a vector (array).
+ * It is supposed that `num_rows * num_cols <= n_vals`, also the array `n_vals` has
+ * to have enough capacity.
+ *
+ * @param   num_rows  number of rows to the new matrix
+ * @param   num_cols  number of columns to the new matrix
+ * @param   n_vals    number of elements to be read
+ * @param   vals      array of values
+ * @return            a pointer to the new allocated matrix structure 
+ */
+nml_mat *nml_mat_from(unsigned int num_rows, unsigned int num_cols, unsigned int n_vals, double *vals) {
+  nml_mat *m = nml_mat_new(num_rows, num_cols);
+  int i, j, v_idx;
+  for(i = 0; i < m->num_rows; i++) {
+    for(j = 0; j < m->num_cols; j++) {
+      v_idx = i * m->num_cols + j;
+      m->data[i][j] = (v_idx < n_vals) ? vals[v_idx] : 0.0;
+    }
+  }
+  return m;
 }
 
 // Frees a matrix structure
@@ -645,7 +655,7 @@ int nml_mat_add_r(nml_mat *m1, nml_mat *m2) {
 }
 
 nml_mat *nml_mat_sub(nml_mat *m1, nml_mat *m2) {
-  nml_mat *r = nml_mat_cp(m2);
+  nml_mat *r = nml_mat_cp(m1);
   if (!nml_mat_sub_r(r, m2)) {
     nml_mat_free(r);
     return NULL;

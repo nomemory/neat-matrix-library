@@ -1,43 +1,46 @@
 \BOOKMARK [1][-]{section.1}{The library}{}% 1
 \BOOKMARK [1][-]{section.2}{The data: nml\137matrix}{}% 2
 \BOOKMARK [1][-]{section.3}{Allocating/deallocating memory for the nml\137mat matrix}{}% 3
-\BOOKMARK [1][-]{section.4}{Creating a random matrix}{}% 4
-\BOOKMARK [1][-]{section.5}{Creating a square matrix}{}% 5
-\BOOKMARK [1][-]{section.6}{Creating an identity matrix}{}% 6
-\BOOKMARK [1][-]{section.7}{Creating a matrix from a FILE}{}% 7
-\BOOKMARK [1][-]{section.8}{Matrix methods}{}% 8
-\BOOKMARK [2][-]{subsection.8.1}{Checking for equality}{section.8}% 9
-\BOOKMARK [2][-]{subsection.8.2}{Printing the matrix}{section.8}% 10
-\BOOKMARK [2][-]{subsection.8.3}{Retrieving / Selecting a column}{section.8}% 11
-\BOOKMARK [2][-]{subsection.8.4}{Retrieving / Selecting a row}{section.8}% 12
-\BOOKMARK [2][-]{subsection.8.5}{Setting values}{section.8}% 13
-\BOOKMARK [2][-]{subsection.8.6}{Multiplying a row with a scalar}{section.8}% 14
-\BOOKMARK [2][-]{subsection.8.7}{Multiplying a column with a scalar}{section.8}% 15
-\BOOKMARK [2][-]{subsection.8.8}{Adding two rows}{section.8}% 16
-\BOOKMARK [2][-]{subsection.8.9}{Multiplying the matrix by a scalar}{section.8}% 17
-\BOOKMARK [1][-]{section.9}{Modifying the nml\137mat internal structure}{}% 18
-\BOOKMARK [2][-]{subsection.9.1}{Removing a column}{section.9}% 19
-\BOOKMARK [2][-]{subsection.9.2}{Removing a row}{section.9}% 20
-\BOOKMARK [2][-]{subsection.9.3}{Swapping Rows}{section.9}% 21
-\BOOKMARK [2][-]{subsection.9.4}{Swapping columns}{section.9}% 22
-\BOOKMARK [2][-]{subsection.9.5}{Horizontal Concatenation of two matrices}{section.9}% 23
-\BOOKMARK [2][-]{subsection.9.6}{Vertical concatenation}{section.9}% 24
-\BOOKMARK [1][-]{section.10}{Basic Matrix Operations}{}% 25
-\BOOKMARK [2][-]{subsection.10.1}{Add two matrices}{section.10}% 26
-\BOOKMARK [2][-]{subsection.10.2}{Substracting two matrices}{section.10}% 27
-\BOOKMARK [2][-]{subsection.10.3}{Multiplying two matrices}{section.10}% 28
-\BOOKMARK [1][-]{section.11}{Row Echelon Form}{}% 29
-\BOOKMARK [2][-]{subsection.11.1}{Example}{section.11}% 30
-\BOOKMARK [2][-]{subsection.11.2}{Code implementation}{section.11}% 31
-\BOOKMARK [1][-]{section.12}{Reduces Row Echelon Form}{}% 32
-\BOOKMARK [2][-]{subsection.12.1}{Code Implementation}{section.12}% 33
-\BOOKMARK [1][-]{section.13}{LU\(P\) Decomposition}{}% 34
-\BOOKMARK [2][-]{subsection.13.1}{The LU\(P\) algorithm as an example}{section.13}% 35
-\BOOKMARK [2][-]{subsection.13.2}{Code implementation}{section.13}% 36
-\BOOKMARK [1][-]{section.14}{Solving linear systems of equations}{}% 37
-\BOOKMARK [2][-]{subsection.14.1}{Forward substitution}{section.14}% 38
-\BOOKMARK [2][-]{subsection.14.2}{Backward substitution}{section.14}% 39
-\BOOKMARK [2][-]{subsection.14.3}{Solving linear systems using LU\(P\) decomposition}{section.14}% 40
-\BOOKMARK [2][-]{subsection.14.4}{Calculating the inverse of the matrix using LU\(P\) decomposition}{section.14}% 41
-\BOOKMARK [2][-]{subsection.14.5}{Calculating the determinant of the matrix using LU\(P\) decomposition}{section.14}% 42
-\BOOKMARK [1][-]{section.15}{QR Decomposition}{}% 43
+\BOOKMARK [1][-]{section.4}{The basic}{}% 4
+\BOOKMARK [2][-]{subsection.4.1}{Creating a random matrix}{section.4}% 5
+\BOOKMARK [2][-]{subsection.4.2}{Creating a square matrix}{section.4}% 6
+\BOOKMARK [2][-]{subsection.4.3}{Creating an identity matrix}{section.4}% 7
+\BOOKMARK [1][-]{section.5}{Reading/Writing a matrix \(IO methods\)}{}% 8
+\BOOKMARK [2][-]{subsection.5.1}{Printing matrix}{section.5}% 9
+\BOOKMARK [2][-]{subsection.5.2}{Creating a matrix from a FILE}{section.5}% 10
+\BOOKMARK [2][-]{subsection.5.3}{Reading a matrix from an array of numbers}{section.5}% 11
+\BOOKMARK [1][-]{section.6}{Matrix methods}{}% 12
+\BOOKMARK [2][-]{subsection.6.1}{Checking for equality}{section.6}% 13
+\BOOKMARK [2][-]{subsection.6.2}{Retrieving / Selecting a column}{section.6}% 14
+\BOOKMARK [2][-]{subsection.6.3}{Retrieving / Selecting a row}{section.6}% 15
+\BOOKMARK [2][-]{subsection.6.4}{Setting values}{section.6}% 16
+\BOOKMARK [2][-]{subsection.6.5}{Multiplying a row with a scalar}{section.6}% 17
+\BOOKMARK [2][-]{subsection.6.6}{Multiplying a column with a scalar}{section.6}% 18
+\BOOKMARK [2][-]{subsection.6.7}{Adding two rows}{section.6}% 19
+\BOOKMARK [2][-]{subsection.6.8}{Multiplying the matrix by a scalar}{section.6}% 20
+\BOOKMARK [1][-]{section.7}{Modifying the nml\137mat internal structure}{}% 21
+\BOOKMARK [2][-]{subsection.7.1}{Removing a column}{section.7}% 22
+\BOOKMARK [2][-]{subsection.7.2}{Removing a row}{section.7}% 23
+\BOOKMARK [2][-]{subsection.7.3}{Swapping Rows}{section.7}% 24
+\BOOKMARK [2][-]{subsection.7.4}{Swapping columns}{section.7}% 25
+\BOOKMARK [2][-]{subsection.7.5}{Horizontal Concatenation of two matrices}{section.7}% 26
+\BOOKMARK [2][-]{subsection.7.6}{Vertical concatenation}{section.7}% 27
+\BOOKMARK [1][-]{section.8}{Basic Matrix Operations}{}% 28
+\BOOKMARK [2][-]{subsection.8.1}{Add two matrices}{section.8}% 29
+\BOOKMARK [2][-]{subsection.8.2}{Substracting two matrices}{section.8}% 30
+\BOOKMARK [2][-]{subsection.8.3}{Multiplying two matrices}{section.8}% 31
+\BOOKMARK [1][-]{section.9}{Row Echelon Form}{}% 32
+\BOOKMARK [2][-]{subsection.9.1}{Example}{section.9}% 33
+\BOOKMARK [2][-]{subsection.9.2}{Code implementation}{section.9}% 34
+\BOOKMARK [1][-]{section.10}{Reduces Row Echelon Form}{}% 35
+\BOOKMARK [2][-]{subsection.10.1}{Code Implementation}{section.10}% 36
+\BOOKMARK [1][-]{section.11}{LU\(P\) Decomposition}{}% 37
+\BOOKMARK [2][-]{subsection.11.1}{The LU\(P\) algorithm as an example}{section.11}% 38
+\BOOKMARK [2][-]{subsection.11.2}{Code implementation}{section.11}% 39
+\BOOKMARK [1][-]{section.12}{Solving linear systems of equations}{}% 40
+\BOOKMARK [2][-]{subsection.12.1}{Forward substitution}{section.12}% 41
+\BOOKMARK [2][-]{subsection.12.2}{Backward substitution}{section.12}% 42
+\BOOKMARK [2][-]{subsection.12.3}{Solving linear systems using LU\(P\) decomposition}{section.12}% 43
+\BOOKMARK [2][-]{subsection.12.4}{Calculating the inverse of the matrix using LU\(P\) decomposition}{section.12}% 44
+\BOOKMARK [2][-]{subsection.12.5}{Calculating the determinant of the matrix using LU\(P\) decomposition}{section.12}% 45
+\BOOKMARK [1][-]{section.13}{QR Decomposition}{}% 46

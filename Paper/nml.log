@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2019/dev/Debian) (preloaded format=latex 2021.1.13)  11 MAY 2022 11:21
+This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2019/dev/Debian) (preloaded format=latex 2021.1.13)  14 MAY 2022 11:15
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -559,466 +559,488 @@ Underfull \hbox (badness 10000) in paragraph at lines 179--181
  []
 
 [5]
-Underfull \hbox (badness 10000) in paragraph at lines 221--223
+Underfull \hbox (badness 10000) in paragraph at lines 223--225
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 237--239
+Underfull \hbox (badness 10000) in paragraph at lines 239--241
 
  []
 
 [6]
-Underfull \hbox (badness 10000) in paragraph at lines 284--285
+Underfull \hbox (badness 10000) in paragraph at lines 289--290
 
  []
 
 
-LaTeX Font Warning: Command \normalsize invalid in math mode on input line 301.
+LaTeX Font Warning: Command \normalsize invalid in math mode on input line 306.
 
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 305--307
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 308--310
+Underfull \hbox (badness 10000) in paragraph at lines 310--312
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 311--313
+Underfull \hbox (badness 10000) in paragraph at lines 313--315
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 316--318
 
  []
 
 [7]
-Overfull \hbox (14.1087pt too wide) in paragraph at lines 327--328
+Overfull \hbox (14.1087pt too wide) in paragraph at lines 332--333
 []\OT1/cmr/m/n/10.95 To find out the rea-sons why the iden-tity method is named
  \OT1/cmtt/m/n/10.95 eye() \OT1/cmr/m/n/10.95 please read [][][][] 
  []
 
-[8]
-LaTeX Font Info:    Try loading font information for OMS+cmtt on input line 383
+[8] [9]
+LaTeX Font Info:    Try loading font information for OMS+cmtt on input line 447
 .
-LaTeX Font Info:    No file OMScmtt.fd. on input line 383.
+LaTeX Font Info:    No file OMScmtt.fd. on input line 447.
 
 
 LaTeX Font Warning: Font shape `OMS/cmtt/m/n' undefined
 (Font)              using `OMS/cmsy/m/n' instead
-(Font)              for symbol `textbackslash' on input line 383.
+(Font)              for symbol `textbackslash' on input line 447.
 
-[9]
-Underfull \hbox (badness 10000) in paragraph at lines 454--456
 
- []
-
-[10]
-Underfull \hbox (badness 10000) in paragraph at lines 497--499
-
+Overfull \hbox (21.897pt too wide) in paragraph at lines 485--485
+[] \OT1/cmtt/m/n/10.95 * Dynamically allocates a new matrix struct, and initial
+izes the matrix my reading[] 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 507--509
-
+Overfull \hbox (21.897pt too wide) in paragraph at lines 485--485
+[] \OT1/cmtt/m/n/10.95 * It is supposed that `num_rows * num_cols <= n_vals`, a
+lso the array `n_vals` has[] 
  []
 
-
-Underfull \hbox (badness 10000) in paragraph at lines 510--512
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 542--544
-
- []
-
-[11]
-Underfull \hbox (badness 10000) in paragraph at lines 545--547
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 550--552
+[10] [11]
+Underfull \hbox (badness 10000) in paragraph at lines 573--575
 
  []
 
 [12]
-Underfull \hbox (badness 10000) in paragraph at lines 600--602
+Underfull \hbox (badness 10000) in paragraph at lines 616--618
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 603--605
+Underfull \hbox (badness 10000) in paragraph at lines 626--628
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 608--610
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 611--613
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 646--648
+Underfull \hbox (badness 10000) in paragraph at lines 629--631
 
  []
 
 [13]
-Underfull \hbox (badness 10000) in paragraph at lines 726--728
+Underfull \hbox (badness 10000) in paragraph at lines 661--663
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 664--666
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 669--671
 
  []
 
 [14]
-Underfull \hbox (badness 10000) in paragraph at lines 729--731
+Underfull \hbox (badness 10000) in paragraph at lines 719--721
 
  []
 
 
-Overfull \hbox (21.897pt too wide) in paragraph at lines 748--748
+Underfull \hbox (badness 10000) in paragraph at lines 722--724
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 727--729
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 730--732
+
+ []
+
+[15]
+Underfull \hbox (badness 10000) in paragraph at lines 765--767
+
+ []
+
+[16]
+Underfull \hbox (badness 10000) in paragraph at lines 845--847
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 848--850
+
+ []
+
+
+Overfull \hbox (21.897pt too wide) in paragraph at lines 867--867
 []\OT1/cmtt/m/n/10.95 // This one returns a new matrix, `nml_mat *r`, after the
  row addition is performed[] 
  []
 
-[15]
-Overfull \hbox (4.26125pt too wide) in paragraph at lines 807--809
+[17]
+Overfull \hbox (4.26125pt too wide) in paragraph at lines 926--928
 []\OT1/cmr/m/n/10.95 Notice how we are se-lect-ing the rows: \OT1/cmtt/m/n/10.9
 5 m->data[where][i] += multiplier * m->data[row][i]\OT1/cmr/m/n/10.95 ,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 807--809
+Underfull \hbox (badness 10000) in paragraph at lines 926--928
 
  []
 
-
-Overfull \hbox (17.2812pt too wide) in paragraph at lines 856--857
+[18]
+Overfull \hbox (17.2812pt too wide) in paragraph at lines 975--976
 []\OT1/cmr/m/n/10.95 For each el-e-ment \OT1/cmtt/m/n/10.95 m->data[i][j] \OT1/
 cmr/m/n/10.95 we per-form the mul-ti-pli-ca-tion with the scalar num: \OT1/cmtt
 /m/n/10.95 m->data[i][j]
  []
 
-[16]
-Underfull \hbox (badness 10000) in paragraph at lines 871--873
+
+Underfull \hbox (badness 10000) in paragraph at lines 990--992
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 874--876
+Underfull \hbox (badness 10000) in paragraph at lines 993--995
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 879--881
+Underfull \hbox (badness 10000) in paragraph at lines 998--1000
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 882--884
-
- []
-
-[17]
-Underfull \hbox (badness 10000) in paragraph at lines 937--939
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 940--942
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 945--947
-
- []
-
-[18]
-Underfull \hbox (badness 10000) in paragraph at lines 997--999
+Underfull \hbox (badness 10000) in paragraph at lines 1001--1003
 
  []
 
 [19]
-Underfull \hbox (badness 10000) in paragraph at lines 1057--1059
+Underfull \hbox (badness 10000) in paragraph at lines 1056--1058
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1060--1062
+Underfull \hbox (badness 10000) in paragraph at lines 1059--1061
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 1064--1066
 
  []
 
 [20]
-Underfull \hbox (badness 10000) in paragraph at lines 1119--1121
+Underfull \hbox (badness 10000) in paragraph at lines 1116--1118
+
+ []
+
+[21]
+Underfull \hbox (badness 10000) in paragraph at lines 1176--1178
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1122--1124
+Underfull \hbox (badness 10000) in paragraph at lines 1179--1181
+
+ []
+
+[22]
+Underfull \hbox (badness 10000) in paragraph at lines 1238--1240
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1125--1127
+Underfull \hbox (badness 10000) in paragraph at lines 1241--1243
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1128--1130
+Underfull \hbox (badness 10000) in paragraph at lines 1244--1246
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1132--1134
-
- []
-
-[21] [22]
-Underfull \hbox (badness 10000) in paragraph at lines 1246--1248
+Underfull \hbox (badness 10000) in paragraph at lines 1247--1249
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1249--1251
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 1252--1254
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 1255--1257
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 1259--1261
+Underfull \hbox (badness 10000) in paragraph at lines 1251--1253
 
  []
 
 [23] [24]
-Underfull \hbox (badness 10000) in paragraph at lines 1391--1393
-
- []
-
-[25] [26]
-Underfull \hbox (badness 10000) in paragraph at lines 1513--1515
+Underfull \hbox (badness 10000) in paragraph at lines 1365--1367
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1516--1518
-
- []
-
-[27]
-Underfull \hbox (badness 10000) in paragraph at lines 1572--1574
-
- []
-
-[28]
-Underfull \hbox (badness 10000) in paragraph at lines 1723--1725
-
- []
-
-[29]
-Overfull \hbox (16.14832pt too wide) in paragraph at lines 1780--1780
-[]    \OT1/cmtt/m/n/10.95 // Find the pivot - the first non-zero entry in the f
-irst column of the matrix[] 
- []
-
-[30]
-Underfull \hbox (badness 10000) in paragraph at lines 1782--1784
+Underfull \hbox (badness 10000) in paragraph at lines 1368--1370
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1789--1791
-
- []
-
-[31]
-Underfull \hbox (badness 10000) in paragraph at lines 1854--1856
+Underfull \hbox (badness 10000) in paragraph at lines 1371--1373
 
  []
 
 
-Overfull \hbox (16.14832pt too wide) in paragraph at lines 1892--1892
-[]    \OT1/cmtt/m/n/10.95 // Find the pivot - the first non-zero entry in the f
-irst column of the matrix[] 
- []
-
-[32]
-Underfull \hbox (badness 10000) in paragraph at lines 1896--1898
+Underfull \hbox (badness 10000) in paragraph at lines 1374--1376
 
  []
 
-
-Underfull \hbox (badness 10000) in paragraph at lines 1921--1923
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 1930--1932
+[25]
+Underfull \hbox (badness 10000) in paragraph at lines 1378--1380
 
  []
 
+[26] [27]
+Underfull \hbox (badness 10000) in paragraph at lines 1510--1512
 
-Underfull \hbox (badness 10000) in paragraph at lines 1939--1941
+ []
+
+[28] [29]
+Underfull \hbox (badness 10000) in paragraph at lines 1632--1634
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1942--1944
-
- []
-
-[33]
-Underfull \hbox (badness 10000) in paragraph at lines 1945--1947
+Underfull \hbox (badness 10000) in paragraph at lines 1635--1637
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1948--1950
+Underfull \hbox (badness 10000) in paragraph at lines 1687--1689
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1955--1957
+LaTeX Font Warning: Font shape `OT1/cmss/m/sc' in size <10.95> not available
+(Font)              Font shape `OT1/cmr/m/sc' tried instead on input line 1710.
+
+
+[30] [31]
+Underfull \hbox (badness 10000) in paragraph at lines 1795--1797
 
  []
 
-
-Underfull \hbox (badness 10000) in paragraph at lines 1958--1960
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 2007--2009
+[32] [33]
+Underfull \hbox (badness 10000) in paragraph at lines 1946--1948
 
  []
 
 [34]
-Underfull \hbox (badness 10000) in paragraph at lines 2135--2137
+Overfull \hbox (16.14832pt too wide) in paragraph at lines 2003--2003
+[]    \OT1/cmtt/m/n/10.95 // Find the pivot - the first non-zero entry in the f
+irst column of the matrix[] 
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2005--2007
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2170--2172
+Underfull \hbox (badness 10000) in paragraph at lines 2012--2014
 
  []
 
 [35]
-Underfull \hbox (badness 10000) in paragraph at lines 2182--2184
+Underfull \hbox (badness 10000) in paragraph at lines 2077--2079
+
+ []
+
+[36]
+Overfull \hbox (16.14832pt too wide) in paragraph at lines 2115--2115
+[]    \OT1/cmtt/m/n/10.95 // Find the pivot - the first non-zero entry in the f
+irst column of the matrix[] 
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2119--2121
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2195--2197
+Underfull \hbox (badness 10000) in paragraph at lines 2144--2146
+
+ []
+
+[37]
+Underfull \hbox (badness 10000) in paragraph at lines 2153--2155
 
  []
 
 
-Overfull \hbox (102.37863pt too wide) in paragraph at lines 2217--2217
+Underfull \hbox (badness 10000) in paragraph at lines 2162--2164
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2165--2167
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2168--2170
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2171--2173
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2178--2180
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2181--2183
+
+ []
+
+[38]
+Underfull \hbox (badness 10000) in paragraph at lines 2230--2232
+
+ []
+
+[39]
+Underfull \hbox (badness 10000) in paragraph at lines 2358--2360
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2393--2395
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2405--2407
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2418--2420
+
+ []
+
+
+Overfull \hbox (102.37863pt too wide) in paragraph at lines 2440--2440
 []\OT1/cmtt/m/n/10.95 nml_mat_lup *nml_mat_lup_new(nml_mat *L, nml_mat *U, nml_
 mat *P, unsigned int num_permutations) {[] 
  []
 
-[36] [37] [38] [39] [40]
-Underfull \hbox (badness 10000) in paragraph at lines 2461--2463
+[40] [41] [42] [43] [44]
+Underfull \hbox (badness 10000) in paragraph at lines 2684--2686
+
+ []
+
+[45]
+Underfull \hbox (badness 10000) in paragraph at lines 2781--2783
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2558--2560
-
- []
-
-[41]
-Underfull \hbox (badness 10000) in paragraph at lines 2588--2590
+Underfull \hbox (badness 10000) in paragraph at lines 2811--2813
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2601--2603
+Underfull \hbox (badness 10000) in paragraph at lines 2824--2826
+
+ []
+
+[46]
+Underfull \hbox (badness 10000) in paragraph at lines 2827--2829
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2604--2606
+Underfull \hbox (badness 10000) in paragraph at lines 2830--2832
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2607--2609
-
- []
-
-[42]
-Underfull \hbox (badness 10000) in paragraph at lines 2616--2618
+Underfull \hbox (badness 10000) in paragraph at lines 2839--2841
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2640--2642
+Underfull \hbox (badness 10000) in paragraph at lines 2863--2865
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2643--2645
+Underfull \hbox (badness 10000) in paragraph at lines 2866--2868
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2646--2648
+Underfull \hbox (badness 10000) in paragraph at lines 2869--2871
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2649--2651
+Underfull \hbox (badness 10000) in paragraph at lines 2872--2874
 
  []
 
-[43]
-Underfull \hbox (badness 10000) in paragraph at lines 2704--2706
+[47]
+Underfull \hbox (badness 10000) in paragraph at lines 2927--2929
 
  []
 
 
-Overfull \hbox (21.897pt too wide) in paragraph at lines 2741--2741
+Overfull \hbox (21.897pt too wide) in paragraph at lines 2964--2964
 []\OT1/cmtt/m/n/10.95 double nml_vect_dot(nml_mat *m1, unsigned int m1col, nml_
 mat *m2, unsigned m2col) {[] 
  []
 
-[44] [45] [46]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 2894.
- [47]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 2894.
+[48] [49] [50]
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 3117.
+ [51]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 3117.
  (./nml.aux)
-Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 2894.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 2894.
+Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 3117.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 3117.
 
 Package rerunfilecheck Info: File `nml.out' has not changed.
-(rerunfilecheck)             Checksum: CE24ACF3DAD4DE2F01A3C3E28A94CB99;3087.
+(rerunfilecheck)             Checksum: D33D7EFBBA8F00FE2B54858D6110E5AF;3338.
 
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 2894.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 3117.
  ) 
 Here is how much of TeX's memory you used:
- 9168 strings out of 494459
- 124107 string characters out of 6174527
- 283126 words of memory out of 5000000
- 12679 multiletter control sequences out of 15000+600000
+ 9172 strings out of 494459
+ 124177 string characters out of 6174527
+ 284454 words of memory out of 5000000
+ 12683 multiletter control sequences out of 15000+600000
  15550 words of font info for 65 fonts, out of 8000000 for 9000
  62 hyphenation exceptions out of 8191
- 33i,17n,35p,590b,462s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 33i,17n,35p,590b,507s stack positions out of 5000i,500n,10000p,200000b,80000s
 
-Output written on nml.dvi (47 pages, 183236 bytes).
+Output written on nml.dvi (51 pages, 195572 bytes).

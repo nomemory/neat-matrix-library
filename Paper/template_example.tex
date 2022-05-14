@@ -1,0 +1,46 @@
+\example \textsf{Creates the following matrix}
+$$
+A = \left[
+\begin{array}{rrr}
+\tt 1.0 & \tt 2.0 & \tt 3.0 \\
+\tt 0.0 & \tt 2.0 & \tt 4.0 \\
+\tt 2.0 & \tt 1.0 & \tt 9.0
+\end{array}
+\right]
+$$
+\textsf{by reading its values from an array}.
+
+\rule{80mm}{0.5pt}\\
+{\bf Code}
+\begin{verbatim}
+include <stdlib.h>
+#include <stdio.h>
+
+#include "nml.h"
+
+int main(int argc, char *argv[]) {
+
+  double v[] = {
+    1.0, 2.0, 3.0,
+    0.0, 2.0, 4.0,
+    2.0, 1.0, 9.0
+  };
+
+  nml_mat *A = nml_mat_from(3, 3, 9, v);
+
+  printf("A:\n");
+  nml_mat_printf(A, "%10.4lf  ");       // printing
+  nml_mat_free(A);                      // freeing
+  return 0;
+}
+\end{verbatim}
+
+\hsep
+{\bf Output}
+\begin{verbatim}
+A:
+
+    1.0000      2.0000      3.0000  
+    0.0000      2.0000      4.0000  
+    2.0000      1.0000      9.0000  
+\end{verbatim}

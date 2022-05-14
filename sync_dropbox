@@ -1,0 +1,6 @@
+#/bin/bash
+
+# extra-options
+opts=$1
+
+rsync -irc . /home/yoel/Dropbox/MathPacks/nml/ --exclude .git $opts

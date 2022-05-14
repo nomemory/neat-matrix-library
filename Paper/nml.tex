@@ -194,7 +194,9 @@ Method & 	Description
 {\tt nml\_mat\_fromfile()} & A method to read the matrix from a FILE.
 \end{tabular}
 
-\section{Creating a random matrix}
+\section{The basic}
+
+\subsection{Creating a random matrix}
 
 Writing a method like {\tt nml\_mat\_rnd()} it’s easy, once we have {\tt nml\_mat\_new()} in place:
 
@@ -232,7 +234,7 @@ double nml_rand_interval(double min, double max) {
 }
 \end{verbatim}
 
-\section{Creating a square matrix}
+\subsection{Creating a square matrix}
 
 A square matrix has the same number of columns and rows.
 \\
@@ -273,17 +275,20 @@ nml_mat *nml_mat_sqr_rnd(unsigned int size, double min, double max) {
 \end{verbatim}
 
 \rule{\textwidth}{0.5pt}\\
-\example \textsf{Create a matrix {\tt A} of $3\times 3$, and a random matrix {\tt B} of $4\times 4$}.
+\example \textsf{Create a zeroes matrix {\tt A} of $3\times 3$, and a random matrix {\tt B} of $4\times 4$ Then, destroy the objects and free all the memory reserved.}
 
 \begin{verbatim}
 #include "nml.h"
 
-nml_mat *A = nml_mat_sqr(3);
-nml_mat *B = nml_mat_sqr_rnd(4);
+nml_mat *A = nml_mat_sqr(3);         // zeros matrix
+nml_mat *B = nml_mat_sqr_rnd(4);     // random matrix
+
+nml_mat_free(A);                     // freeing
+nml_mat_free(B);
 \end{verbatim}
 \rule{\textwidth}{0.5pt}\\
 
-\section{Creating an identity matrix}
+\subsection{Creating an identity matrix}
 
 An identity matrix is a square $(N\times N)$ matrix that has 1.0 on the first diagonal, and 0.0 elsewhere:
 
@@ -326,7 +331,66 @@ nml_mat *nml_mat_eye(unsigned int size) {
 
 To find out the reasons why the identity method is named {\tt eye()} please read \href{https://math.stackexchange.com/questions/3028394/what-is-the-motivation-behind-naming-identity-matrix-as-eye/3028999}{\underline{\itshape this math exchange post}}
 
-\section{Creating a matrix from a FILE}
+\section{Reading/Writing a matrix (IO methods)}
+
+\subsection{Printing matrix}
+
+The function {\tt nml\_mat\_print} is a simple method to print the content of a matrix on the standard output (screen), with a default format.
+\\
+The method {\tt nml\_mat\_printf} does the same, but also allowing to specify a printing format {\tt d\_fmt} which will be interpreted in the same way as in the C function {\tt printf}.
+
+\begin{verbatim}
+// Prints the matrix on the stdout
+void nml_mat_print(nml_mat *matrix) {
+  nml_mat_printf(matrix, "%lf\t\t");
+}
+
+// Prints the matrix on the stdout (with a custom formatting for elements)
+void nml_mat_printf(nml_mat *matrix, const char *d_fmt) {
+  int i, j;
+  fprintf(stdout, "\n");
+  for(i = 0; i < matrix->num_rows; ++i) {
+    for(j = 0; j < matrix->num_cols; ++j) {
+      fprintf(stdout, d_fmt, matrix->data[i][j]);
+    }
+    fprintf(stdout, "\n");
+  }
+  fprintf(stdout, "\n");
+}
+\end{verbatim}
+
+\rule{\textwidth}{0.5pt}\\
+\example \textsf{Create an identity matrix $I_{3\times 3}$, print its content, and finally free the used resources.}
+
+\begin{verbatim}
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "nml.h"
+
+int main(int argc, char *argv[]) {
+
+  printf("\nCreating an eye matrix of 3x3:\n");
+  nml_mat *I = nml_mat_eye(3);          // identity matrix
+
+  nml_mat_printf(I, "%10.4lf  ");       // printing
+  nml_mat_free(I);                      // freeing
+
+  return 0;
+}
+\end{verbatim}
+
+\rule{\textwidth}{0.5pt}
+\textbf{Output:}
+\begin{verbatim}
+Creating an eye matrix of 3x3:
+
+    1.0000      0.0000      0.0000  
+    0.0000      1.0000      0.0000  
+    0.0000      0.0000      1.0000  
+\end{verbatim}
+
+\subsection{Creating a matrix from a FILE}
 
 Instead of having to write something like the code bellow to set the elements of the matrix:
 
@@ -386,7 +450,85 @@ and {\tt fscanf(f, "\%d", \&num\_cols)} read the first line;
 This method can also be used to read user input from the keyboard, by calling the method like this:
 
 \begin{verbatim}
-nml_mat_fromfilef(stdin);
+    nml_mat_fromfilef(stdin);
+\end{verbatim}
+
+\subsection{Reading a matrix from an array of numbers}
+
+The method {\tt nml\_mat\_from} creates a new matrix, by specifying its dimensions ({\tt num\_rows} and {\tt num\_cols}), and passing an array {\tt vals} with elements to read from, as well as the number of elements to be read.
+
+\begin{verbatim}
+/**
+ * Dynamically allocates a new matrix struct, and initializes the matrix my reading
+ * values from a vector (array).
+ * It is supposed that `num_rows * num_cols <= n_vals`, also the array `n_vals` has
+ * to have enough capacity.
+ *
+ * @param   num_rows  number of rows to the new matrix
+ * @param   num_cols  number of columns to the new matrix
+ * @param   n_vals    number of elements to be read
+ * @param   vals      array of values
+ * @return            a pointer to the new allocated matrix structure 
+ */
+nml_mat *nml_mat_from(unsigned int num_rows, unsigned int num_cols, 
+  unsigned int n_vals, double *vals) {
+  nml_mat *m = nml_mat_new(num_rows, num_cols);
+  int i, j, v_idx;
+  for(i = 0; i < m->num_rows; i++) {
+    for(j = 0; j < m->num_cols; j++) {
+      v_idx = i * m->num_cols + j;
+      m->data[i][j] = (v_idx < n_vals) ? vals[v_idx] : 0.0;
+    }
+  }
+  return m;
+}
+\end{verbatim}
+
+\example \textsf{Creates the following matrix}
+$$
+A = \left[
+\begin{array}{rrr}
+\tt 1.0 & \tt 2.0 & \tt 3.0 \\
+\tt 0.0 & \tt 2.0 & \tt 4.0 \\
+\tt 2.0 & \tt 1.0 & \tt 9.0
+\end{array}
+\right]
+$$
+\textsf{by reading its values from an array}.
+
+\rule{80mm}{0.5pt}\\
+{\bf Code}
+\begin{verbatim}
+include <stdlib.h>
+#include <stdio.h>
+
+#include "nml.h"
+
+int main(int argc, char *argv[]) {
+
+  double v[] = {
+    1.0, 2.0, 3.0,
+    0.0, 2.0, 4.0,
+    2.0, 1.0, 9.0
+  };
+
+  nml_mat *A = nml_mat_from(3, 3, 9, v);
+
+  printf("A:\n");
+  nml_mat_printf(A, "%10.4lf  ");       // printing
+  nml_mat_free(A);                      // freeing
+  return 0;
+}
+\end{verbatim}
+
+\hsep
+{\bf Output}
+\begin{verbatim}
+A:
+
+    1.0000      2.0000      3.0000  
+    0.0000      2.0000      4.0000  
+    2.0000      1.0000      9.0000  
 \end{verbatim}
 
 \section{Matrix methods}
@@ -425,29 +567,6 @@ int nml_mat_eq(nml_mat *m1, nml_mat *m2, double tolerance) {
 }
 \end{verbatim}
 {\tt fabs(x)} returns the absolute value of {\tt x} $\rightarrow$ {\tt |x|}.
-
-\subsection{Printing the matrix}
-
-Printing the matrix is trivial. We just need to iterate through all the elements and use {\tt fprintf()} to show the matrix in {\tt stdout}:
-
-\begin{verbatim}
-void nml_mat_print(nml_mat *matrix) {
-  nml_mat_printf(matrix, "%lf\t\t");
-}
-
-// Prints the matrix on the stdout (with a custom formatting for elements)
-void nml_mat_printf(nml_mat *matrix, const char *d_fmt) {
-  int i, j;
-  fprintf(stdout, "\n");
-  for(i = 0; i < matrix->num_rows; ++i) {
-    for(j = 0; j < matrix->num_cols; ++j) {
-      fprintf(stdout, d_fmt, matrix->data[i][j]);
-    }
-    fprintf(stdout, "\n");
-  }
-  fprintf(stdout, "\n");
-} 
-\end{verbatim}
 
 \subsection{Retrieving / Selecting a column}
 
@@ -1566,6 +1685,110 @@ ml_mat *nml_mat_dot(nml_mat *m1, nml_mat *m2) {
 \end{verbatim}
 
 Better algorithms exists for matrix multiplications, if you want to find out more please check this wikipedia \href{https://en.wikipedia.org/wiki/Matrix_multiplication_algorithm}{\underline{\it article}}.
+\\
+
+\textsf{
+\example Given the matrices
+$$
+A = \left[
+\begin{array}{rrr}
+\tt 1 & \tt 2 & \tt 3 \\
+\tt 0 & \tt 2 & \tt 4 \\
+\tt 2 & \tt 1 & \tt 9
+\end{array}
+\right]
+,\qquad 
+B = \left[
+\begin{array}{rrr}
+\tt 3 & \tt -1 & \tt 1 \\
+\tt 2 & \tt 0 & \tt -5 \\
+\tt -1 & \tt 1 & \tt 4
+\end{array}
+\right]
+$$
+compute $A+B$, $A-B$, and $AB$.
+}
+
+\rule{80mm}{0.5pt}\\
+{\bf Code}
+\begin{verbatim}
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "nml.h"
+
+int main(int argc, char *argv[]) {
+
+  double A_values[] = {
+    1, 2, 3,
+    0, 2, 4,
+    2, 1, 9
+  };
+  double B_values[] = {
+    3, -1, 1,
+    2, 0, -5,
+    -1, 1, 4
+  };
+
+  nml_mat *A = nml_mat_from(3, 3, 9, A_values);
+  nml_mat *B = nml_mat_from(3, 3, 9, B_values);
+
+  // printing
+  printf("A:\n");                       
+  nml_mat_printf(A, "%10.4lf  ");
+
+  printf("B:\n");                       
+  nml_mat_printf(B, "%10.4lf  ");
+
+  printf("A+B:\n");                       
+  nml_mat_printf(nml_mat_add(A, B), "%10.4lf  ");
+
+  printf("A-B:\n");                       
+  nml_mat_printf(nml_mat_sub(A, B), "%10.4lf  ");
+
+  printf("A*B:\n");                       
+  nml_mat_printf(nml_mat_dot(A, B), "%10.4lf  ");
+
+  // freeing
+  nml_mat_free(A);    
+  nml_mat_free(B);    
+  return 0;
+}
+\end{verbatim}
+
+\hsep
+{\bf Output}
+\begin{verbatim}
+A:
+
+    1.0000      2.0000      3.0000  
+    0.0000      2.0000      4.0000  
+    2.0000      1.0000      9.0000  
+
+B:
+
+    3.0000     -1.0000      1.0000  
+    2.0000      0.0000     -5.0000  
+   -1.0000      1.0000      4.0000  
+
+A+B:
+
+    4.0000      1.0000      4.0000  
+    2.0000      2.0000     -1.0000  
+    1.0000      2.0000     13.0000  
+
+A-B:
+
+   -2.0000      3.0000      2.0000  
+   -2.0000      2.0000      9.0000  
+    3.0000      0.0000      5.0000  
+
+A*B:
+
+    4.0000      2.0000      3.0000  
+    0.0000      4.0000      6.0000  
+   -1.0000      7.0000     33.0000  
+\end{verbatim}
 
 \section{Row Echelon Form}
 

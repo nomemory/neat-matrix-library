@@ -2,43 +2,46 @@
 \contentsline {section}{\numberline {1}The library}{2}{section.1}% 
 \contentsline {section}{\numberline {2}The data: {\tt nml\_matrix}}{3}{section.2}% 
 \contentsline {section}{\numberline {3}Allocating/deallocating memory for the {\tt nml\_mat} matrix}{4}{section.3}% 
-\contentsline {section}{\numberline {4}Creating a random matrix}{6}{section.4}% 
-\contentsline {section}{\numberline {5}Creating a square matrix}{6}{section.5}% 
-\contentsline {section}{\numberline {6}Creating an identity matrix}{7}{section.6}% 
-\contentsline {section}{\numberline {7}Creating a matrix from a FILE}{8}{section.7}% 
-\contentsline {section}{\numberline {8}Matrix methods}{9}{section.8}% 
-\contentsline {subsection}{\numberline {8.1}Checking for equality}{9}{subsection.8.1}% 
-\contentsline {subsection}{\numberline {8.2}Printing the matrix}{10}{subsection.8.2}% 
-\contentsline {subsection}{\numberline {8.3}Retrieving / Selecting a column}{10}{subsection.8.3}% 
-\contentsline {subsection}{\numberline {8.4}Retrieving / Selecting a row}{11}{subsection.8.4}% 
-\contentsline {subsection}{\numberline {8.5}Setting values}{12}{subsection.8.5}% 
-\contentsline {subsection}{\numberline {8.6}Multiplying a row with a scalar}{13}{subsection.8.6}% 
-\contentsline {subsection}{\numberline {8.7}Multiplying a column with a scalar}{14}{subsection.8.7}% 
-\contentsline {subsection}{\numberline {8.8}Adding two rows}{15}{subsection.8.8}% 
-\contentsline {subsection}{\numberline {8.9}Multiplying the matrix by a scalar}{16}{subsection.8.9}% 
-\contentsline {section}{\numberline {9}Modifying the {\tt nml\_mat} internal structure}{17}{section.9}% 
-\contentsline {subsection}{\numberline {9.1}Removing a column}{17}{subsection.9.1}% 
-\contentsline {subsection}{\numberline {9.2}Removing a row}{18}{subsection.9.2}% 
-\contentsline {subsection}{\numberline {9.3}Swapping Rows}{19}{subsection.9.3}% 
-\contentsline {subsection}{\numberline {9.4}Swapping columns}{20}{subsection.9.4}% 
-\contentsline {subsection}{\numberline {9.5}Horizontal Concatenation of two matrices}{21}{subsection.9.5}% 
-\contentsline {subsection}{\numberline {9.6}Vertical concatenation}{23}{subsection.9.6}% 
-\contentsline {section}{\numberline {10}Basic Matrix Operations}{25}{section.10}% 
-\contentsline {subsection}{\numberline {10.1}Add two matrices}{25}{subsection.10.1}% 
-\contentsline {subsection}{\numberline {10.2}Substracting two matrices}{26}{subsection.10.2}% 
-\contentsline {subsection}{\numberline {10.3}Multiplying two matrices}{27}{subsection.10.3}% 
-\contentsline {section}{\numberline {11}Row Echelon Form}{28}{section.11}% 
-\contentsline {subsection}{\numberline {11.1}Example}{29}{subsection.11.1}% 
-\contentsline {subsection}{\numberline {11.2}Code implementation}{30}{subsection.11.2}% 
-\contentsline {section}{\numberline {12}Reduces Row Echelon Form}{31}{section.12}% 
-\contentsline {subsection}{\numberline {12.1}Code Implementation}{32}{subsection.12.1}% 
-\contentsline {section}{\numberline {13}LU(P) Decomposition}{33}{section.13}% 
-\contentsline {subsection}{\numberline {13.1}The LU(P) algorithm as an example}{34}{subsection.13.1}% 
-\contentsline {subsection}{\numberline {13.2}Code implementation}{36}{subsection.13.2}% 
-\contentsline {section}{\numberline {14}Solving linear systems of equations}{38}{section.14}% 
-\contentsline {subsection}{\numberline {14.1}Forward substitution}{38}{subsection.14.1}% 
-\contentsline {subsection}{\numberline {14.2}Backward substitution}{39}{subsection.14.2}% 
-\contentsline {subsection}{\numberline {14.3}Solving linear systems using LU(P) decomposition}{40}{subsection.14.3}% 
-\contentsline {subsection}{\numberline {14.4}Calculating the inverse of the matrix using LU(P) decomposition}{41}{subsection.14.4}% 
-\contentsline {subsection}{\numberline {14.5}Calculating the determinant of the matrix using LU(P) decomposition}{42}{subsection.14.5}% 
-\contentsline {section}{\numberline {15}QR Decomposition}{43}{section.15}% 
+\contentsline {section}{\numberline {4}The basic}{6}{section.4}% 
+\contentsline {subsection}{\numberline {4.1}Creating a random matrix}{6}{subsection.4.1}% 
+\contentsline {subsection}{\numberline {4.2}Creating a square matrix}{6}{subsection.4.2}% 
+\contentsline {subsection}{\numberline {4.3}Creating an identity matrix}{7}{subsection.4.3}% 
+\contentsline {section}{\numberline {5}Reading/Writing a matrix (IO methods)}{8}{section.5}% 
+\contentsline {subsection}{\numberline {5.1}Printing matrix}{8}{subsection.5.1}% 
+\contentsline {subsection}{\numberline {5.2}Creating a matrix from a FILE}{9}{subsection.5.2}% 
+\contentsline {subsection}{\numberline {5.3}Reading a matrix from an array of numbers}{10}{subsection.5.3}% 
+\contentsline {section}{\numberline {6}Matrix methods}{12}{section.6}% 
+\contentsline {subsection}{\numberline {6.1}Checking for equality}{12}{subsection.6.1}% 
+\contentsline {subsection}{\numberline {6.2}Retrieving / Selecting a column}{13}{subsection.6.2}% 
+\contentsline {subsection}{\numberline {6.3}Retrieving / Selecting a row}{13}{subsection.6.3}% 
+\contentsline {subsection}{\numberline {6.4}Setting values}{14}{subsection.6.4}% 
+\contentsline {subsection}{\numberline {6.5}Multiplying a row with a scalar}{15}{subsection.6.5}% 
+\contentsline {subsection}{\numberline {6.6}Multiplying a column with a scalar}{16}{subsection.6.6}% 
+\contentsline {subsection}{\numberline {6.7}Adding two rows}{17}{subsection.6.7}% 
+\contentsline {subsection}{\numberline {6.8}Multiplying the matrix by a scalar}{18}{subsection.6.8}% 
+\contentsline {section}{\numberline {7}Modifying the {\tt nml\_mat} internal structure}{19}{section.7}% 
+\contentsline {subsection}{\numberline {7.1}Removing a column}{19}{subsection.7.1}% 
+\contentsline {subsection}{\numberline {7.2}Removing a row}{20}{subsection.7.2}% 
+\contentsline {subsection}{\numberline {7.3}Swapping Rows}{21}{subsection.7.3}% 
+\contentsline {subsection}{\numberline {7.4}Swapping columns}{22}{subsection.7.4}% 
+\contentsline {subsection}{\numberline {7.5}Horizontal Concatenation of two matrices}{23}{subsection.7.5}% 
+\contentsline {subsection}{\numberline {7.6}Vertical concatenation}{25}{subsection.7.6}% 
+\contentsline {section}{\numberline {8}Basic Matrix Operations}{27}{section.8}% 
+\contentsline {subsection}{\numberline {8.1}Add two matrices}{27}{subsection.8.1}% 
+\contentsline {subsection}{\numberline {8.2}Substracting two matrices}{28}{subsection.8.2}% 
+\contentsline {subsection}{\numberline {8.3}Multiplying two matrices}{29}{subsection.8.3}% 
+\contentsline {section}{\numberline {9}Row Echelon Form}{32}{section.9}% 
+\contentsline {subsection}{\numberline {9.1}Example}{33}{subsection.9.1}% 
+\contentsline {subsection}{\numberline {9.2}Code implementation}{34}{subsection.9.2}% 
+\contentsline {section}{\numberline {10}Reduces Row Echelon Form}{35}{section.10}% 
+\contentsline {subsection}{\numberline {10.1}Code Implementation}{36}{subsection.10.1}% 
+\contentsline {section}{\numberline {11}LU(P) Decomposition}{37}{section.11}% 
+\contentsline {subsection}{\numberline {11.1}The LU(P) algorithm as an example}{38}{subsection.11.1}% 
+\contentsline {subsection}{\numberline {11.2}Code implementation}{40}{subsection.11.2}% 
+\contentsline {section}{\numberline {12}Solving linear systems of equations}{42}{section.12}% 
+\contentsline {subsection}{\numberline {12.1}Forward substitution}{42}{subsection.12.1}% 
+\contentsline {subsection}{\numberline {12.2}Backward substitution}{43}{subsection.12.2}% 
+\contentsline {subsection}{\numberline {12.3}Solving linear systems using LU(P) decomposition}{44}{subsection.12.3}% 
+\contentsline {subsection}{\numberline {12.4}Calculating the inverse of the matrix using LU(P) decomposition}{45}{subsection.12.4}% 
+\contentsline {subsection}{\numberline {12.5}Calculating the determinant of the matrix using LU(P) decomposition}{46}{subsection.12.5}% 
+\contentsline {section}{\numberline {13}QR Decomposition}{47}{section.13}% 
