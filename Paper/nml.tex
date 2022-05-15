@@ -484,7 +484,7 @@ nml_mat *nml_mat_from(unsigned int num_rows, unsigned int num_cols,
 }
 \end{verbatim}
 
-\example \textsf{Creates the following matrix}
+\example \textsf{Create the following matrix}
 $$
 A = \left[
 \begin{array}{rrr}
@@ -2114,6 +2114,83 @@ nml_mat *nml_mat_ref(nml_mat *m) {
 } 
 \end{verbatim}
 
+\subsection{Example}
+
+\textsf{
+\example Given the matrix
+$$
+A = \left[
+\begin{array}{rrr}
+0 & 1 & 2 \\
+1 & 2 & 1 \\
+2 & 7 & 8
+\end{array}
+\right]
+$$
+compute its Row Echelon Form (REF), and its Reduced Row Echelon Form (RREF).
+}
+
+\rule{80mm}{0.5pt}\\
+{\bf Code}
+\begin{verbatim}
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "nml.h"
+
+int main(int argc, char *argv[]) {
+
+  double A_values[] = {
+    0, 1, 2,
+    1, 2, 1,
+    2, 7, 8
+  };
+
+  nml_mat *A = nml_mat_from(3, 3, 9, A_values);
+  nml_mat *Aref  = nml_mat_ref(A);
+  nml_mat *Arref = nml_mat_rref(A);
+
+  // printing
+  printf("A:\n");                       
+  nml_mat_printf(A, "%10.4lf  ");
+
+  printf("ref(A):\n");                       
+  nml_mat_printf(Aref, "%10.4lf  ");
+
+  printf("rref(A)\n");                       
+  nml_mat_printf(Arref, "%10.4lf  ");
+
+  // freeing
+  nml_mat_free(A); 
+  nml_mat_free(Aref);
+  nml_mat_free(Arref);
+  return 0;
+}
+\end{verbatim}
+
+\hsep
+{\bf Output}
+\begin{verbatim}
+A:
+
+    0.0000      1.0000      2.0000  
+    1.0000      2.0000      1.0000  
+    2.0000      7.0000      8.0000  
+
+ref(A):
+
+    1.0000      2.0000      1.0000  
+    0.0000      1.0000      2.0000  
+    0.0000      0.0000      0.0000  
+
+rref(A)
+
+    1.0000      0.0000     -3.0000  
+   -0.0000      1.0000      2.0000  
+    0.0000      0.0000      0.0000  
+\end{verbatim}
+
+
 \section{LU(P) Decomposition}
 
 LU decomposition, also named LU factorisation refers to the factorisation of a matrix $A$, into two factors $L$ and $U$.
@@ -2483,6 +2560,72 @@ nml_mat_lup *nml_mat_lup_solve(nml_mat *m) {
 
   return nml_mat_lup_new(L, U, P, num_permutations);
 } 
+\end{verbatim}
+
+\subsection{Example}
+
+\textsf{
+\example Given the matrix
+$$
+A = \left[
+\begin{array}{rrr}
+2 & 1 & 5 \\
+4 & 4 & -4 \\
+1 & 3 & 1
+\end{array}
+\right]
+$$
+compute its LU(P) decomposition.
+}
+
+\rule{80mm}{0.5pt}\\
+{\bf Code}
+\begin{verbatim}
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "lib/nml.h"
+
+int main(int argc, char *argv[]) {
+
+  double A_values[] = {
+    2, 1, 5,
+    4, 4, -4,
+    1, 3, 1
+  };
+
+  nml_mat *A = nml_mat_from(3, 3, 9, A_values);
+  nml_mat_lup *A_lup = nml_mat_lup_solve(A);
+
+  // printing
+  printf("L, U, P:\n");
+  nml_mat_lup_printf(A_lup, "%10.4lf");
+
+  // freeing
+  nml_mat_free(A); 
+  nml_mat_lup_free(A_lup);
+  return 0;
+}
+\end{verbatim}
+
+\hsep
+{\bf Output}
+\begin{verbatim}
+L, U, P:
+
+    1.0000      0.0000      0.0000  
+    0.2500      1.0000      0.0000  
+    0.5000     -0.5000      1.0000  
+
+
+    4.0000      4.0000     -4.0000  
+    0.0000      2.0000      2.0000  
+    0.0000      0.0000      8.0000  
+
+
+    0.0000      1.0000      0.0000  
+    0.0000      0.0000      1.0000  
+    1.0000      0.0000      0.0000  
 \end{verbatim}
 
 \section{Solving linear systems of equations}
@@ -2858,6 +3001,93 @@ double nml_mat_det(nml_mat_lup* lup) {
 }
 \end{verbatim}
 
+\subsection{Example}
+
+\textsf{
+\example Solve the system $\mathbf{A} \mathbf {x} = \mathbf{b}$, given that
+$$
+\mathbf{A} = \left[
+\begin{array}{rrr}
+1 & 2 & 3 \\
+0 & 2 & 4 \\
+2 & 1 & 9
+\end{array}
+\right]
+,\qquad 
+\mathbf{b} = \left[
+\begin{array}{r}
+1 \\
+-1 \\
+3/2
+\end{array}
+\right]
+$$
+}
+
+\rule{80mm}{0.5pt}\\
+{\bf Code}
+\begin{verbatim}
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "nml.h"
+
+int main(int argc, char *argv[]) {
+
+  double A_values[] = {
+    1, 2, 3,
+    0, 2, 4,
+    2, 1, 9
+  };
+  double b_values[] = {
+    0, -1, 3.0/2
+  };
+
+  nml_mat *A = nml_mat_from(3, 3, 9, A_values);
+  nml_mat *b = nml_mat_from(3, 1, 3, b_values);
+
+  nml_mat_lup *A_lup = nml_mat_lup_solve(A);
+
+  // solving via LUP decomposition
+  nml_mat *x = nml_ls_solve(A_lup, b);
+
+  // printing
+  printf("A:\n");
+  nml_mat_printf(A, "%10.4lf  ");
+  printf("b:\n");
+  nml_mat_printf(b, "%10.4lf  ");
+  printf("x:\n");
+  nml_mat_printf(x, "%10.4lf  ");
+
+  // freeing
+  nml_mat_free(A); 
+  nml_mat_lup_free(A_lup);
+  return 0;
+}
+\end{verbatim}
+
+\hsep
+{\bf Output}
+\begin{verbatim}
+A:
+
+    1.0000      2.0000      3.0000  
+    0.0000      2.0000      4.0000  
+    2.0000      1.0000      9.0000  
+
+b:
+
+    0.0000  
+   -1.0000  
+    1.5000  
+
+x:
+
+    1.0000  
+   -0.5000  
+   -0.0000  
+\end{verbatim}
+
 \section{QR Decomposition}
 
 Any square matrix $A$ can be decomposed as $A=QR$, where $Q$ is an orthogonal matrix, and $R$ is an upper triangular matrix.
@@ -3086,6 +3316,80 @@ nml_mat_qr *nml_mat_qr_solve(nml_mat *m) {
   return qr;
 } 
 \end{verbatim}
+
+\subsection{Example}
+
+\textsf{
+\example Find the QR factorization for the matrix
+$$
+\mathbf{A} = \left[
+\begin{array}{rrr}
+1 & 3 & 4 \\
+1 & 1 & -6 \\
+1 & -1 & 2
+\end{array}
+\right]
+$$
+}
+
+\rule{80mm}{0.5pt}\\
+{\bf Code}
+\begin{verbatim}
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "nml.h"
+
+int main(int argc, char *argv[]) {
+
+  double A_values[] = {
+    1, 3, 4,
+    1, 1, -6,
+    1, -1, 2
+  };
+
+  nml_mat *A = nml_mat_from(3, 3, 9, A_values);
+
+  // obtaining the QR factorization
+  nml_mat_qr *A_qr = nml_mat_qr_solve(A);
+
+  // printing
+  printf("A:\n");
+  nml_mat_printf(A, "%10.4lf  ");
+  printf("Q:\n");
+  nml_mat_printf(A_qr->Q, "%10.4lf  ");
+  printf("R:\n");
+  nml_mat_printf(A_qr->R, "%10.4lf  ");
+
+  // freeing
+  nml_mat_free(A); 
+  nml_mat_qr_free(A_qr);
+  return 0;
+}
+\end{verbatim}
+
+\hsep
+{\bf Output}
+\begin{verbatim}
+A:
+
+    1.0000      3.0000      4.0000  
+    1.0000      1.0000     -6.0000  
+    1.0000     -1.0000      2.0000  
+
+Q:
+
+    0.5774      0.7071      0.4082  
+    0.5774     -0.0000     -0.8165  
+    0.5774     -0.7071      0.4082  
+
+R:
+
+    1.7321      1.7321     -0.0000  
+    0.0000      2.8284      1.4142  
+    0.0000      0.0000      7.3485 
+\end{verbatim}
+
 
 % References
 \begin{thebibliography}{9}

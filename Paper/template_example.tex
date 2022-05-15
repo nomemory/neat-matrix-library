@@ -1,36 +1,51 @@
-\example \textsf{Creates the following matrix}
+\textsf{
+\example Given the matrix
 $$
 A = \left[
 \begin{array}{rrr}
-\tt 1.0 & \tt 2.0 & \tt 3.0 \\
-\tt 0.0 & \tt 2.0 & \tt 4.0 \\
-\tt 2.0 & \tt 1.0 & \tt 9.0
+0 & 1 & 2 \\
+1 & 2 & 1 \\
+2 & 7 & 8
 \end{array}
 \right]
 $$
-\textsf{by reading its values from an array}.
+compute its Row Echelon Form (REF), and its Reduced Row Echelon Form (RREF).
+}
 
 \rule{80mm}{0.5pt}\\
 {\bf Code}
 \begin{verbatim}
-include <stdlib.h>
+#include <stdlib.h>
 #include <stdio.h>
 
 #include "nml.h"
 
 int main(int argc, char *argv[]) {
 
-  double v[] = {
-    1.0, 2.0, 3.0,
-    0.0, 2.0, 4.0,
-    2.0, 1.0, 9.0
+  double A_values[] = {
+    0, 1, 2,
+    1, 2, 1,
+    2, 7, 8
   };
 
-  nml_mat *A = nml_mat_from(3, 3, 9, v);
+  nml_mat *A = nml_mat_from(3, 3, 9, A_values);
+  nml_mat *Aref  = nml_mat_ref(A);
+  nml_mat *Arref = nml_mat_rref(A);
 
-  printf("A:\n");
-  nml_mat_printf(A, "%10.4lf  ");       // printing
-  nml_mat_free(A);                      // freeing
+  // printing
+  printf("A:\n");                       
+  nml_mat_printf(A, "%10.4lf  ");
+
+  printf("ref(A):\n");                       
+  nml_mat_printf(Aref, "%10.4lf  ");
+
+  printf("rref(A)\n");                       
+  nml_mat_printf(Arref, "%10.4lf  ");
+
+  // freeing
+  nml_mat_free(A); 
+  nml_mat_free(Aref);
+  nml_mat_free(Arref);
   return 0;
 }
 \end{verbatim}
@@ -40,7 +55,21 @@ int main(int argc, char *argv[]) {
 \begin{verbatim}
 A:
 
-    1.0000      2.0000      3.0000  
-    0.0000      2.0000      4.0000  
-    2.0000      1.0000      9.0000  
+    0.0000      1.0000      2.0000  
+    1.0000      2.0000      1.0000  
+    2.0000      7.0000      8.0000  
+
+ref(A):
+
+    1.0000      2.0000      1.0000  
+    0.0000      1.0000      2.0000  
+    0.0000      0.0000      0.0000  
+
+rref(A)
+
+    1.0000      0.0000     -3.0000  
+   -0.0000      1.0000      2.0000  
+    0.0000      0.0000      0.0000  
 \end{verbatim}
+
+

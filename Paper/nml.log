@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2019/dev/Debian) (preloaded format=latex 2021.1.13)  14 MAY 2022 11:15
+This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2019/dev/Debian) (preloaded format=latex 2021.1.13)  14 MAY 2022 12:02
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -522,7 +522,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 41--43
 
  []
 
-
+[2]
 Underfull \hbox (badness 10000) in paragraph at lines 49--51
 
  []
@@ -532,7 +532,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 52--54
 
  []
 
-[2]
+
 Underfull \hbox (badness 10000) in paragraph at lines 67--68
 
  []
@@ -876,171 +876,171 @@ Overfull \hbox (16.14832pt too wide) in paragraph at lines 2115--2115
 irst column of the matrix[] 
  []
 
-
-Underfull \hbox (badness 10000) in paragraph at lines 2119--2121
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 2144--2146
-
- []
-
-[37]
-Underfull \hbox (badness 10000) in paragraph at lines 2153--2155
+[37] [38]
+Underfull \hbox (badness 10000) in paragraph at lines 2196--2198
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2162--2164
+Underfull \hbox (badness 10000) in paragraph at lines 2221--2223
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2165--2167
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 2168--2170
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 2171--2173
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 2178--2180
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 2181--2183
-
- []
-
-[38]
 Underfull \hbox (badness 10000) in paragraph at lines 2230--2232
 
  []
 
+
+Underfull \hbox (badness 10000) in paragraph at lines 2239--2241
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2242--2244
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2245--2247
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2248--2250
+
+ []
+
 [39]
-Underfull \hbox (badness 10000) in paragraph at lines 2358--2360
+Underfull \hbox (badness 10000) in paragraph at lines 2255--2257
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2393--2395
+Underfull \hbox (badness 10000) in paragraph at lines 2258--2260
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2405--2407
+Underfull \hbox (badness 10000) in paragraph at lines 2307--2309
+
+ []
+
+[40]
+Underfull \hbox (badness 10000) in paragraph at lines 2435--2437
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2418--2420
+Underfull \hbox (badness 10000) in paragraph at lines 2470--2472
 
  []
 
 
-Overfull \hbox (102.37863pt too wide) in paragraph at lines 2440--2440
+Underfull \hbox (badness 10000) in paragraph at lines 2482--2484
+
+ []
+
+[41]
+Underfull \hbox (badness 10000) in paragraph at lines 2495--2497
+
+ []
+
+
+Overfull \hbox (102.37863pt too wide) in paragraph at lines 2517--2517
 []\OT1/cmtt/m/n/10.95 nml_mat_lup *nml_mat_lup_new(nml_mat *L, nml_mat *U, nml_
 mat *P, unsigned int num_permutations) {[] 
  []
 
-[40] [41] [42] [43] [44]
-Underfull \hbox (badness 10000) in paragraph at lines 2684--2686
-
- []
-
-[45]
-Underfull \hbox (badness 10000) in paragraph at lines 2781--2783
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 2811--2813
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 2824--2826
-
- []
-
-[46]
+[42] [43] [44] [45] [46] [47]
 Underfull \hbox (badness 10000) in paragraph at lines 2827--2829
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2830--2832
+Underfull \hbox (badness 10000) in paragraph at lines 2924--2926
+
+ []
+
+[48]
+Underfull \hbox (badness 10000) in paragraph at lines 2954--2956
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2839--2841
+Underfull \hbox (badness 10000) in paragraph at lines 2967--2969
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2863--2865
+Underfull \hbox (badness 10000) in paragraph at lines 2970--2972
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2866--2868
+Underfull \hbox (badness 10000) in paragraph at lines 2973--2975
+
+ []
+
+[49]
+Underfull \hbox (badness 10000) in paragraph at lines 2982--2984
+
+ []
+
+[50] [51]
+Underfull \hbox (badness 10000) in paragraph at lines 3093--3095
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2869--2871
+Underfull \hbox (badness 10000) in paragraph at lines 3096--3098
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2872--2874
-
- []
-
-[47]
-Underfull \hbox (badness 10000) in paragraph at lines 2927--2929
+Underfull \hbox (badness 10000) in paragraph at lines 3099--3101
 
  []
 
 
-Overfull \hbox (21.897pt too wide) in paragraph at lines 2964--2964
+Underfull \hbox (badness 10000) in paragraph at lines 3102--3104
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 3157--3159
+
+ []
+
+[52]
+Overfull \hbox (21.897pt too wide) in paragraph at lines 3194--3194
 []\OT1/cmtt/m/n/10.95 double nml_vect_dot(nml_mat *m1, unsigned int m1col, nml_
 mat *m2, unsigned m2col) {[] 
  []
 
-[48] [49] [50]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 3117.
- [51]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 3117.
+[53] [54] [55] [56]
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 3421.
+ [57]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 3421.
  (./nml.aux)
-Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 3117.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 3117.
+Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 3421.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 3421.
 
 Package rerunfilecheck Info: File `nml.out' has not changed.
-(rerunfilecheck)             Checksum: D33D7EFBBA8F00FE2B54858D6110E5AF;3338.
+(rerunfilecheck)             Checksum: BC08843DCB27FB1502A3E03F29F9C644;3574.
 
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 3117.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 3421.
  ) 
 Here is how much of TeX's memory you used:
- 9172 strings out of 494459
- 124177 string characters out of 6174527
- 284454 words of memory out of 5000000
- 12683 multiletter control sequences out of 15000+600000
- 15550 words of font info for 65 fonts, out of 8000000 for 9000
+ 9180 strings out of 494459
+ 124283 string characters out of 6174527
+ 281801 words of memory out of 5000000
+ 12689 multiletter control sequences out of 15000+600000
+ 16171 words of font info for 67 fonts, out of 8000000 for 9000
  62 hyphenation exceptions out of 8191
- 33i,17n,35p,590b,507s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 33i,17n,35p,590b,462s stack positions out of 5000i,500n,10000p,200000b,80000s
 
-Output written on nml.dvi (51 pages, 195572 bytes).
+Output written on nml.dvi (57 pages, 208748 bytes).

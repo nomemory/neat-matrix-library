@@ -35,13 +35,17 @@
 \contentsline {subsection}{\numberline {9.2}Code implementation}{34}{subsection.9.2}% 
 \contentsline {section}{\numberline {10}Reduces Row Echelon Form}{35}{section.10}% 
 \contentsline {subsection}{\numberline {10.1}Code Implementation}{36}{subsection.10.1}% 
-\contentsline {section}{\numberline {11}LU(P) Decomposition}{37}{section.11}% 
-\contentsline {subsection}{\numberline {11.1}The LU(P) algorithm as an example}{38}{subsection.11.1}% 
-\contentsline {subsection}{\numberline {11.2}Code implementation}{40}{subsection.11.2}% 
-\contentsline {section}{\numberline {12}Solving linear systems of equations}{42}{section.12}% 
-\contentsline {subsection}{\numberline {12.1}Forward substitution}{42}{subsection.12.1}% 
-\contentsline {subsection}{\numberline {12.2}Backward substitution}{43}{subsection.12.2}% 
-\contentsline {subsection}{\numberline {12.3}Solving linear systems using LU(P) decomposition}{44}{subsection.12.3}% 
-\contentsline {subsection}{\numberline {12.4}Calculating the inverse of the matrix using LU(P) decomposition}{45}{subsection.12.4}% 
-\contentsline {subsection}{\numberline {12.5}Calculating the determinant of the matrix using LU(P) decomposition}{46}{subsection.12.5}% 
-\contentsline {section}{\numberline {13}QR Decomposition}{47}{section.13}% 
+\contentsline {subsection}{\numberline {10.2}Example}{37}{subsection.10.2}% 
+\contentsline {section}{\numberline {11}LU(P) Decomposition}{39}{section.11}% 
+\contentsline {subsection}{\numberline {11.1}The LU(P) algorithm as an example}{40}{subsection.11.1}% 
+\contentsline {subsection}{\numberline {11.2}Code implementation}{41}{subsection.11.2}% 
+\contentsline {subsection}{\numberline {11.3}Example}{43}{subsection.11.3}% 
+\contentsline {section}{\numberline {12}Solving linear systems of equations}{45}{section.12}% 
+\contentsline {subsection}{\numberline {12.1}Forward substitution}{45}{subsection.12.1}% 
+\contentsline {subsection}{\numberline {12.2}Backward substitution}{46}{subsection.12.2}% 
+\contentsline {subsection}{\numberline {12.3}Solving linear systems using LU(P) decomposition}{47}{subsection.12.3}% 
+\contentsline {subsection}{\numberline {12.4}Calculating the inverse of the matrix using LU(P) decomposition}{48}{subsection.12.4}% 
+\contentsline {subsection}{\numberline {12.5}Calculating the determinant of the matrix using LU(P) decomposition}{49}{subsection.12.5}% 
+\contentsline {subsection}{\numberline {12.6}Example}{50}{subsection.12.6}% 
+\contentsline {section}{\numberline {13}QR Decomposition}{52}{section.13}% 
+\contentsline {subsection}{\numberline {13.1}Example}{56}{subsection.13.1}% 

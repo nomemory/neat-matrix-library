@@ -34,13 +34,17 @@
 \BOOKMARK [2][-]{subsection.9.2}{Code implementation}{section.9}% 34
 \BOOKMARK [1][-]{section.10}{Reduces Row Echelon Form}{}% 35
 \BOOKMARK [2][-]{subsection.10.1}{Code Implementation}{section.10}% 36
-\BOOKMARK [1][-]{section.11}{LU\(P\) Decomposition}{}% 37
-\BOOKMARK [2][-]{subsection.11.1}{The LU\(P\) algorithm as an example}{section.11}% 38
-\BOOKMARK [2][-]{subsection.11.2}{Code implementation}{section.11}% 39
-\BOOKMARK [1][-]{section.12}{Solving linear systems of equations}{}% 40
-\BOOKMARK [2][-]{subsection.12.1}{Forward substitution}{section.12}% 41
-\BOOKMARK [2][-]{subsection.12.2}{Backward substitution}{section.12}% 42
-\BOOKMARK [2][-]{subsection.12.3}{Solving linear systems using LU\(P\) decomposition}{section.12}% 43
-\BOOKMARK [2][-]{subsection.12.4}{Calculating the inverse of the matrix using LU\(P\) decomposition}{section.12}% 44
-\BOOKMARK [2][-]{subsection.12.5}{Calculating the determinant of the matrix using LU\(P\) decomposition}{section.12}% 45
-\BOOKMARK [1][-]{section.13}{QR Decomposition}{}% 46
+\BOOKMARK [2][-]{subsection.10.2}{Example}{section.10}% 37
+\BOOKMARK [1][-]{section.11}{LU\(P\) Decomposition}{}% 38
+\BOOKMARK [2][-]{subsection.11.1}{The LU\(P\) algorithm as an example}{section.11}% 39
+\BOOKMARK [2][-]{subsection.11.2}{Code implementation}{section.11}% 40
+\BOOKMARK [2][-]{subsection.11.3}{Example}{section.11}% 41
+\BOOKMARK [1][-]{section.12}{Solving linear systems of equations}{}% 42
+\BOOKMARK [2][-]{subsection.12.1}{Forward substitution}{section.12}% 43
+\BOOKMARK [2][-]{subsection.12.2}{Backward substitution}{section.12}% 44
+\BOOKMARK [2][-]{subsection.12.3}{Solving linear systems using LU\(P\) decomposition}{section.12}% 45
+\BOOKMARK [2][-]{subsection.12.4}{Calculating the inverse of the matrix using LU\(P\) decomposition}{section.12}% 46
+\BOOKMARK [2][-]{subsection.12.5}{Calculating the determinant of the matrix using LU\(P\) decomposition}{section.12}% 47
+\BOOKMARK [2][-]{subsection.12.6}{Example}{section.12}% 48
+\BOOKMARK [1][-]{section.13}{QR Decomposition}{}% 49
+\BOOKMARK [2][-]{subsection.13.1}{Example}{section.13}% 50
