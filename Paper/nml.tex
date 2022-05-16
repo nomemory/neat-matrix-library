@@ -3090,10 +3090,18 @@ x:
 
 \section{QR Decomposition}
 
-Any square matrix $A$ can be decomposed as $A=QR$, where $Q$ is an orthogonal matrix, and $R$ is an upper triangular matrix.
+Any real square matrix A may be decomposed as
+
+$$
+A = QR
+$$
+where $Q$ is an orthogonal matrix (its columns are orthogonal unit vectors meaning $Q^{T}=Q^{-1}$) and $R$ is an upper triangular matrix (also called right triangular matrix). If $A$ is invertible, then the factorization is unique if we require the diagonal elements of R to be positive.
 \\
 
-A (real) matrix is orthogonal if its columns are orthogonal unit vectors, meaning that $QQ^T = Q^TQ = I$, where $Q^T$ is the transpose of $Q$. This means that $Q$ is invertible and $Q^T = Q^{-1}$ for an orthogonal matrix.
+If instead A is a complex square matrix, then there is a decomposition $A = QR$ where Q is a unitary matrix (so $Q^{H}=Q^{-1}$).
+\\
+
+A real matrix is orthogonal if its columns are orthogonal unit vectors, meaning that $QQ^T = Q^TQ = I$, where $Q^T$ is the transpose of $Q$. This means that $Q$ is invertible and $Q^T = Q^{-1}$ for an orthogonal matrix.
 \\
 
 The process of computing $A=QR$ is called the $Gram-Schmidt$ algorithm.
@@ -3361,10 +3369,15 @@ int main(int argc, char *argv[]) {
   printf("R:\n");
   nml_mat_printf(A_qr->R, "%10.4lf  ");
 
+  // verifying
+  printf("Q * R:\n");
+  nml_mat *A_ = nml_mat_dot(A_qr->Q, A_qr->R);
+  nml_mat_printf(A_, "%10.4lf  ");  
+
   // freeing
   nml_mat_free(A); 
   nml_mat_qr_free(A_qr);
-  return 0;
+  nml_mat_free(A_);
 }
 \end{verbatim}
 
@@ -3388,6 +3401,12 @@ R:
     1.7321      1.7321     -0.0000  
     0.0000      2.8284      1.4142  
     0.0000      0.0000      7.3485 
+
+Q * R:
+
+    1.0000      3.0000      4.0000  
+    1.0000      1.0000     -6.0000  
+    1.0000     -1.0000      2.0000  
 \end{verbatim}
 
 
@@ -3407,6 +3426,11 @@ LU(P) decomposition
 The QR decomposition
 \\ 
 \url{https://www.youtube.com/watch?v=FAnNBw7d0vg}
+
+\bibitem{qr}
+The QR decomposition (2)
+\\ 
+\url{https://en.wikipedia.org/wiki/QR_decomposition}
 
 \bibitem{vector-norm}
 Norm of vectors.

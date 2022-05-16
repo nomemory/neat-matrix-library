@@ -9,19 +9,19 @@
 \usepackage{hyperref}
 \usepackage[all]{xy}
 
-%Para trabajar con pdftex:
+%for working with pdftex:
 %\usepackage[pdftex]{graphicx}
 %\usepackage[pdftex]{color}
 
-%Para trabajar con latex:
+%for working with latex:
 \usepackage[dvips]{graphics}
 \usepackage[dvips]{color}
 
-%Redefiniendo las funciones trigonom\'{e}tricas
-\def\sen{\mbox{\rmfamily \upshape sen}\,}
+% trigonometrical functions
+\def\sin{\mbox{\rmfamily \upshape sin}\,}
 \def\tg{\mbox{\rmfamily \upshape tg}\,}
 \def\cotg{\mbox{\rmfamily \upshape cotg}\,}
-\def\asen{\mbox{\rmfamily \upshape arc\,sen}\,}
+\def\asin{\mbox{\rmfamily \upshape arc\,sin}\,}
 \def\acos{\mbox{\rmfamily \upshape arc\,cos}\,}
 \def\atan{\mbox{\rmfamily \upshape arc\,tan}\,}
 \def\atg{\mbox{\rmfamily \upshape arc\,tg}\,}
@@ -31,24 +31,14 @@
 \def\acosec{\mbox{\rmfamily \upshape arc\,cosec}\,}
 \def\acsc{\mbox{\rmfamily \upshape arc\,csc}\,}
 
-%Redefiniendo m\'{\i}n, m\'{a}x, l\'{\i}m,
-\renewcommand{\min}[1]{\mbox{\rmfamily \upshape m\'{\i}n}\left\{  #1 \right\}}
-\renewcommand{\max}[1]{\mbox{\rmfamily \upshape m\'{\i}n}\left\{  #1 \right\}}
-\renewcommand{\lim}[1]{\mathop{\mbox{\rmfamily \upshape l\'{\i}m}}\limits_%
-{\scriptsize #1}\quad}
-
-%Definiendo operadores relacionados con n\'{u}meros complejos
-\def\Ic{\mathbf{I}_{\mbox{\scriptsize \upshape \rmfamily C}}}
-\def\IIc{\mathbf{II}_{\mbox{\scriptsize \upshape \rmfamily C}}}
-\def\IIIc{\mathbf{III}_{\mbox{\scriptsize \upshape \rmfamily C}}}
-\def\IVc{\mathbf{IV}_{\mbox{\scriptsize \upshape \rmfamily C}}}
+% complex numbers
 \def\Re{\mbox{\rmfamily \upshape Re}\,}
 \def\Im{\mbox{\rmfamily \upshape Im}\,}
 \def\Arg{\mbox{\rmfamily \upshape Arg}\,}
 \def\Res{\mathop{\mbox{\rmfamily \upshape Res}}}
 \def\Log{\mbox{\rmfamily \upshape Log}}
 
-%Redefiniendo algunas letras griegas
+% aliasing greek letters
 \def\alfa{\alpha}
 \def\seta{\zeta}
 \def\my{\mu}
@@ -56,90 +46,32 @@
 \def\ipsilon{\upsilon}
 \def\ji{\chi}
 
-%Redefiniendo algunos s\'{\i}mbolos matem\'{a}ticos comunes
-\newcommand{\implica}{\ \Rightarrow\ }
-\newcommand{\menos}{\setminus}
+% others
 \newcommand{\binomial}{\choose}
-\def\B{\mathfrak B}
-\def\D{\mathfrak D}
-\def\C{\mathbb C}
-\def\E{\mathbb E}
-\def\R{\mathbb R}
-\def\Q{\mathbb Q}
-\def\N{\mathbb N}
-\def\L{\mathcal L}
-\def\X{\mathbb X}
-\def\Y{\mathbb Y}
-\def\Z{\mathbb Z}
-\def\I{\mathbf I}
-\def\II{\mathbf II}
-\def\III{\mathbf III}
-\def\IV{\mathbf IV}
-\def\({\left(}
-\def\){\right)}
-\def\[{\left[}
-\def\]{\right]}
-\def\iz|{\left|}
-\def\de|{\right|}
-\def\->{\rightarrow}
-\def\<-{\leftarrow}
-\def\d{\mbox{\rmfamily \upshape d}}
-\def\e{\mbox{\rmfamily \upshape e}}
 
-% Definiendo etiquetas de estilo (ejemplo, soluci'on, etc)
-%\def\ejemplo{\noindent{\large\bfseries\sffamily\textcolor{blue}{Ejemplo.}}\quad}
-%\def\solu{\noindent{\large\bfseries\sffamily\textcolor{blue}{Soluci\'on.}}\quad}
-
+% environments
 \def\example{\textsc{Example.\quad}}
 \def\solution{\textbf{Solution.}}
 \def\hsep{\rule{\textwidth}{0.5pt}\\}
 
-% Definiendo s'imbolos de relaci'on y de conjuntos
-\def\un{\mathop{\cup}}
-\def\inter{\mathop{\cap}}
-
-% Definiendo entornos de teorema, lema y corolario
-\newtheorem{proposicion}{Proposici\'on}[section]
-\newtheorem{teorema}{Teorema}[section]
-\newtheorem{corolario}{Corolario}[teorema]
-\newtheorem{lema}{Lema}[section]
-\def\demo{{\sc\noindent DEMOSTRACI\'ON. }}
-
-% Definiendo otros simbolos
-\def\obs{{\sc\noindent OBSERVACION. }}
-\newcommand{\obsN}[1]{{\sc\noindent OBSERVACI\'ON #1. }}
-\def\cuadro{\scriptstyle\blacksquare}
-
-\newcounter{ejemplo}\setcounter{ejemplo}0
-\newcounter{ejercicio}\setcounter{ejercicio}0
-\newcounter{definicion}\setcounter{definicion}0
-\def\solu{\noindent{\bfseries\itshape {\color{blue}\large Soluci\'on.}}\quad}
-\newcommand{\Ejemplo}{{\addtocounter{ejemplo}1\noindent\bfseries\sffamily\large
-\colorbox[rgb]{1,1,.7}{\textcolor[rgb]{.2,.2,1}{Ejemplo
-\arabic{ejemplo}. }}\quad }}
-\newcommand{\Ejercicio}{{\addtocounter{ejercicio}1\noindent\scshape\Large {\textcolor[rgb]{.2,0,1}{\underline{Ejercicio No.
-\arabic{ejercicio}.}}\quad}}}
-
 %-----------------------------------------------------------------------------
-%Definiendo otros aspectos del documento
-\newcommand{\seccion}{\setcounter{equation}0\setcounter{ejercicio}0\setcounter{ejemplo}0\section}
-\newcommand{\subseccion}{\setcounter{equation}0\setcounter{figure}0\subsection}
+% Document attributes
 \def\theequation{\arabic{section}.\arabic{equation}}
 \def\thefigure{\arabic{section}.\arabic{figure}}
 \def\thetable{\arabic{section}.\arabic{table}}
 \def\thepage{\arabic{page}}
-\frenchspacing      %espaciado frances
+\frenchspacing      % french spacing
 
-\setlength\hoffset{-1in}     %sin separacion horizontal en la parte izquierda
-\setlength\oddsidemargin{30mm}  %margen izquierdo
-\setlength\textwidth{160mm} %ancho del texto
+\setlength\hoffset{-1in}        %no separation in the left side
+\setlength\oddsidemargin{30mm}  %left margin
+\setlength\textwidth{160mm}     %text width
 
-\setlength\voffset{-1in}        %sin separacion vertical en la parte superior
-\setlength\topmargin{20mm}      %margen superior
-\setlength\headheight{8mm}       %alto de la cabecera
-\setlength\headsep{10mm}     %distancia de la cabecera al texto
-\setlength\textheight{215mm} %alto del texto
+\setlength\voffset{-1in}        %no separation in the upper side superior
+\setlength\topmargin{20mm}      %upper margin
+\setlength\headheight{8mm}      %
+\setlength\headsep{10mm}        %header to text distance
+\setlength\textheight{215mm}    %text height
 
-%Dimensiones de la hoja tama~no carta:
-%Ancho: 215.9 mm
-%Alto: 279.4 mm
+% Letter size
+%Width: 215.9 mm
+%Height: 279.4 mm

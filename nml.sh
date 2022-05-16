@@ -4,8 +4,8 @@
 
 # COMPILING RELATED
 CC=gcc
-CCFLAGS="-Wall -c -lm"
-CCFLAGS_EXAMPLES="-Wall -lm"
+CCFLAGS="-Wall -c -lm --std=gnu99"
+CCFLAGS_EXAMPLES="-Wall -lm --std=gnu99"
 AR=ar
 ARFLAGS="crs"
 SOURCE_FILES=(nml.c nml_util.c)

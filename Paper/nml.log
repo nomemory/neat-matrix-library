@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2019/dev/Debian) (preloaded format=latex 2021.1.13)  14 MAY 2022 12:02
+This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2019/dev/Debian) (preloaded format=latex 2021.1.13)  16 MAY 2022 08:38
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -385,15 +385,7 @@ Package color Info: Driver file: dvips.def on input line 147.
 
 (/usr/share/texlive/texmf-dist/tex/latex/graphics/dvipsnam.def
 File: dvipsnam.def 2016/06/17 v3.0m Driver-dependent file (DPC,SPQR)
-))
-\c@proposicion=\count123
-\c@teorema=\count124
-\c@corolario=\count125
-\c@lema=\count126
-\c@ejemplo=\count127
-\c@ejercicio=\count128
-\c@definicion=\count129
-)
+)))
 (/usr/share/texlive/texmf-dist/tex/latex/titling/titling.sty
 Package: titling 2009/09/04 v2.1d maketitle typesetting
 \thanksmarkwidth=\skip47
@@ -406,7 +398,7 @@ Package: alltt 1997/06/16 v2.0g defines alltt environment
 (/usr/share/texlive/texmf-dist/tex/latex/multirow/multirow.sty
 Package: multirow 2019/01/01 v2.4 Span multiple rows of a table
 \multirow@colwidth=\skip50
-\multirow@cntb=\count130
+\multirow@cntb=\count123
 \multirow@dima=\skip51
 \bigstrutjot=\dimen156
 )
@@ -435,7 +427,7 @@ Package: array 2018/12/30 v2.4k Tabular extension package (FMi)
 \minrowclearance=\skip54
 )
 LaTeX Info: Redefining \color on input line 709.
-\rownum=\count131
+\rownum=\count124
 Package xcolor Info: Model `cmy' substituted by `cmy0' on input line 1348.
 Package xcolor Info: Model `RGB' extended on input line 1364.
 Package xcolor Info: Model `HTML' substituted by `rgb' on input line 1366.
@@ -444,7 +436,11 @@ Package xcolor Info: Model `tHsb' substituted by `hsb' on input line 1368.
 Package xcolor Info: Model `HSB' substituted by `hsb' on input line 1369.
 Package xcolor Info: Model `Gray' substituted by `gray' on input line 1370.
 Package xcolor Info: Model `wave' substituted by `hsb' on input line 1371.
-) (./nml.aux)
+) (./nml.aux
+
+LaTeX Warning: Label `qr' multiply defined.
+
+)
 \openout1 = `nml.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 18.
@@ -463,14 +459,13 @@ LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 18.
 LaTeX Font Info:    ... okay on input line 18.
 \AtBeginShipoutBox=\box36
 Package hyperref Info: Link coloring OFF on input line 18.
-
-(/usr/share/texlive/texmf-dist/tex/latex/hyperref/nameref.sty
+ (/usr/share/texlive/texmf-dist/tex/latex/hyperref/nameref.sty
 Package: nameref 2016/05/21 v2.44 Cross-referencing by name of section
 
 (/usr/share/texlive/texmf-dist/tex/generic/oberdiek/gettitlestring.sty
 Package: gettitlestring 2016/05/16 v1.5 Cleanup title references (HO)
 )
-\c@section@level=\count132
+\c@section@level=\count125
 )
 LaTeX Info: Redefining \ref on input line 18.
 LaTeX Info: Redefining \pageref on input line 18.
@@ -988,43 +983,48 @@ Underfull \hbox (badness 10000) in paragraph at lines 2982--2984
  []
 
 [50] [51]
-Underfull \hbox (badness 10000) in paragraph at lines 3093--3095
+Underfull \hbox (badness 10000) in paragraph at lines 3097--3100
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 3096--3098
+Underfull \hbox (badness 10000) in paragraph at lines 3101--3103
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 3099--3101
+Underfull \hbox (badness 10000) in paragraph at lines 3104--3106
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 3102--3104
+Underfull \hbox (badness 10000) in paragraph at lines 3107--3109
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 3157--3159
+Underfull \hbox (badness 10000) in paragraph at lines 3110--3112
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 3165--3167
 
  []
 
 [52]
-Overfull \hbox (21.897pt too wide) in paragraph at lines 3194--3194
+Overfull \hbox (21.897pt too wide) in paragraph at lines 3202--3202
 []\OT1/cmtt/m/n/10.95 double nml_vect_dot(nml_mat *m1, unsigned int m1col, nml_
 mat *m2, unsigned m2col) {[] 
  []
 
 [53] [54] [55] [56]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 3421.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 3445.
  [57]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 3421.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 3445.
  (./nml.aux)
-Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 3421.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 3421.
+Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 3445.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 3445.
 
 Package rerunfilecheck Info: File `nml.out' has not changed.
 (rerunfilecheck)             Checksum: BC08843DCB27FB1502A3E03F29F9C644;3574.
@@ -1032,15 +1032,18 @@ Package rerunfilecheck Info: File `nml.out' has not changed.
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 3421.
+
+LaTeX Warning: There were multiply-defined labels.
+
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 3445.
  ) 
 Here is how much of TeX's memory you used:
- 9180 strings out of 494459
- 124283 string characters out of 6174527
- 281801 words of memory out of 5000000
- 12689 multiletter control sequences out of 15000+600000
+ 9114 strings out of 494459
+ 123727 string characters out of 6174527
+ 280796 words of memory out of 5000000
+ 12623 multiletter control sequences out of 15000+600000
  16171 words of font info for 67 fonts, out of 8000000 for 9000
  62 hyphenation exceptions out of 8191
- 33i,17n,35p,590b,462s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 33i,17n,35p,590b,460s stack positions out of 5000i,500n,10000p,200000b,80000s
 
-Output written on nml.dvi (57 pages, 208748 bytes).
+Output written on nml.dvi (57 pages, 210052 bytes).
