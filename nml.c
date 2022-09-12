@@ -506,7 +506,7 @@ nml_mat *nml_mat_col_swap(nml_mat *m, unsigned int col1, unsigned int col2) {
 }
 
 int nml_mat_col_swap_r(nml_mat *m, unsigned int col1, unsigned int col2) {
-  if (col1 >= m->num_cols || col2 >= m->num_rows) {
+  if (col1 >= m->num_cols || col2 >= m->num_cols) {
     NML_FERROR(CANNOT_SWAP_ROWS, col1, col2, m->num_cols);
     return 0;
   }
