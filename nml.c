@@ -645,7 +645,7 @@ int nml_mat_add_r(nml_mat *m1, nml_mat *m2) {
 }
 
 nml_mat *nml_mat_sub(nml_mat *m1, nml_mat *m2) {
-  nml_mat *r = nml_mat_cp(m2);
+  nml_mat *r = nml_mat_cp(m1);
   if (!nml_mat_sub_r(r, m2)) {
     nml_mat_free(r);
     return NULL;
