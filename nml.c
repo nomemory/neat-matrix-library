@@ -121,7 +121,14 @@ limitations under the License.
 //
 // *****************************************************************************
 
-// Dynamically allocates a new matrix struct
+/**
+ * Dynamically allocates a new matrix struct.
+ * The matrix will be initially populated with zeroes.
+ *
+ * @param   num_rows  number of rows of the new matrix
+ * @param   num_cols  number of cols of the new matrix
+ * @return            a pointer to the new matrix struct
+ */
 nml_mat *nml_mat_new(unsigned int num_rows, unsigned int num_cols) {
   if (num_rows == 0) {
     NML_ERROR(INVALID_ROWS);
@@ -146,6 +153,15 @@ nml_mat *nml_mat_new(unsigned int num_rows, unsigned int num_cols) {
   return m;
 }
 
+/**
+ * Create a new square matrix, with random elements.
+ * The elements will be double in the range [min, max)
+ *
+ * @param   size  the size of the matrix
+ * @param   min   lower bound for the random numbers
+ * @param   max   upper bound for the random numbers
+ * @return        a pointer to the created matrix struct
+ */
 nml_mat *nml_mat_rnd(unsigned int num_rows, unsigned int num_cols, double min, double max) {
   nml_mat *r = nml_mat_new(num_rows, num_cols);
   int i, j;
@@ -157,20 +173,36 @@ nml_mat *nml_mat_rnd(unsigned int num_rows, unsigned int num_cols, double min, d
   return r;
 }
 
-// Dynamically alloctes a new matrix struct
-// The matrix is square (number of rows is equl with the number of cols)
+/**
+ * Dynamically allocates a new square matrix struct.
+ * This is similar to `nml_matrix_new()`, but the matrix is square 
+ * (number of rows is equal than the number of cols)
+ */
 nml_mat *nml_mat_sqr(unsigned int size) {
   return nml_mat_new(size, size);
 }
 
+/**
+ * Create a new square matrix, with random elements.
+ * The elements will be double in the range [min, max)
+ *
+ * @param   size  the size of the matrix
+ * @param   min   lower bound for the random numbers
+ * @param   max   upper bound for the random numbers
+ * @return        a pointer to the created matrix struct
+ */
 nml_mat *nml_mat_sqr_rnd(unsigned int size, double min, double max) {
   return nml_mat_rnd(size, size, min, max);
 }
 
-// Dynamically allocates a a new matrix struct
-// The resulting matrix is an ID matrix (I)
-// I has 1.0 on the first diagonal
-// I is square
+/**
+ * Dynamically allocates a new identity matrix.
+ * The resulting matrix will be sqare, with 1's in the main diagonal
+ * and zero otherwise.
+ *
+ * @param   size  the size of the square matrix
+ * @return        identity matrix
+ */
 nml_mat *nml_mat_eye(unsigned int size) {
   nml_mat *r = nml_mat_new(size, size);
   int i;
@@ -180,22 +212,13 @@ nml_mat *nml_mat_eye(unsigned int size) {
   return r;
 }
 
-// Dynamically allocates a new matrix struct
-// Initialise the matrix by reading values from a vector
-nml_mat *nml_mat_from(unsigned int num_rows, unsigned int num_cols, unsigned int n_vals, double *vals) {
-  nml_mat *m = nml_mat_new(num_rows, num_cols);
-  int i, j, v_idx;
-  for(i = 0; i < m->num_rows; i++) {
-    for(j = 0; j < m->num_cols; j++) {
-      v_idx = i * m->num_cols + j;
-      m->data[i][j] = (v_idx < n_vals) ? vals[v_idx] : 0.0;
-    }
-  }
-  return m;
-}
-
-// Dynamically allocates a new Matrix
-// Initialise the matrix by copying another one
+/**
+ * Initialises a matrix by copying from another one.
+ * Dynamically allocates a new Matrix.
+ *
+ * @param   m  the other matrix
+ * @return     pointer to the new created matrix struct.
+ */
 nml_mat *nml_mat_cp(nml_mat *m) {
   nml_mat *r  = nml_mat_new(m->num_rows, m->num_cols);
   int i,j;
@@ -232,7 +255,35 @@ nml_mat *nml_mat_fromfilef(FILE *f) {
   return r;
 }
 
-// Frees a matrix structure
+/**
+ * Dynamically allocates a new matrix struct, and initializes the matrix my reading
+ * values from a vector (array).
+ * It is supposed that `num_rows * num_cols <= n_vals`, also the array `n_vals` has
+ * to have enough capacity.
+ *
+ * @param   num_rows  number of rows to the new matrix
+ * @param   num_cols  number of columns to the new matrix
+ * @param   n_vals    number of elements to be read
+ * @param   vals      array of values
+ * @return            a pointer to the new allocated matrix structure 
+ */
+nml_mat *nml_mat_from(unsigned int num_rows, unsigned int num_cols, unsigned int n_vals, double *vals) {
+  nml_mat *m = nml_mat_new(num_rows, num_cols);
+  int i, j, v_idx;
+  for(i = 0; i < m->num_rows; i++) {
+    for(j = 0; j < m->num_cols; j++) {
+      v_idx = i * m->num_cols + j;
+      m->data[i][j] = (v_idx < n_vals) ? vals[v_idx] : 0.0;
+    }
+  }
+  return m;
+}
+
+/**
+ * Free a matrix structure.
+ *
+ * @param  matrix  the matrix to be freed.
+ */
 void nml_mat_free(nml_mat *matrix) {
   int i;
   for(i = 0; i < matrix->num_rows; ++i) {
@@ -240,6 +291,9 @@ void nml_mat_free(nml_mat *matrix) {
   }
   free(matrix->data);
   free(matrix);
+  
+  matrix->data = NULL;
+  matrix = NULL;
 }
 
 // *****************************************************************************
@@ -302,7 +356,17 @@ void nml_mat_printf(nml_mat *matrix, const char *d_fmt) {
 //
 // *****************************************************************************
 
-double nml_mat_get(nml_mat *matrix, unsigned int i, unsigned int j) {
+/**
+ * Get the [i,j]-th element of m (zero-based index)
+ * C99 allows the qualifier "inline" to suggest the compiler to insert the 
+ * code function in-place, instead of calling it as a normal function.
+ *
+ * @param   matrix  the matrix (a pointer to)
+ * @param   i       row index
+ * @param   j       col index
+ * @return          the [i,j]-th element
+ */
+inline double nml_mat_get(nml_mat *matrix, unsigned int i, unsigned int j) {
   return matrix->data[i][j];
 }
 
@@ -329,11 +393,21 @@ nml_mat *nml_mat_row_get(nml_mat *m, unsigned int row) {
   return r;
 }
 
-void nml_mat_set(nml_mat *matrix, unsigned int i, unsigned int j, double value) {
+inline void nml_mat_set(nml_mat *matrix, unsigned int i, unsigned int j, double value) {
   matrix->data[i][j] = value;
 }
 
-// Sets all elements of a matrix to a given value
+/**
+ * Set the [i,j]-th element of m (zero-based index)
+ *
+ * C99 allows the qualifier "inline" to suggest the compiler to insert the 
+ * code function in-place, instead of calling it as a normal function.
+ * 
+ * @param   matrix  the matrix (a pointer to)
+ * @param   i       row index
+ * @param   j       col index
+ * @param   val     the value to what m[i,j] will be set
+ */
 void nml_mat_all_set(nml_mat *matrix, double value) {
   int i, j;
   for(i = 0; i < matrix->num_rows; i++) {
@@ -356,6 +430,15 @@ int nml_mat_diag_set(nml_mat *m, double value) {
   return 1;
 }
 
+/**
+ * Return a new (independent) matrix that is the result of multiplying a given
+ * row of the original matrix, by a scalar.
+ *
+ * @param   m    the original matrix
+ * @param   row  the index (zero-based) of the row to multiply
+ * @param   num  the scalar
+ * @return       the new matrix
+ */
 nml_mat *nml_mat_row_mult(nml_mat *m, unsigned int row, double num) {
   nml_mat *r = nml_mat_cp(m);
   if (!nml_mat_row_mult_r(r, row, num)) {
@@ -365,6 +448,15 @@ nml_mat *nml_mat_row_mult(nml_mat *m, unsigned int row, double num) {
   return r;
 }
 
+/**
+ * Auxiliary function: Multiply a given row of a matrix, by a scalar. 
+ * The matrix will be overwritten.
+ *
+ * @param   m    the matrix
+ * @param   row  index of the row to be multiplied
+ * @param   num  the scalar
+ * @return       TRUE iff the operation succeeded
+ */
 int nml_mat_row_mult_r(nml_mat *m, unsigned int row, double num) {
   if (row>= m->num_rows) {
     NML_FERROR(CANNOT_ROW_MULTIPLY, row, m->num_rows);
@@ -377,6 +469,15 @@ int nml_mat_row_mult_r(nml_mat *m, unsigned int row, double num) {
   return 1;
 }
 
+/**
+ * Return a new (independent) matrix that is the result of multiplying a given
+ * column of the original matrix, by a scalar.
+ *
+ * @param   m    the original matrix
+ * @param   col  the index (zero-based) of the col to multiply
+ * @param   num  the scalar
+ * @return       the new matrix
+ */
 nml_mat *nml_mat_col_mult(nml_mat *m, unsigned int col, double num) {
   nml_mat *r = nml_mat_cp(m);
   if (!nml_mat_col_mult_r(r, col, num)) {
@@ -386,6 +487,15 @@ nml_mat *nml_mat_col_mult(nml_mat *m, unsigned int col, double num) {
   return r;
 }
 
+/**
+ * Auxiliary function: Multiply a given column of a matrix, by a scalar. 
+ * The matrix will be overwritten.
+ *
+ * @param   m    the matrix
+ * @param   col  index of the column to be multiplied
+ * @param   num  the scalar
+ * @return       TRUE iff the operation succeeded
+ */
 int nml_mat_col_mult_r(nml_mat *m, unsigned int col, double num) {
   if (col>=m->num_cols) {
     NML_FERROR(CANNOT_COL_MULTIPLY, col, m->num_cols);
@@ -398,6 +508,10 @@ int nml_mat_col_mult_r(nml_mat *m, unsigned int col, double num) {
   return 1;
 }
 
+/**
+ * Elementary row-operation. Adds to the row A[where][:] a multiple of the row A[row][:]
+ * This produces an independent matrix.
+ */
 nml_mat *nml_mat_row_addrow(nml_mat *m, unsigned int where, unsigned int row, double multiplier) {
   nml_mat *r = nml_mat_cp(m);
   if (!nml_mat_row_addrow_r(m, where, row, multiplier)) {
@@ -407,6 +521,10 @@ nml_mat *nml_mat_row_addrow(nml_mat *m, unsigned int where, unsigned int row, do
   return r;
 }
 
+/**
+ * Elementary row-operation. Adds to the row A[where][:] a multiple of the row A[row][:]
+ * The matrix will be overwritten.
+ */
 int nml_mat_row_addrow_r(nml_mat *m, unsigned int where, unsigned int row, double multiplier) {
 
   if (where >= m->num_rows || row >= m->num_rows) {
@@ -420,12 +538,20 @@ int nml_mat_row_addrow_r(nml_mat *m, unsigned int where, unsigned int row, doubl
   return 1;
 }
 
+/**
+ * Multiply a matrix by a scalar.
+ * This produces an independent matrix.
+ */
 nml_mat *nml_mat_smult(nml_mat *m, double num) {
   nml_mat *r = nml_mat_cp(m);
   nml_mat_smult_r(r, num);
   return r;
 }
 
+/**
+ * Multiply a matrix by a scalar.
+ * Changes are made in-place, the matrix will be overwritten.
+ */
 int nml_mat_smult_r(nml_mat *m, double num) {
   int i, j;
   for(i = 0; i < m->num_rows; i++) {
@@ -441,6 +567,14 @@ int nml_mat_smult_r(nml_mat *m, double num) {
 // Modifying the matrix structure
 //
 // *****************************************************************************
+
+/**
+ * Remove column. Produces an independent matrix.
+ *
+ * @param   m       [description]
+ * @param   column  [description]
+ * @return          [description]
+ */
 nml_mat *nml_mat_col_rem(nml_mat *m, unsigned int column) {
   if(column >= m->num_cols) {
     NML_FERROR(CANNOT_REMOVE_COLUMN, column, m->num_cols);
@@ -458,6 +592,13 @@ nml_mat *nml_mat_col_rem(nml_mat *m, unsigned int column) {
   return r;
 }
 
+/**
+ * Remove row. Produces an independent matrix.
+ *
+ * @param   m    [description]
+ * @param   row  [description]
+ * @return       [description]
+ */
 nml_mat *nml_mat_row_rem(nml_mat *m, unsigned int row) {
   if (row >= m->num_rows) {
     NML_FERROR(CANNOT_REMOVE_ROW, row, m->num_rows);
@@ -476,6 +617,15 @@ nml_mat *nml_mat_row_rem(nml_mat *m, unsigned int row) {
   return r;
 }
 
+/**
+ * Swap two rows of a matrix.
+ * Produces an independent matrix.
+ *
+ * @param   m     [description]
+ * @param   row1  [description]
+ * @param   row2  [description]
+ * @return        [description]
+ */
 nml_mat *nml_mat_row_swap(nml_mat *m, unsigned int row1, unsigned int row2) {
   nml_mat *r = nml_mat_cp(m);
   if (!nml_mat_row_swap_r(r, row1, row2)) {
@@ -485,6 +635,15 @@ nml_mat *nml_mat_row_swap(nml_mat *m, unsigned int row1, unsigned int row2) {
   return r;
 }
 
+/**
+ * Swap two rows of a matrix.
+ * The matrix will be overwritten.
+ *
+ * @param   m     [description]
+ * @param   row1  [description]
+ * @param   row2  [description]
+ * @return        [description]
+ */
 int nml_mat_row_swap_r(nml_mat *m, unsigned int row1, unsigned int row2) {
   if (row1 >= m->num_rows || row2 >= m->num_rows) {
     NML_FERROR(CANNOT_SWAP_ROWS, row1, row2, m->num_rows);
@@ -496,6 +655,15 @@ int nml_mat_row_swap_r(nml_mat *m, unsigned int row1, unsigned int row2) {
   return 1;
 }
 
+/**
+ * Swap two columns of a matrix.
+ * Produces an independent matrix.
+ *
+ * @param   m     [description]
+ * @param   row1  [description]
+ * @param   row2  [description]
+ * @return        [description]
+ */
 nml_mat *nml_mat_col_swap(nml_mat *m, unsigned int col1, unsigned int col2) {
   nml_mat *r = nml_mat_cp(m);
   if (!nml_mat_col_swap_r(r, col1, col2)) {
@@ -505,6 +673,15 @@ nml_mat *nml_mat_col_swap(nml_mat *m, unsigned int col1, unsigned int col2) {
   return r;
 }
 
+/**
+ * Swap two columns of a matrix.
+ * The matrix will be overwritten.
+ *
+ * @param   m     [description]
+ * @param   row1  [description]
+ * @param   row2  [description]
+ * @return        [description]
+ */
 int nml_mat_col_swap_r(nml_mat *m, unsigned int col1, unsigned int col2) {
   if (col1 >= m->num_cols || col2 >= m->num_cols) {
     NML_FERROR(CANNOT_SWAP_ROWS, col1, col2, m->num_cols);
@@ -520,6 +697,15 @@ int nml_mat_col_swap_r(nml_mat *m, unsigned int col1, unsigned int col2) {
   return 1;
 }
 
+/**
+ * Concatenates horizontally a variable number of matrices into one.
+ * The concatenation requires the matrices to have the same number of rows, 
+ * while the number of columns is allowed to be variable.
+ *
+ * @param   mnum  number of matrices to be concatenated
+ * @param   marr  array of matrices
+ * @return        the resulting matrix
+ */
 nml_mat *nml_mat_cath(unsigned int mnum, nml_mat **marr) {
   if (0==mnum) {
     return NULL;
@@ -565,10 +751,15 @@ nml_mat *nml_mat_cath(unsigned int mnum, nml_mat **marr) {
   return r;
 }
 
-// Concatenates a variable number of matrices into one.
-// The concentation is done vertically this means the matrices need to have
-// the same number of columns, while the number of rows is allowed to
-// be variable
+/**
+ * Concatenates vertically a variable number of matrices into one.
+ * The concatenation requires the matrices to have the same number of columns, 
+ * while the number of rows is allowed to be variable.
+ *
+ * @param   mnum  number of matrices to be concatenated
+ * @param   marr  array of matrices
+ * @return        the resulting matrix
+ */
 nml_mat *nml_mat_catv(unsigned int mnum, nml_mat **marr) {
   if (0 == mnum) {
     return NULL;
@@ -617,10 +808,14 @@ nml_mat *nml_mat_catv(unsigned int mnum, nml_mat **marr) {
 // Matrix Operations
 //
 // *****************************************************************************
-//
-// Matrix Operations
-//
 
+/**
+ * Adding matrices.
+ *
+ * @param   m1  matrix 1
+ * @param   m2  matrix 2
+ * @return      a pointer for the new matrix (m1 + m2)
+ */
 nml_mat *nml_mat_add(nml_mat *m1, nml_mat *m2) {
   nml_mat *r = nml_mat_cp(m1);
   if (!nml_mat_add_r(r, m2)) {
@@ -630,6 +825,13 @@ nml_mat *nml_mat_add(nml_mat *m1, nml_mat *m2) {
   return r;
 }
 
+/**
+ * Adding matrices.
+ *
+ * @param   m1  matrix 1
+ * @param   m2  matrix 2
+ * @return      After operation, m1 will contain (m1 + m2).
+ */
 int nml_mat_add_r(nml_mat *m1, nml_mat *m2) {
   if (!nml_mat_eqdim(m1, m2)) {
     NML_ERROR(CANNOT_ADD);
@@ -644,6 +846,13 @@ int nml_mat_add_r(nml_mat *m1, nml_mat *m2) {
   return 1;
 }
 
+/**
+ * Substracting matrices.
+ *
+ * @param   m1  matrix 1
+ * @param   m2  matrix 2
+ * @return      a pointer for the new matrix (m1 - m2)
+ */
 nml_mat *nml_mat_sub(nml_mat *m1, nml_mat *m2) {
   nml_mat *r = nml_mat_cp(m1);
   if (!nml_mat_sub_r(r, m2)) {
@@ -653,6 +862,13 @@ nml_mat *nml_mat_sub(nml_mat *m1, nml_mat *m2) {
   return r;
 }
 
+/**
+ * Substracting matrices.
+ *
+ * @param   m1  matrix 1
+ * @param   m2  matrix 2
+ * @return      after operation, m1 will contain (m1 - m2).
+ */
 int nml_mat_sub_r(nml_mat *m1, nml_mat *m2) {
   if (!nml_mat_eqdim(m1, m2)) {
     NML_ERROR(CANNOT_SUBTRACT);
@@ -667,6 +883,13 @@ int nml_mat_sub_r(nml_mat *m1, nml_mat *m2) {
   return 1;
 }
 
+/**
+ * Matrix product.
+ *
+ * @param   m1  matrix 1
+ * @param   m2  matrix 2
+ * @return      a pointer for the new matrix (m1 * m2)
+ */
 nml_mat *nml_mat_dot(nml_mat *m1, nml_mat *m2) {
   if (!(m1->num_cols == m2->num_rows)) {
     NML_ERROR(CANNOT_MULITPLY);
@@ -684,6 +907,12 @@ nml_mat *nml_mat_dot(nml_mat *m1, nml_mat *m2) {
   return r;
 }
 
+/**
+ * Transpose matrix
+ *
+ * @param   m  the matrix
+ * @return     pointer to the created transpose of m
+ */
 nml_mat *nml_mat_transp(nml_mat *m) {
   int i, j;
   nml_mat *r = nml_mat_new(m->num_cols, m->num_rows);
@@ -695,6 +924,12 @@ nml_mat *nml_mat_transp(nml_mat *m) {
   return r;
 }
 
+/**
+ * Trace of the matrix
+ *
+ * @param   m  the matrix
+ * @return     trace of m
+ */
 double nml_mat_trace(nml_mat* m) {
   if (!m->is_square) {
     NML_ERROR(CANNOT_TRACE);
@@ -713,9 +948,11 @@ double nml_mat_trace(nml_mat* m) {
 //
 // *****************************************************************************
 
-// Finds the first non-zero element on the col column, under the row row.
-// This is used to determine the pivot in gauss Elimination
-// If not pivot is found, returns -1
+/**
+ * Find the first non-zero element in the column `col`, and on or under the row `row`.
+ * This is used to determine the pivot in Gauss elimination.
+ * If no pivot is found, returns -1
+ */
 int _nml_mat_pivotidx(nml_mat *m, unsigned int col, unsigned int row) {
   // No validations are made, this is an API Method
   int i;
@@ -727,9 +964,12 @@ int _nml_mat_pivotidx(nml_mat *m, unsigned int col, unsigned int row) {
   return -1;
 }
 
-// Find the max element from the column "col" under the row "row"
-// This is needed to pivot in Gauss-Jordan elimination
-// If pivot is not found, return -1
+/**
+ * Find the element with the max absolute value in the column `col`, 
+ * and on or under the row `row`.
+ * This is used to determine the pivot in Gauss elimination.
+ * If no pivot is found, returns -1
+ */
 int _nml_mat_pivotmaxidx(nml_mat *m, unsigned int col, unsigned int row) {
   int i, maxi;
   double micol;
@@ -745,7 +985,12 @@ int _nml_mat_pivotmaxidx(nml_mat *m, unsigned int col, unsigned int row) {
   return (max < NML_MIN_COEF) ? -1 : maxi;
 }
 
-// Retrieves the matrix in Row Echelon form using Gauss Elimination
+/**
+ * Retrieves the matrix in Row Echelon form using Gauss Elimination
+ *
+ * @param   m  the argument matrix
+ * @return     the matrix reduced to its Row Echelon form
+ */
 nml_mat *nml_mat_ref(nml_mat *m) {
   nml_mat *r = nml_mat_cp(m);
   int i, j, k, pivot;
@@ -778,7 +1023,9 @@ nml_mat *nml_mat_ref(nml_mat *m) {
   return r;
 }
 
-// Retrieves the matrix in Reduced Row Echelon using Guass-Jordan Elimination
+/** 
+ * Retrieves the matrix in Reduced Row Echelon using Gauss-Jordan Elimination 
+ */
 nml_mat *nml_mat_rref(nml_mat *m) {
   nml_mat* r = nml_mat_cp(m);
   int i,j,k,pivot;
@@ -833,7 +1080,15 @@ int _nml_mat_absmaxr(nml_mat *m, unsigned int k) {
   return maxIdx;
 }
 
-// Allocates memory for a new nml_mat_lup structure
+/**
+ * Allocates memory for a new nml_mat_lup structure
+ *
+ * @param   L                 lower triangular matrix
+ * @param   U                 upper triangular matrix
+ * @param   P                 permutation matrix
+ * @param   num_permutations  number of permutations
+ * @return                    pointer to LUP structure allocated
+ */
 nml_mat_lup *nml_mat_lup_new(nml_mat *L, nml_mat *U, nml_mat *P, unsigned int num_permutations) {
   nml_mat_lup *r = malloc(sizeof(*r));
   NP_CHECK(r);
@@ -843,6 +1098,10 @@ nml_mat_lup *nml_mat_lup_new(nml_mat *L, nml_mat *U, nml_mat *P, unsigned int nu
   r->num_permutations = num_permutations;
   return r;
 }
+
+/**
+ * Free a LUP structure
+ */
 void nml_mat_lup_free(nml_mat_lup* lu) {
   nml_mat_free(lu->P);
   nml_mat_free(lu->L);
@@ -850,18 +1109,30 @@ void nml_mat_lup_free(nml_mat_lup* lu) {
   free(lu);
 }
 
+/**
+ * Print a LUP structure
+ */
 void nml_mat_lup_print(nml_mat_lup *lu) {
   nml_mat_print(lu->L);
   nml_mat_print(lu->U);
   nml_mat_print(lu->P);
 }
 
+/**
+ * Print a LUP structure, with format
+ */
 void nml_mat_lup_printf(nml_mat_lup *lu, const char *fmt) {
   nml_mat_printf(lu->L, fmt);
   nml_mat_printf(lu->U, fmt);
   nml_mat_printf(lu->P, fmt);
 }
 
+/**
+ * LU(P) factorisation of a matrix.
+ *
+ * @param   m  the matrix
+ * @return     pointer to a LUP structure.
+ */
 nml_mat_lup *nml_mat_lup_solve(nml_mat *m) {
   if (!m->is_square) {
     NML_FERROR(CANNOT_LU_MATRIX_SQUARE, m->num_rows, m-> num_cols);
@@ -995,18 +1266,21 @@ nml_mat *nml_ls_solvebck(nml_mat *U, nml_mat *b) {
   return x;
 }
 
-// A[n][n] is a square matrix
-// m contains matrices L, U, P for A[n][n] so that P*A = L*U
-//
-// The linear system is:
-// A*x=b  =>  P*A*x = P*b  =>  L*U*x = P*b  =>
-// (where b is a matrix[n][1], and x is a matrix[n][1])
-//
-// if y = U*x , we solve two systems:
-//    L * y = P b (forward substition)
-//    U * x = y (backward substition)
-//
-// We obtain and return x
+/**
+ * A[n][n] is a square matrix
+ * m contains matrices L, U, P for A[n][n] so that P*A = L*U
+ * 
+ * The linear system is:
+ * 
+ *   A*x=b  =>  P*A*x = P*b  =>  L*U*x = P*b 
+ *   
+ * (where b is a matrix[n][1], and x is a matrix[n][1])
+ * if y = U*x , we solve two systems:
+ *    L * y = P b (forward substition)
+ *    U * x = y (backward substition)
+ *    
+ * We obtain and return x.
+ */
 nml_mat *nml_ls_solve(nml_mat_lup *lu, nml_mat* b) {
   if (lu->U->num_rows != b->num_rows || b->num_cols != 1) {
     NML_FERROR(CANNOT_SOLVE_LIN_SYS_INVALID_B,
@@ -1029,7 +1303,14 @@ nml_mat *nml_ls_solve(nml_mat_lup *lu, nml_mat* b) {
   return x;
 }
 
-// Calculates the inverse of a matrix
+/**
+ * Calculates the inverse of a matrix. To find the inverse B of A,
+ * we solve the linear system AB = I, where I is the identity matrix
+ * (of same size of A). The system is solved by LUP decomposition.
+ *
+ * @param   lup  the LU decomposition of A.
+ * @return       the inverse of A.
+ */
 nml_mat *nml_mat_inv(nml_mat_lup *lup) {
   unsigned n = lup->L->num_cols;
   nml_mat *r = nml_mat_sqr(n);
@@ -1078,7 +1359,13 @@ double nml_vect_dot(nml_mat *m1, unsigned int m1col, nml_mat *m2, unsigned m2col
   return dot;
 }
 
-// Calculates the l2 norm for a colum in the matrix
+/**
+ * Calculates the l2 norm for a column in the matrix
+ *
+ * @param   m    the matrix
+ * @param   col  index of column for which to calculate the l2 norm
+ * @return       l2 norm of column `col`
+ */
 double nml_mat_col_l2norm(nml_mat *m, unsigned int col) {
   if (col >= m->num_cols) {
     NML_FERROR(CANNOT_COLUMN_L2NORM, col, m->num_cols);
@@ -1091,8 +1378,14 @@ double nml_mat_col_l2norm(nml_mat *m, unsigned int col) {
   return sqrt(doublesum);
 }
 
-// Calculates the l2norm for each column
-// Keeps results into 1 row matrix
+/**
+ * Calculates the l2norm for each column
+ * Keeps results into 1 row matrix, where the j-th element
+ * corresponds to the l2norm for the j-th column of m
+ *
+ * @param   m  the matrix
+ * @return     row matrix, containing the l2norm at colum-wise.
+ */
 nml_mat *nml_mat_l2norm(nml_mat *m) {
   int i, j;
   nml_mat *r = nml_mat_new(1, m->num_cols);
@@ -1107,6 +1400,14 @@ nml_mat *nml_mat_l2norm(nml_mat *m) {
   return r;
 }
 
+/**
+ * Normalizes a matrix, that is, divides each column by its own l2norm.
+ * This way, each column will have an unitary square-norm.
+ *
+ * @param   m  the matrix
+ * @return     the normalized matrix (using the same storage space than 
+ *             its predecesor m)
+ */
 nml_mat *nml_mat_normalize(nml_mat *m) {
   nml_mat *r = nml_mat_cp(m);
   if (!nml_mat_normalize_r(r)) {
@@ -1116,6 +1417,9 @@ nml_mat *nml_mat_normalize(nml_mat *m) {
   return r;
 }
 
+/**
+ * Auxiliary function to normalize matrix m.
+ */
 int nml_mat_normalize_r(nml_mat *m) {
   nml_mat *l2norms = nml_mat_l2norm(m);
   int j;
@@ -1131,19 +1435,35 @@ int nml_mat_normalize_r(nml_mat *m) {
   return 1;
 }
 
+/**
+ * Allocates a new QR structure.
+ *
+ * @return  new QR structure
+ */
 nml_mat_qr *nml_mat_qr_new() {
   nml_mat_qr *qr = malloc(sizeof(*qr));
   NP_CHECK(qr);
   return qr;
 }
 
+/**
+ * Deallocates a QR structure.
+ *
+ * @param  qr  an existing, previously allocated, QR structure.
+ */
 void nml_mat_qr_free(nml_mat_qr *qr) {
   nml_mat_free(qr->Q);
   nml_mat_free(qr->R);
   free(qr);
 }
 
-// M = QR
+/**
+ * QR factorization. The QR structure will contain both, the ortoghonal matrix Q,
+ * and the upper triangular matrix R, so that M = QR.
+ *
+ * @param   m  the matrix
+ * @return     QR structure containing the matrices Q and R.
+ */
 nml_mat_qr *nml_mat_qr_solve(nml_mat *m) {
 
   nml_mat_qr *qr = nml_mat_qr_new();

@@ -12,7 +12,6 @@ int main(int argc, char *argv[]) {
     printf("m2=\n");
     nml_mat_print(m2);
 
-
     // Add the matrices to, result is kept in m3
     // m1 and m2 remain unchanged
     nml_mat *m3 = nml_mat_add(m1, m2);
